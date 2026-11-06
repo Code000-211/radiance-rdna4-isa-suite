@@ -99,7 +99,8 @@ def _objects(path: Path) -> list[bytes]:
 
 
 def check_object_bytes(data: bytes, label: str, table: dict, backend: dict, kernel_filter: str | None,
-                       work: Path, asm_functions: dict | None = None) -> tuple[list[dict], list[dict]]:
+                       work: Path, asm_functions: dict | None = None,
+                       timeout: float = 600) -> tuple[list[dict], list[dict]]:
     elf = ELF(data)
     ks, issues = kernel_inventory(elf)
     notes = [{'rule': 'OBJECT_EVIDENCE', 'severity': 'incomplete', 'message': m, 'pc': None}
@@ -109,7 +110,7 @@ def check_object_bytes(data: bytes, label: str, table: dict, backend: dict, kern
     usable = [k for k in ks if 'code_hex' in k]
     tmp = work / 'object.co'
     tmp.write_bytes(data)
-    decoded = decode_object(tmp, usable, backend) if usable else {}
+    decoded = decode_object(tmp, usable, backend, timeout) if usable else {}
     results = []
     for k in ks:
         d = decoded.get(k['symbol'], {'instructions': [], 'issues': [], 'decoded_bytes': 0})
@@ -155,7 +156,8 @@ def check_assembly(path: Path, table: dict, backend: dict, args, work: Path):
                      'message': p.stderr.strip() or 'llvm-mc failed'}]
     if '.amdhsa_kernel' in text:
         functions = hipsrc.parse_asm(text)
-        return check_object_bytes(obj.read_bytes(), str(path), table, backend, args.kernel, work, functions)
+        return check_object_bytes(obj.read_bytes(), str(path), table, backend, args.kernel, work, functions,
+                                  args.timeout)
     k, _ = snippet_kernel(obj, args.wave)
     decoded = decode_object(obj, [k], backend)
     d = decoded[k['symbol']]
@@ -195,7 +197,7 @@ def check_hip(path: Path, table: dict, backend: dict, args, work: Path):
                       'message': c['stderr'].strip()})
     functions = hipsrc.parse_asm(Path(c['asm']).read_text(encoding='utf-8', errors='replace'), c['cwd'])
     results, n2 = check_object_bytes(Path(c['object']).read_bytes(), str(path), table, backend,
-                                     args.kernel, work, functions)
+                                     args.kernel, work, functions, args.timeout)
     return results, src_findings + notes + n2
 
 
@@ -249,7 +251,8 @@ def run(args) -> int:
             else:
                 kernels, findings = [], []
                 for i, data in enumerate(_objects(path)):
-                    ks, notes = check_object_bytes(data, str(path), table, backend, args.kernel, work)
+                    ks, notes = check_object_bytes(data, str(path), table, backend, args.kernel, work,
+                                                   timeout=args.timeout)
                     kernels += ks
                     findings += notes
         except FormatError as ex:
@@ -312,6 +315,7 @@ def add_parser(sub) -> None:
     c.add_argument('--llvm-library')
     c.add_argument('--objdump')
     c.add_argument('--keep', help='keep intermediate .s/.o files in this directory')
+    c.add_argument('--timeout', type=float, default=600, help='seconds for the disassembler (default 600)')
     c.set_defaults(fn=run)
     h = sub.add_parser('hook', help='Claude Code PostToolUse hook: check the edited file, exit 2 on errors')
     h.set_defaults(fn=hook)
