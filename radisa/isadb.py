@@ -222,7 +222,8 @@ def split_operands(args: str) -> list[str]:
     if out:
         words = out[-1].split()
         out[-1] = words[0] if words else ''
-        if ':' in out[-1] and not out[-1].startswith(('v[', 's[', 'ttmp[')) or out[-1] in MODIFIER_WORDS:
+        # A modifier is key:value (offset:16, th:TH_LOAD_NT); a register range such as -v[0:1] is not.
+        if re.match(r'[a-z_][a-z0-9_]*:', out[-1]) or out[-1] in MODIFIER_WORDS:
             out.pop()
     return out
 

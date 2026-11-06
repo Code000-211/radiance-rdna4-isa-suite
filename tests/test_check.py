@@ -81,6 +81,11 @@ class TableTests(unittest.TestCase):
         self.assertEqual(waits.domains(model('s_load_b32', 's0, s[0:1], 0x20'), ''), ['km'])
         self.assertEqual(waits.domains(model('global_store_b32', 'v1, v2, s[4:5]'), ''), ['store'])
 
+    def test_negated_register_range_last(self):
+        m = model('v_add_f64_e64', 'v[0:1], v[2:3], -v[4:5]')
+        self.assertTrue(m['known'])
+        self.assertEqual(names(m['reads']), ['s126', 'v2', 'v3', 'v4', 'v5'])
+
     def test_unknown_mnemonic_is_not_harmless(self):
         m = model('v_made_up_b32', 'v1, v2')
         self.assertFalse(m['known'])
