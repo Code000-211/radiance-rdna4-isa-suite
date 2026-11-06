@@ -71,6 +71,22 @@ FP32 CPU fixtures are not FP8 GPU calibration. Native code must be trusted.
 CMake, a C++20 compiler, LLVM and clang ASan are needed for the full host pipeline.
 The separate missing `core/kvstream/bind.h` engine dependency is not stubbed.
 
+## Lint one kernel: `radisa check`
+
+```bash
+S=tools/rdna4-isa-suite
+bash "$S/check-kernel.sh" libr4d/r4d_attn_paged_h128_gqa4.hip \
+  --compile-commands build/compile_commands.json     # HIP source -> gfx1201 machine code
+bash "$S/check-kernel.sh" snippet.s                  # hand-written assembly
+bash "$S/check-kernel.sh" build/.../r4d_gemm_fp8a8.hip.o --kernel gemm_8a8_prefill   # code object
+```
+
+Every instruction is mapped onto AMD's machine-readable RDNA4 operand table (XML, MIT), and the
+memory counters are modelled over the whole CFG. Missing `s_wait_*` (typically after inline-asm
+memory instructions, which the compiler does not track), WMMA and VOPD hazards, VGPR deallocation
+errors, spills and scratch are reported against source lines with manual section and PDF page.
+`radisa hook` runs the same check as a Claude Code PostToolUse hook. Details: `docs/CHECK.md`.
+
 ## Main documentation
 
 - `docs/V06_REVIEW.md`: actual validation and remaining boundaries.

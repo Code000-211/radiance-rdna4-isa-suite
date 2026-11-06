@@ -307,6 +307,7 @@ def main(argv=None) -> int:
     a.add_argument('--allow-review',action='store_false',dest='strict_review',help='exploratory mode only; does not override incomplete evidence')
     a.add_argument('--expect');a.add_argument('--capture-log');a.set_defaults(fn=audit)
     b=sub.add_parser('baseline');b.add_argument('manifest');b.add_argument('--out',required=True);b.set_defaults(fn=baseline)
+    from .check import add_parser as add_check;add_check(sub)
     args=p.parse_args(argv)
     try:
         if getattr(args,'timeout',1)<=0: raise FormatError('timeout must be positive')
