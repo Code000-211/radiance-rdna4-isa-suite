@@ -1,0 +1,71 @@
+--- a/core/device/aql.cpp
++++ b/core/device/aql.cpp
+@@ -64,6 +64,7 @@
+ #include <vector>
+ 
+ #include "rad_isa_capture.h"
++#include "rad_replay_dispatch.h"
+ #include "aql.h"
+ #include "rad_format.h"
+ #include "../rad_internal.h"
+@@ -166,6 +167,7 @@
+     int32_t     hid[16];                      /* offset of each Hidden kind, or -1 */
+     uint8_t     hid_size[16];
+     std::string name;
++    std::string replay_object_sha256; // populated only for opted-in diagnostic observers
+     /* A chained form (RadKernelChainFn): its name carries "r4dchain". Only such a kernel gets a
+      * chain record and may lose its barrier bit; a row's other kernels keep the bit. */
+     bool        chained = false;
+@@ -520,6 +522,8 @@
+     }
+     auto k = std::make_unique<KernelRec>();
+     k->name = fn->name;
++    if (rad_replay_trace_enabled_v1 && rad_replay_trace_enabled_v1())
++        k->replay_object_sha256 = rad_isa_capture::sha256(im->co, im->size);
+     k->chained = k->name.find("r4dchain") != std::string::npos;
+     hsa_executable_symbol_get_info(s, HSA_EXECUTABLE_SYMBOL_INFO_KERNEL_OBJECT, &k->object);
+     hsa_executable_symbol_get_info(s, HSA_EXECUTABLE_SYMBOL_INFO_KERNEL_KERNARG_SEGMENT_SIZE,
+@@ -1093,6 +1097,17 @@
+     if (!gx || !gy || !gz) return RAD_OK;
+     if (gx > UINT32_MAX || gy > UINT32_MAX || gz > UINT32_MAX) return RAD_E_INVAL;
+     if ((uint64_t)k->group_size + shm > 65536) return RAD_E_INVAL;
++
++    // Diagnostic hook only: validate exact runtime identity before reserving a
++    // packet. Failure cannot leave an unpublished hole in the AQL queue.
++    if (rad_replay_trace_enabled_v1 && rad_replay_trace_enabled_v1()) {
++        if (!rad_replay_observe_dispatch_v1 || k->replay_object_sha256.empty()) return RAD_E_IO;
++        const std::string symbol = k->name + ".kd";
++        const RadReplayDispatchV1 observed{1, k->replay_object_sha256.c_str(), symbol.c_str(),
++            s->ord, s->id, {(uint32_t)gx, (uint32_t)gy, (uint32_t)gz}, {b.x, b.y, b.z},
++            k->group_size + (uint32_t)shm, k->private_size};
++        if (rad_replay_observe_dispatch_v1(&observed)) return RAD_E_IO;
++    }
+ 
+     alignas(64) unsigned char ka[kKargMax];
+     const uint32_t n = (k->kernarg_size + 15u) & ~15u;
+--- /dev/null
++++ b/core/device/rad_replay_dispatch.h
+@@ -0,0 +1,23 @@
++#pragma once
++// Optional CPU-side diagnostic hook. Versioned ABI; never dereference GPU pointers.
++// Backends call BEFORE queue reservation. Nonzero observer result refuses dispatch.
++#include <stdint.h>
++struct RadReplayDispatchV1 {
++    uint32_t version;
++    const char* object_sha256;
++    const char* descriptor_symbol;
++    int32_t device;
++    uint32_t queue_id;
++    uint32_t grid[3];
++    uint32_t group[3];
++    uint32_t group_bytes;
++    uint32_t private_bytes;
++};
++#ifndef RAD_REPLAY_DISPATCH_COLLECTOR
++# define RAD_REPLAY_DISPATCH_WEAK __attribute__((weak))
++#else
++# define RAD_REPLAY_DISPATCH_WEAK
++#endif
++extern "C" int rad_replay_trace_enabled_v1() noexcept RAD_REPLAY_DISPATCH_WEAK;
++extern "C" int rad_replay_observe_dispatch_v1(const RadReplayDispatchV1*) noexcept RAD_REPLAY_DISPATCH_WEAK;
++#undef RAD_REPLAY_DISPATCH_WEAK

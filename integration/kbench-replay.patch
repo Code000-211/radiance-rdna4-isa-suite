@@ -1,0 +1,108 @@
+--- a/tools/rad_kbench.cpp
++++ b/tools/rad_kbench.cpp
+@@ -24,6 +24,9 @@
+  * in kbench_core.h; this file wires them to plugins, devices and fixtures.
+  */
+ #include "kbench_core.h"
++#ifdef RAD_KBENCH_REPLAY_CAPTURE
++#include "capture.h"
++#endif
+ #include "kbench_timer.h"
+ #include "kfixture.h"
+ #include "opshapes.h"
+@@ -1413,7 +1416,11 @@
+     /* The reference's reduced outputs may come from the cache (kb::RefCache). The verdict below
+      * still runs. */
+     const bool cacheable = cache_.enabled() && lib == ref_name_ && dom == RAD_DOMAIN_HOST &&
+-                           !o_.timing_only;
++                           !o_.timing_only
++#ifdef RAD_KBENCH_REPLAY_CAPTURE
++                           && !rad_replay::capture_enabled()
++#endif
++                           ;
+     uint64_t ckey = 0;
+     std::vector<kb::Digest> cached;
+     bool from_cache = false;
+@@ -1536,6 +1543,17 @@
+             }
+         }
+ 
++#ifdef RAD_KBENCH_REPLAY_CAPTURE
++        std::vector<size_t> snapshot_sizes(n_opd, 0);
++        for (size_t k = 0; k < n_opd; ++k) {
++            if (!t[k].data) continue;
++            snapshot_sizes[k] = dom == RAD_DOMAIN_DEVICE ? (size_t)dev[k].bytes
++                                : !own[k].empty() ? own[k].size()
++                                : in[k].bytes ? in[k].bytes->size() : 0;
++        }
++        rad_replay::Capture snapshot(*reg_, row, a, schema, snapshot_sizes, stream,
++                                    "kbench-seeded");
++#endif
+         int s, sync = RAD_OK;
+         {
+             const auto l0 = std::chrono::steady_clock::now();
+@@ -1559,6 +1577,9 @@
+             release();
+             return;
+         }
++#ifdef RAD_KBENCH_REPLAY_CAPTURE
++        snapshot.finish();
++#endif
+         launched = true;
+ 
+         /* Outputs are read back here; the timing pass runs later on the operands it is handed
+@@ -2225,6 +2246,8 @@
+         "      --bench-warm-ms N  sustained load before each timing pass, in ms (default 2000;\n"
+         "                     0 for none). The cards idle in a low-power state and the clock ramp\n"
+         "                     is longer than a short batch.\n"
++        "      --snapshot-dir DIR  export exact operands for the replay suite (opt-in build);\n"
++        "                     a new directory, complete bytes, captured-baseline oracle\n"
+         "      --report FILE  write the markdown report: a summary of every loaded library, the\n"
+         "                     op-by-library completeness matrix, every case and its error, the\n"
+         "                     speed table, and every skip named\n"
+@@ -2303,6 +2326,11 @@
+         };
+         if (a == "-h" || a == "--help") { usage(); return 0; }
+         else if (a == "-m" || a == "--model") model = next("--model");
++#ifdef RAD_KBENCH_REPLAY_CAPTURE
++        else if (a == "--snapshot-dir") {
++            if (::setenv("RAD_REPLAY_CAPTURE_DIR", next("--snapshot-dir"), 1) != 0) return 2;
++        }
++#endif
+         else if (a == "--home")    home = next("--home");
+         else if (a == "--kernels") hierarchy = rad_split_list(next("--kernels"));
+         else if (a == "--op")      op_filters.push_back(next("--op"));
+@@ -3097,9 +3125,20 @@
+                             a.scratch_bytes = need;
+                         }
+                     }
++#ifdef RAD_KBENCH_REPLAY_CAPTURE
++                    std::vector<size_t> snapshot_sizes(tv.size(), 0);
++                    for (size_t k = 0; k < tv.size(); ++k)
++                        if (tv[k].data) snapshot_sizes[k] = (size_t)dev[k].bytes;
++                    rad_replay::Capture snapshot(reg, row, a, o.schema, snapshot_sizes, stream,
++                                                "kbench-model-weights");
++#endif
+                     const int s = row->info->launch(&a, stream);
+                     if (s < 0) return s;
+-                    return rad_stream_sync(stream);
++                    const int synced = rad_stream_sync(stream);
++#ifdef RAD_KBENCH_REPLAY_CAPTURE
++                    if (synced >= 0) snapshot.finish();
++#endif
++                    return synced;
+                 };
+ 
+                 /* The oracle's launch counts toward its library's share of the launch phase. */
+--- a/tools/CMakeLists.txt
++++ b/tools/CMakeLists.txt
+@@ -94,3 +94,9 @@
+                                                    ${CMAKE_CURRENT_SOURCE_DIR})
+   set_target_properties(rad-chatparse PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+ endif()
++
++# Optional snapshot/replay suite; no serving-engine changes.
++option(RAD_BUILD_REPLAY_SUITE "Build the standalone kernel snapshot replayer and kBench exporter" OFF)
++if(RAD_BUILD_REPLAY_SUITE)
++  include(${CMAKE_CURRENT_SOURCE_DIR}/rdna4-isa-suite/replay/CMakeLists.txt)
++endif()

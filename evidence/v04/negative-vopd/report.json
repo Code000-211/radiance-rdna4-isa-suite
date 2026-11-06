@@ -1,0 +1,115 @@
+{
+  "coverage": {
+    "all_source_instantiations_proved": false,
+    "analyzed_kernels": 1,
+    "decoded_bytes": 36,
+    "expected_bytes": 36,
+    "expected_kernels": 1,
+    "fully_decoded_kernels": 1,
+    "helper_call_graph_proved": false,
+    "objects": 1
+  },
+  "decoder": {
+    "kind": "library",
+    "llvm_version": "19.1.7",
+    "path": "libLLVM.so.19.1"
+  },
+  "exit_code": 1,
+  "finding_counts": {
+    "error": 1,
+    "incomplete": 0,
+    "info": 1,
+    "review": 0
+  },
+  "full_isa_certification": false,
+  "global_findings": [
+    {
+      "message": "runtime-resolved kernels not reconciled; scope is supplied build artifacts only",
+      "pc": null,
+      "rule": "RUNTIME_NOT_CAPTURED",
+      "severity": "info",
+      "source": "AMD RDNA4 ISA \u00a7\u00a73.2.1,5.5, printed pp.14,47\u201348"
+    }
+  ],
+  "kernels": [
+    {
+      "address": 6400,
+      "checks": {
+        "deallocation": "reachable uses, explicit CFG only",
+        "direct_cfg": "intra-kernel direct edges",
+        "global_memory_safety": "not_proved",
+        "gpu_wedge_freedom": "not_proved",
+        "memory_waits": "local supported-op diagnostic; not proof",
+        "numerical_correctness": "not_proved",
+        "p2p_visibility": "not_proved",
+        "sgpr_pair": "documented narrow pattern diagnostic; not full scoreboard",
+        "vopd": "raw-binary legality subset",
+        "waterfall": "measured-cost candidate, not correctness failure",
+        "wmma": "basic-block explicit D-to-A/B/index hazards"
+      },
+      "code_sha256": "64a500eed9629bcba0d786a3427236be93e54bbe9b4377b2f89ffc0ef485fea1",
+      "control_flow": {
+        "0x1900": [
+          "0x1908"
+        ],
+        "0x1908": [
+          "0x1910"
+        ],
+        "0x1910": [
+          "0x1914"
+        ],
+        "0x1914": [
+          "0x1920"
+        ],
+        "0x1920": []
+      },
+      "decoded_bytes": 36,
+      "expected_bytes": 36,
+      "findings": [
+        {
+          "message": "SRC0 bank conflict: v4 and v0",
+          "pc": 6408,
+          "rule": "VOPD_BANK",
+          "severity": "error",
+          "source": "AMD RDNA4 ISA \u00a7\u00a77.8,15.3.7, printed pp.82\u201384,188\u2013190"
+        }
+      ],
+      "identity": "743af10de7545ff2666f5b84aabd0ee3c1a07281dd6d198f586c4f0d3723c1fa:smoke.kd",
+      "instruction_count": 5,
+      "local_scanner_stats": {
+        "instructions_in_rw_subset": 5
+      },
+      "name": "smoke",
+      "object_sha256": "743af10de7545ff2666f5b84aabd0ee3c1a07281dd6d198f586c4f0d3723c1fa",
+      "opcode_counts": {
+        "global_store_b32": 1,
+        "s_endpgm": 1,
+        "s_load_b64": 1,
+        "s_wait_kmcnt": 1,
+        "v_dual_add_f32": 1
+      },
+      "reachable_instruction_count": 5,
+      "resources": {
+        "descriptor_vgprs": 8,
+        "granule": 24,
+        "logical_vgprs": 2,
+        "physical_allocation": 24,
+        "profile": "gfx1201-static",
+        "register_limited_waves_per_simd": 16,
+        "upper_bound_only": true,
+        "wave_equivalent_capacity": 1536
+      },
+      "scratch_bytes_per_workitem": 0,
+      "symbol": "smoke.kd"
+    }
+  ],
+  "manifest_sha256": "40552e2a2bf0af7c7805d8b7a8be42d95154330d9338163a94f1e8935cf996ab",
+  "runtime_coverage": {
+    "exhaustive_workload_coverage": false,
+    "mode": "not-collected"
+  },
+  "schema": "radiance-rdna4-isa/2",
+  "status": "FAIL",
+  "strict_review": true,
+  "suite_version": "0.2.0"
+}

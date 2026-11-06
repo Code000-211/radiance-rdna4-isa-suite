@@ -1,0 +1,15 @@
+{"node":"tested","pattern":0,"phase":"diagnostic-node"}
+{"node":"tested","pattern":1,"phase":"diagnostic-node"}
+{"node":"tested","pattern":2,"phase":"diagnostic-node"}
+{"iteration":0,"phase":"prefix"}
+{"iteration":0,"phase":"measure-submit"}
+{"iteration":0,"phase":"checked","window_us":0.08}
+{"iteration":1,"phase":"prefix"}
+{"iteration":1,"phase":"measure-submit"}
+{"iteration":1,"phase":"checked","window_us":0.041}
+{"iteration":2,"phase":"prefix"}
+{"iteration":2,"phase":"measure-submit"}
+{"iteration":2,"phase":"checked","window_us":0.03}
+{"iteration":3,"phase":"prefix"}
+{"iteration":3,"phase":"measure-submit"}
+{"iteration":3,"phase":"checked","window_us":0.03}

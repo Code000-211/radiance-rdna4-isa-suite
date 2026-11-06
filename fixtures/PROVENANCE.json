@@ -1,0 +1,20 @@
+{
+  "generated_not_gpu_executed": true,
+  "compiler": "LLVM 20.1.8 via llvmlite.binding, target amdgcn-amd-amdhsa, cpu gfx1201, opt=3",
+  "linker_command": "ld.lld -shared smoke.o -o smoke.hsaco",
+  "linker_version": "17.0.0",
+  "files": [
+    {
+      "name": "smoke.hsaco",
+      "sha256": "37a144d918a72dfcc4c6a283291a2173ba34bf55145aea79923eba5acd38315a"
+    },
+    {
+      "name": "smoke-relocatable.o",
+      "sha256": "b44916f5fa732e8ce0d6bddbeb9e0d33e22cfd11c1a32da7e15188aad4b5fd6e"
+    },
+    {
+      "name": "smoke.ll",
+      "sha256": "dc2c2e9af1092d7b327617d2bfc98189428c55219602c82486b4f43a2ae57c0c"
+    }
+  ]
+}

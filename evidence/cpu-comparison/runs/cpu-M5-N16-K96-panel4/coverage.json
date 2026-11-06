@@ -1,0 +1,32 @@
+{
+  "all_radiance_kernels_covered": false,
+  "fixture": {
+    "all_radiance_kernels_covered": false,
+    "allocation_bytes_including_scratch": 8384,
+    "blob_bytes": 8704,
+    "id": "cpu-M5-N16-K96-panel4",
+    "kernel_nodes": [
+      "gemm"
+    ],
+    "kernel_rows": [
+      "planner_cpu:cpu_panel4"
+    ],
+    "manifest_sha256": "86a8375129347928dd6b712d9868cce6d7d643e2bb41339cce72c99268fbecfd",
+    "node_count": 1,
+    "provenance": {
+      "kind": "synthetic",
+      "note": "CPU-only planner comparison; independent fsum oracle; not production activation snapshot.",
+      "reference": "independent"
+    },
+    "runtime_executed": false,
+    "schema": "radiance-kernel-replay/1",
+    "status": "FIXTURE_VALID",
+    "stream_count": 1
+  },
+  "isa": {
+    "status": "NOT_APPLICABLE_HOST"
+  },
+  "production_equivalence_proved": false,
+  "runtime_status": "RUNTIME_CHECKS_PASS",
+  "schema": "radiance-replay-coverage/1"
+}

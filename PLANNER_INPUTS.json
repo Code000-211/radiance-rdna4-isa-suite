@@ -1,0 +1,21 @@
+{
+  "schema": "radiance-planner-inputs/1",
+  "inputs": [
+    {
+      "name": "radiance-main(1).zip",
+      "sha256": "fac881c3b20d3918a632221d67d6e15fa110edab75f9d92476be9c405515baa9",
+      "bytes": 19460479
+    },
+    {
+      "name": "RADIANCE_RDNA4_ISA_TESTSUITE_v0.4.zip",
+      "sha256": "419026e5e505b7af4cf02ade3022b89e01614119a5cfc21fe9509dd1bfc23832",
+      "bytes": 453750
+    },
+    {
+      "name": "RADIANCE_RDNA4_ISA_SUITE_v0.4_REVIEW.md",
+      "sha256": "3b1157310acc764c8b3a8e8717568554bcdc45c319c98743f60bb851d8089985",
+      "bytes": 7192
+    }
+  ],
+  "review_date": "2026-10-27"
+}

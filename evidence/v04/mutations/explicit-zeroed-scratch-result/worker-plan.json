@@ -1,0 +1,152 @@
+{
+  "blob_paths": {
+    "88d4266fd4e6338d13b845fcf289579d209c897823b9217da3e161936f031589": "/mnt/data/work_v04/mutations-final/explicit-zeroed-scratch-result/staged/88d4266fd4e6338d13b845fcf289579d209c897823b9217da3e161936f031589"
+  },
+  "device": 0,
+  "diagnostic_only": false,
+  "diagnostics": "contracts",
+  "fixture": {
+    "allocations": [
+      {
+        "alignment": 256,
+        "bytes": 4,
+        "id": "x",
+        "initial": {
+          "bytes": 4,
+          "path": "blobs/88d4266fd4e6338d13b845fcf289579d209c897823b9217da3e161936f031589",
+          "sha256": "88d4266fd4e6338d13b845fcf289579d209c897823b9217da3e161936f031589"
+        },
+        "kind": "host",
+        "mutable": false,
+        "relocations": []
+      },
+      {
+        "alignment": 256,
+        "bytes": 4,
+        "id": "y",
+        "initial": {
+          "bytes": 4,
+          "path": "blobs/88d4266fd4e6338d13b845fcf289579d209c897823b9217da3e161936f031589",
+          "sha256": "88d4266fd4e6338d13b845fcf289579d209c897823b9217da3e161936f031589"
+        },
+        "kind": "host",
+        "mutable": true,
+        "relocations": []
+      }
+    ],
+    "checks": [
+      {
+        "atol": 0,
+        "expected": {
+          "bytes": 4,
+          "path": "blobs/88d4266fd4e6338d13b845fcf289579d209c897823b9217da3e161936f031589",
+          "sha256": "88d4266fd4e6338d13b845fcf289579d209c897823b9217da3e161936f031589"
+        },
+        "mode": "bytes",
+        "nonfinite": "reject",
+        "rel_l2": 0,
+        "rtol": 0,
+        "view": "y"
+      }
+    ],
+    "contract": {
+      "execution": "ordered-launchers",
+      "hidden_state": "none",
+      "pointer_fields_complete": true
+    },
+    "id": "explicit-zeroed-scratch",
+    "nodes": [
+      {
+        "accesses": [
+          {
+            "mode": "r",
+            "view": "x"
+          },
+          {
+            "mode": "w",
+            "view": "y"
+          }
+        ],
+        "id": "tested",
+        "kind": "kernel",
+        "op": "replay_probe",
+        "params": [],
+        "phase": "measure",
+        "plugin": "p0",
+        "row": "audit_scratch_read",
+        "scratch_bytes": 16,
+        "scratch_policy": "zeroed",
+        "stream": "q0",
+        "tensors": [
+          "x",
+          "y"
+        ]
+      }
+    ],
+    "plugins": [
+      {
+        "abi": 30,
+        "id": "p0",
+        "name": "replay_test",
+        "sha256": "fb11b3e6b5efeaf7b56e57779505e9278c121315e29fd964caf54cb964bcb1c7"
+      }
+    ],
+    "provenance": {
+      "kind": "synthetic",
+      "note": "Deliberately faulty HOST mutation/control; never GPU code.",
+      "reference": "independent"
+    },
+    "schema": "radiance-kernel-replay/1",
+    "streams": [
+      {
+        "id": "q0",
+        "priority": 0
+      }
+    ],
+    "target": {
+      "arch": "host",
+      "backend": "host",
+      "world_size": 1
+    },
+    "views": [
+      {
+        "allocation": "x",
+        "bytes": 4,
+        "dtype": 9,
+        "id": "x",
+        "offset": 0,
+        "shape": [
+          4
+        ],
+        "stride": [
+          1
+        ]
+      },
+      {
+        "allocation": "y",
+        "bytes": 4,
+        "dtype": 9,
+        "id": "y",
+        "offset": 0,
+        "shape": [
+          4
+        ],
+        "stride": [
+          1
+        ]
+      }
+    ]
+  },
+  "fixture_sha256": "eeccb7c69d802d42c615f716ce0f4ff557a2c7bf37abd71a6ffab56248b31ca9",
+  "gate": false,
+  "max_bytes": 2147483648,
+  "memory_check": "none",
+  "out": "/mnt/data/work_v04/mutations-final/explicit-zeroed-scratch-result",
+  "plugin_paths": {
+    "p0": "/mnt/data/work_v04/build-host/replay_test.so"
+  },
+  "repetitions": 3,
+  "schema": "radiance-replay-worker/1",
+  "trace_dispatches": false,
+  "warmups": 1
+}

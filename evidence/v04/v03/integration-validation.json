@@ -1,0 +1,28 @@
+[
+  {
+    "patch": "aql-capture.patch",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "patch": "kbench-replay.patch",
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "action": "patched kBench syntax",
+    "capture_enabled": false,
+    "exit_code": 0
+  },
+  {
+    "action": "patched kBench syntax",
+    "capture_enabled": true,
+    "exit_code": 0
+  },
+  {
+    "action": "optional integrated CMake configure",
+    "exit_code": 0
+  }
+]

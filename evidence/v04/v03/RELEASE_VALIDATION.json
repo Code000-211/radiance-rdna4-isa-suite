@@ -1,0 +1,95 @@
+{
+  "schema": "radiance-suite-release-validation/3",
+  "date": "2026-10-27",
+  "bundle_version": "0.3.0",
+  "static_checker_version": "0.2.0 (retained source byte-identical)",
+  "tests": {
+    "isa": {
+      "run": 162,
+      "failed": 0,
+      "skipped": 0
+    },
+    "replay_python": {
+      "run": 80,
+      "failed": 0,
+      "skipped": 0
+    },
+    "native_host": {
+      "run": 22,
+      "failed": 0,
+      "skipped": 0
+    },
+    "total_run": 264
+  },
+  "environment": {
+    "compiler": "g++ (Debian 14.2.0-19) 14.2.0",
+    "cmake": "cmake version 3.31.6",
+    "gpu_device_available": false,
+    "hip_compiler_available": false
+  },
+  "native_artifacts_tested": [
+    {
+      "name": "rad-kbench-replay",
+      "sha256": "21e4f9a8cb3e68d9f74ff61520c54f9748af438c59f4c46e334d49cd3fe306f0"
+    },
+    {
+      "name": "replay-capture-harness",
+      "sha256": "bafdb17d29a754425f871d7f70a8d54eb6a971ed0a10369727bb4078afbc1a4e"
+    },
+    {
+      "name": "replay_test.so",
+      "sha256": "51a5597bb30f7896a985c37314fd7227fc383ddabfce94d76dbcb0beae147883"
+    },
+    {
+      "name": "libref.so",
+      "sha256": "de94cdd5b9f5b22f4568e3257ac0758ebb46a857962c55bc3aeebf0d6c138387"
+    }
+  ],
+  "end_to_end": {
+    "real_libref_alias_chain": "RUNTIME_CHECKS_PASS",
+    "capture_component_real_libref_to_replay": "RUNTIME_CHECKS_PASS",
+    "explicit_corpus": "CORPUS_CHECKS_PASS",
+    "missing_case": "INCOMPLETE (exit 2)"
+  },
+  "integration": [
+    {
+      "patch": "aql-capture.patch",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "patch": "kbench-replay.patch",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "action": "patched kBench syntax",
+      "capture_enabled": false,
+      "exit_code": 0
+    },
+    {
+      "action": "patched kBench syntax",
+      "capture_enabled": true,
+      "exit_code": 0
+    },
+    {
+      "action": "optional integrated CMake configure",
+      "exit_code": 0
+    }
+  ],
+  "not_validated": [
+    "Complete patched kBench executable: supplied source lacks core/kvstream/bind.h; original full core build blocked",
+    "Complete HIP/HSA build of worker and kBench integration",
+    "AQL/GPU execution, timing, guards and gating on R9700",
+    "Production activation corpus, QSA/MoE/GEMM workload equivalence",
+    "Raw AQL tape/device-side chains, TP2/P2P and hidden-state replay (not implemented)"
+  ],
+  "claims": {
+    "full_isa_certification": false,
+    "all_radiance_kernels_tested": false,
+    "production_equivalence": false,
+    "gpu_wedge_safety_proved": false
+  }
+}

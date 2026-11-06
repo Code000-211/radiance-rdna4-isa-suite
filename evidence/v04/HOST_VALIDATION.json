@@ -1,0 +1,10 @@
+{
+  "schema": "radiance-host-validation/1",
+  "status": "HOST_PIPELINE_PASS",
+  "fixture_cases": 46,
+  "tested_plugin_rows": 1,
+  "declared_plugin_rows": 210,
+  "gpu_execution": false,
+  "tp2_execution": false,
+  "whole_engine_built": false
+}

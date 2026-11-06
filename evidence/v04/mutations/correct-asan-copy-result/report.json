@@ -1,0 +1,112 @@
+{
+  "command": [
+    "/mnt/data/work_v04/build-asan/rad-kbench-replay",
+    "/mnt/data/work_v04/mutations-final/correct-asan-copy-result/worker-plan.json"
+  ],
+  "exit_code": 0,
+  "fixture": {
+    "all_radiance_kernels_covered": false,
+    "allocation_bytes_including_scratch": 8,
+    "blob_bytes": 12,
+    "id": "correct-asan-copy",
+    "kernel_nodes": [
+      "tested"
+    ],
+    "kernel_rows": [
+      "replay_test:copy"
+    ],
+    "manifest_sha256": "514b08aa6ab8ea93c08a55c1dc216ed74fba3026bd1e0a237f0357a699814da0",
+    "node_count": 1,
+    "provenance": {
+      "kind": "synthetic",
+      "note": "Deliberately faulty HOST mutation/control; never GPU code.",
+      "reference": "independent"
+    },
+    "runtime_executed": false,
+    "schema": "radiance-kernel-replay/1",
+    "status": "FIXTURE_VALID",
+    "stream_count": 1
+  },
+  "host": {
+    "platform": "Linux-6.18.55-x86_64-with-glibc2.41",
+    "python": "3.13.5"
+  },
+  "host_asan": {
+    "binary_evidence": [
+      {
+        "path": "/mnt/data/work_v04/build-asan/rad-kbench-replay",
+        "sha256": "3fcc8bb68f45b8d7b319cbc7e815993586db2e712663673c223ac5f782ec7a10"
+      },
+      {
+        "path": "/mnt/data/work_v04/build-asan/replay_test.so",
+        "sha256": "8bf730fe2b76753b6358bd174e5056a0aba192e86328cd7faffae49463f4d40f"
+      }
+    ],
+    "scope": "symbol presence is a necessary check, not proof that every load or inline-assembly path is instrumented"
+  },
+  "isa": {
+    "status": "NOT_APPLICABLE_HOST"
+  },
+  "options": {
+    "diagnostic_only": true,
+    "diagnostics": "contracts",
+    "gate": false,
+    "memory_check": "host-asan",
+    "repetitions": 3,
+    "timeout_seconds": 120,
+    "trace_dispatches": false,
+    "warmups": 1
+  },
+  "production_equivalence_proved": false,
+  "runtime": {
+    "backend": "host",
+    "checked_iterations": 0,
+    "checks_per_iteration": 1,
+    "device": {
+      "arch": "host",
+      "dma_lane": "",
+      "n_cu": 5,
+      "name": "AMD EPYC 9V74 80-Core Processor",
+      "ordinal": 0,
+      "pci_address": "",
+      "runtime_version": "",
+      "vram_bytes": 3124326400
+    },
+    "diagnostics": {
+      "allocation_byte_bounds_not_scalar_element_bounds": true,
+      "checked_nodes": 1,
+      "completed_passes": 3,
+      "explicit_checkpoints": 0,
+      "intermediate_equality": "explicit checkpoint tolerances, then exact bytes for remaining writes against same-candidate baseline",
+      "output_poison_scope": "packed exact-span output-only operands, excluding all readable aliases; other views not covered",
+      "output_poison_variants": 2,
+      "per_operation_write_contracts": true,
+      "poisoned_output_bytes_total": 8,
+      "race_freedom_proved": false,
+      "read_checks": "HOST_ASAN_INSTRUMENTED_PATHS",
+      "scratch_contracts": true,
+      "status": "PASS"
+    },
+    "fixture_sha256": "514b08aa6ab8ea93c08a55c1dc216ed74fba3026bd1e0a237f0357a699814da0",
+    "measurement": "NOT_MEASURED_DIAGNOSTIC_ONLY",
+    "reference": "independent",
+    "samples_us": [],
+    "schema": "radiance-replay-worker-result/1",
+    "statistics": null,
+    "status": "RUNTIME_CHECKS_PASS",
+    "worker_build": {
+      "compiler": "Clang 17.0.0 (https://github.com/swiftlang/llvm-project.git 10999b6d034fe318f3d56c83bddb6572593a8bb0)",
+      "cxx": 202002,
+      "host_asan": true,
+      "radiance_abi": 30
+    }
+  },
+  "runtime_executed": true,
+  "schema": "radiance-replay-result/1",
+  "status": "RUNTIME_CHECKS_PASS",
+  "telemetry_after": [],
+  "telemetry_before": [],
+  "version": "0.4.0",
+  "wall_seconds": 0.033674576000066736,
+  "worker_sha256": "3fcc8bb68f45b8d7b319cbc7e815993586db2e712663673c223ac5f782ec7a10"
+}

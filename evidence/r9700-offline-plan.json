@@ -1,0 +1,4532 @@
+{
+  "arch": "gfx1201",
+  "backend": "aql",
+  "calibration_sha256": null,
+  "catalog_sha256": "0a1ca73f01e1a8635d5de5bdae1881acfe23e6217215f39f675279c4debe688d",
+  "cpu_timings_are_gpu_timings": false,
+  "deployment_approved": false,
+  "full_model_speed_predicted": false,
+  "gpu_executed": false,
+  "offline": true,
+  "profile_sha256": "fbed24aad2dba89c9bd09bbca1b519a58eccd872d8883e3dc925b5ef3fa6a068",
+  "schema": "radiance-offline-plan/1",
+  "status": "OFFLINE_PLAN_CREATED",
+  "workloads": [
+    {
+      "automatic_dispatch_changed": false,
+      "correctness_validation_still_required": true,
+      "decision_reason": "missing calibration, changed candidate or out-of-domain prediction",
+      "measurement_queue": [
+        "w4a8-prefill-tile27",
+        "w4a8-prefill-tile28",
+        "w4a8-prefill-tile29",
+        "w4a8-prefill-tile30"
+      ],
+      "ranked": [
+        {
+          "candidate_id": "w4a8-prefill-tile27",
+          "candidate_sha256": "146df628513e3d4ffea6371d892c8f94dd7548785a5f776517ba1252aef7dad9",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 1.32900625,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 419430400,
+            "features": {
+              "block_k_million": 0.0001,
+              "executed_gops": 0.4194304,
+              "intercept": 1.0,
+              "operand_mb": 0.850564,
+              "output_melements": 0.00256,
+              "tile_read_mb": 1.66916
+            },
+            "groups": 10,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 9830400,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 1055213.0,
+            "scenario_terms_us": {
+              "lds_us": 1.96608,
+              "matrix_and_unpack_us": 5.493752801767424,
+              "memory_us": 2.3553861607142856
+            },
+            "scenario_us": 8.493752801767425,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 0.0078125,
+            "tile_requested_bytes": 1669160.0,
+            "unique_operand_bytes": 850564,
+            "useful_ops": 3276800,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 27
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 8.493752801767425,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile28",
+          "candidate_sha256": "af96974cbb9e8f3f10697a3312b45161a409949b55f975c4c8848d09d83f88a4",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 1.32900625,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 419430400,
+            "features": {
+              "block_k_million": 0.0001,
+              "executed_gops": 0.4194304,
+              "intercept": 1.0,
+              "operand_mb": 0.850564,
+              "output_melements": 0.00256,
+              "tile_read_mb": 1.66916
+            },
+            "groups": 10,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 9830400,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 1055213.0,
+            "scenario_terms_us": {
+              "lds_us": 1.96608,
+              "matrix_and_unpack_us": 5.493752801767424,
+              "memory_us": 2.3553861607142856
+            },
+            "scenario_us": 8.493752801767425,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 0.0078125,
+            "tile_requested_bytes": 1669160.0,
+            "unique_operand_bytes": 850564,
+            "useful_ops": 3276800,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 28
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 8.493752801767425,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile29",
+          "candidate_sha256": "a0b14f7ca8016b1bb184361219562ff3a83f36d42b1501165aa3d12c72295b74",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 1.32900625,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 419430400,
+            "features": {
+              "block_k_million": 0.0001,
+              "executed_gops": 0.4194304,
+              "intercept": 1.0,
+              "operand_mb": 0.850564,
+              "output_melements": 0.00256,
+              "tile_read_mb": 1.66916
+            },
+            "groups": 10,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 9830400,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 1055213.0,
+            "scenario_terms_us": {
+              "lds_us": 1.96608,
+              "matrix_and_unpack_us": 5.493752801767424,
+              "memory_us": 2.3553861607142856
+            },
+            "scenario_us": 8.493752801767425,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 0.0078125,
+            "tile_requested_bytes": 1669160.0,
+            "unique_operand_bytes": 850564,
+            "useful_ops": 3276800,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 29
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 8.493752801767425,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile30",
+          "candidate_sha256": "f95b3baea9025f635634c8416b41fe1edb9f22dd448bcfc9731162962c17e6e8",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 1.32900625,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 419430400,
+            "features": {
+              "block_k_million": 0.0001,
+              "executed_gops": 0.4194304,
+              "intercept": 1.0,
+              "operand_mb": 0.850564,
+              "output_melements": 0.00256,
+              "tile_read_mb": 1.66916
+            },
+            "groups": 10,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 9830400,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 1055213.0,
+            "scenario_terms_us": {
+              "lds_us": 1.96608,
+              "matrix_and_unpack_us": 5.493752801767424,
+              "memory_us": 2.3553861607142856
+            },
+            "scenario_us": 8.493752801767425,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 0.0078125,
+            "tile_requested_bytes": 1669160.0,
+            "unique_operand_bytes": 850564,
+            "useful_ops": 3276800,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 30
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 8.493752801767425,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        }
+      ],
+      "ranking_basis": "uncalibrated analytic scenario",
+      "rejected": [
+        {
+          "candidate_id": "w4a8-prefill-tile0",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile2",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile3",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile5",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile6",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile8",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile9",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile10",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile13",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile14",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        }
+      ],
+      "shape": {
+        "K": 640,
+        "M": 1,
+        "N": 2560
+      },
+      "shape_key": "0196617a5f70b6bd15357b67f19c0cccc613e863a24ee3098c39f8233223df6a",
+      "status": "NEEDS_MEASUREMENT",
+      "suggested_candidate": "w4a8-prefill-tile27",
+      "workload_id": "dense-M1-N2560-K640"
+    },
+    {
+      "automatic_dispatch_changed": false,
+      "correctness_validation_still_required": true,
+      "decision_reason": "missing calibration, changed candidate or out-of-domain prediction",
+      "measurement_queue": [
+        "w4a8-prefill-tile27",
+        "w4a8-prefill-tile28",
+        "w4a8-prefill-tile29",
+        "w4a8-prefill-tile30"
+      ],
+      "ranked": [
+        {
+          "candidate_id": "w4a8-prefill-tile27",
+          "candidate_sha256": "146df628513e3d4ffea6371d892c8f94dd7548785a5f776517ba1252aef7dad9",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 1.36503125,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 419430400,
+            "features": {
+              "block_k_million": 0.0001,
+              "executed_gops": 0.4194304,
+              "intercept": 1.0,
+              "operand_mb": 0.87362,
+              "output_melements": 0.0128,
+              "tile_read_mb": 1.6898
+            },
+            "groups": 10,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 9830400,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 1077665.0,
+            "scenario_terms_us": {
+              "lds_us": 1.96608,
+              "matrix_and_unpack_us": 5.493752801767424,
+              "memory_us": 2.405502232142857
+            },
+            "scenario_us": 8.493752801767425,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 0.0390625,
+            "tile_requested_bytes": 1689800.0,
+            "unique_operand_bytes": 873620,
+            "useful_ops": 16384000,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 27
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 8.493752801767425,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile28",
+          "candidate_sha256": "af96974cbb9e8f3f10697a3312b45161a409949b55f975c4c8848d09d83f88a4",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 1.36503125,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 419430400,
+            "features": {
+              "block_k_million": 0.0001,
+              "executed_gops": 0.4194304,
+              "intercept": 1.0,
+              "operand_mb": 0.87362,
+              "output_melements": 0.0128,
+              "tile_read_mb": 1.6898
+            },
+            "groups": 10,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 9830400,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 1077665.0,
+            "scenario_terms_us": {
+              "lds_us": 1.96608,
+              "matrix_and_unpack_us": 5.493752801767424,
+              "memory_us": 2.405502232142857
+            },
+            "scenario_us": 8.493752801767425,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 0.0390625,
+            "tile_requested_bytes": 1689800.0,
+            "unique_operand_bytes": 873620,
+            "useful_ops": 16384000,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 28
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 8.493752801767425,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile29",
+          "candidate_sha256": "a0b14f7ca8016b1bb184361219562ff3a83f36d42b1501165aa3d12c72295b74",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 1.36503125,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 419430400,
+            "features": {
+              "block_k_million": 0.0001,
+              "executed_gops": 0.4194304,
+              "intercept": 1.0,
+              "operand_mb": 0.87362,
+              "output_melements": 0.0128,
+              "tile_read_mb": 1.6898
+            },
+            "groups": 10,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 9830400,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 1077665.0,
+            "scenario_terms_us": {
+              "lds_us": 1.96608,
+              "matrix_and_unpack_us": 5.493752801767424,
+              "memory_us": 2.405502232142857
+            },
+            "scenario_us": 8.493752801767425,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 0.0390625,
+            "tile_requested_bytes": 1689800.0,
+            "unique_operand_bytes": 873620,
+            "useful_ops": 16384000,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 29
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 8.493752801767425,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile30",
+          "candidate_sha256": "f95b3baea9025f635634c8416b41fe1edb9f22dd448bcfc9731162962c17e6e8",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 1.36503125,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 419430400,
+            "features": {
+              "block_k_million": 0.0001,
+              "executed_gops": 0.4194304,
+              "intercept": 1.0,
+              "operand_mb": 0.87362,
+              "output_melements": 0.0128,
+              "tile_read_mb": 1.6898
+            },
+            "groups": 10,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 9830400,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 1077665.0,
+            "scenario_terms_us": {
+              "lds_us": 1.96608,
+              "matrix_and_unpack_us": 5.493752801767424,
+              "memory_us": 2.405502232142857
+            },
+            "scenario_us": 8.493752801767425,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 0.0390625,
+            "tile_requested_bytes": 1689800.0,
+            "unique_operand_bytes": 873620,
+            "useful_ops": 16384000,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 30
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 8.493752801767425,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        }
+      ],
+      "ranking_basis": "uncalibrated analytic scenario",
+      "rejected": [
+        {
+          "candidate_id": "w4a8-prefill-tile0",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile2",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile3",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile5",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile6",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile8",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile9",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile10",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile13",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile14",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        }
+      ],
+      "shape": {
+        "K": 640,
+        "M": 5,
+        "N": 2560
+      },
+      "shape_key": "99b55116c661ab2648300b986da838c24d1affdb6a0520bb8fd924c4af52000f",
+      "status": "NEEDS_MEASUREMENT",
+      "suggested_candidate": "w4a8-prefill-tile27",
+      "workload_id": "dense-M5-N2560-K640"
+    },
+    {
+      "automatic_dispatch_changed": false,
+      "correctness_validation_still_required": true,
+      "decision_reason": "missing calibration, changed candidate or out-of-domain prediction",
+      "measurement_queue": [
+        "w4a8-prefill-tile13",
+        "w4a8-prefill-tile8",
+        "w4a8-prefill-tile27",
+        "w4a8-prefill-tile28",
+        "w4a8-prefill-tile29",
+        "w4a8-prefill-tile30"
+      ],
+      "ranked": [
+        {
+          "candidate_id": "w4a8-prefill-tile13",
+          "candidate_sha256": "71deda2de10bde8bdda21c6ecc6cb1fbea822f1b6ff2f052d22cb529d3c2e50f",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 1.8964,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 209715200,
+            "features": {
+              "block_k_million": 0.0001,
+              "executed_gops": 0.2097152,
+              "intercept": 1.0,
+              "operand_mb": 1.213696,
+              "output_melements": 0.16384,
+              "tile_read_mb": 1.58464
+            },
+            "groups": 10,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 5324800,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "memory_us",
+            "scenario_memory_bytes": 1306432.0,
+            "scenario_terms_us": {
+              "lds_us": 1.06496,
+              "matrix_and_unpack_us": 2.7980764008837116,
+              "memory_us": 2.9161428571428574
+            },
+            "scenario_us": 5.916142857142857,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 1584640.0,
+            "unique_operand_bytes": 1213696,
+            "useful_ops": 209715200,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 13
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 5.916142857142857,
+          "tile": [
+            64,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile8",
+          "candidate_sha256": "681d8b441ca66664ea064c51bb81f7ac92b3e573b39473b7118f369bc09f138b",
+          "cost": {
+            "accumulator_register_estimate": 32,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 1.8964,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 209715200,
+            "features": {
+              "block_k_million": 0.0001,
+              "executed_gops": 0.2097152,
+              "intercept": 1.0,
+              "operand_mb": 1.213696,
+              "output_melements": 0.16384,
+              "tile_read_mb": 1.58464
+            },
+            "groups": 10,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 6144000,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "memory_us",
+            "scenario_memory_bytes": 1306432.0,
+            "scenario_terms_us": {
+              "lds_us": 1.2288,
+              "matrix_and_unpack_us": 2.7980764008837116,
+              "memory_us": 2.9161428571428574
+            },
+            "scenario_us": 5.916142857142857,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 1584640.0,
+            "unique_operand_bytes": 1213696,
+            "useful_ops": 209715200,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 8
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 5.916142857142857,
+          "tile": [
+            64,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile27",
+          "candidate_sha256": "146df628513e3d4ffea6371d892c8f94dd7548785a5f776517ba1252aef7dad9",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 1.8964,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 419430400,
+            "features": {
+              "block_k_million": 0.0001,
+              "executed_gops": 0.4194304,
+              "intercept": 1.0,
+              "operand_mb": 1.213696,
+              "output_melements": 0.16384,
+              "tile_read_mb": 1.99424
+            },
+            "groups": 10,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 9830400,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 1408832.0,
+            "scenario_terms_us": {
+              "lds_us": 1.96608,
+              "matrix_and_unpack_us": 5.493752801767424,
+              "memory_us": 3.1447142857142856
+            },
+            "scenario_us": 8.493752801767425,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 0.5,
+            "tile_requested_bytes": 1994240.0,
+            "unique_operand_bytes": 1213696,
+            "useful_ops": 209715200,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 27
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 8.493752801767425,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile28",
+          "candidate_sha256": "af96974cbb9e8f3f10697a3312b45161a409949b55f975c4c8848d09d83f88a4",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 1.8964,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 419430400,
+            "features": {
+              "block_k_million": 0.0001,
+              "executed_gops": 0.4194304,
+              "intercept": 1.0,
+              "operand_mb": 1.213696,
+              "output_melements": 0.16384,
+              "tile_read_mb": 1.99424
+            },
+            "groups": 10,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 9830400,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 1408832.0,
+            "scenario_terms_us": {
+              "lds_us": 1.96608,
+              "matrix_and_unpack_us": 5.493752801767424,
+              "memory_us": 3.1447142857142856
+            },
+            "scenario_us": 8.493752801767425,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 0.5,
+            "tile_requested_bytes": 1994240.0,
+            "unique_operand_bytes": 1213696,
+            "useful_ops": 209715200,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 28
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 8.493752801767425,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile29",
+          "candidate_sha256": "a0b14f7ca8016b1bb184361219562ff3a83f36d42b1501165aa3d12c72295b74",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 1.8964,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 419430400,
+            "features": {
+              "block_k_million": 0.0001,
+              "executed_gops": 0.4194304,
+              "intercept": 1.0,
+              "operand_mb": 1.213696,
+              "output_melements": 0.16384,
+              "tile_read_mb": 1.99424
+            },
+            "groups": 10,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 9830400,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 1408832.0,
+            "scenario_terms_us": {
+              "lds_us": 1.96608,
+              "matrix_and_unpack_us": 5.493752801767424,
+              "memory_us": 3.1447142857142856
+            },
+            "scenario_us": 8.493752801767425,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 0.5,
+            "tile_requested_bytes": 1994240.0,
+            "unique_operand_bytes": 1213696,
+            "useful_ops": 209715200,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 29
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 8.493752801767425,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile30",
+          "candidate_sha256": "f95b3baea9025f635634c8416b41fe1edb9f22dd448bcfc9731162962c17e6e8",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 1.8964,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 419430400,
+            "features": {
+              "block_k_million": 0.0001,
+              "executed_gops": 0.4194304,
+              "intercept": 1.0,
+              "operand_mb": 1.213696,
+              "output_melements": 0.16384,
+              "tile_read_mb": 1.99424
+            },
+            "groups": 10,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 9830400,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 1408832.0,
+            "scenario_terms_us": {
+              "lds_us": 1.96608,
+              "matrix_and_unpack_us": 5.493752801767424,
+              "memory_us": 3.1447142857142856
+            },
+            "scenario_us": 8.493752801767425,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 0.5,
+            "tile_requested_bytes": 1994240.0,
+            "unique_operand_bytes": 1213696,
+            "useful_ops": 209715200,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 30
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 8.493752801767425,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        }
+      ],
+      "ranking_basis": "uncalibrated analytic scenario",
+      "rejected": [
+        {
+          "candidate_id": "w4a8-prefill-tile0",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile2",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile3",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile5",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile6",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile9",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile10",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile14",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        }
+      ],
+      "shape": {
+        "K": 640,
+        "M": 64,
+        "N": 2560
+      },
+      "shape_key": "84bada723a1ce9ba7049df2923df6f79d4c149db0941f1b0bc60ee7e3da27ab2",
+      "status": "NEEDS_MEASUREMENT",
+      "suggested_candidate": "w4a8-prefill-tile13",
+      "workload_id": "dense-M64-N2560-K640"
+    },
+    {
+      "automatic_dispatch_changed": false,
+      "correctness_validation_still_required": true,
+      "decision_reason": "missing calibration, changed candidate or out-of-domain prediction",
+      "measurement_queue": [
+        "w4a8-prefill-tile10",
+        "w4a8-prefill-tile13",
+        "w4a8-prefill-tile8",
+        "w4a8-prefill-tile0",
+        "w4a8-prefill-tile2",
+        "w4a8-prefill-tile27",
+        "w4a8-prefill-tile28",
+        "w4a8-prefill-tile29",
+        "w4a8-prefill-tile3",
+        "w4a8-prefill-tile30",
+        "w4a8-prefill-tile5",
+        "w4a8-prefill-tile6"
+      ],
+      "ranked": [
+        {
+          "candidate_id": "w4a8-prefill-tile10",
+          "candidate_sha256": "5d57b9f425f99f47a64f073db2e65cd692ecdc85a17ab931f03035f2dab01c99",
+          "cost": {
+            "accumulator_register_estimate": 32,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 2.4728,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 419430400,
+            "features": {
+              "block_k_million": 0.0002,
+              "executed_gops": 0.4194304,
+              "intercept": 1.0,
+              "operand_mb": 1.582592,
+              "output_melements": 0.32768,
+              "tile_read_mb": 3.1488
+            },
+            "groups": 20,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 17203200,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "memory_us",
+            "scenario_memory_bytes": 1974144.0,
+            "scenario_terms_us": {
+              "lds_us": 3.44064,
+              "matrix_and_unpack_us": 2.7980764008837116,
+              "memory_us": 4.406571428571429
+            },
+            "scenario_us": 7.406571428571429,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 3148800.0,
+            "unique_operand_bytes": 1582592,
+            "useful_ops": 419430400,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 10
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 7.406571428571429,
+          "tile": [
+            128,
+            128,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile13",
+          "candidate_sha256": "71deda2de10bde8bdda21c6ecc6cb1fbea822f1b6ff2f052d22cb529d3c2e50f",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 2.4728,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 419430400,
+            "features": {
+              "block_k_million": 0.0002,
+              "executed_gops": 0.4194304,
+              "intercept": 1.0,
+              "operand_mb": 1.582592,
+              "output_melements": 0.32768,
+              "tile_read_mb": 3.16928
+            },
+            "groups": 20,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 10649600,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "memory_us",
+            "scenario_memory_bytes": 1979264.0,
+            "scenario_terms_us": {
+              "lds_us": 2.12992,
+              "matrix_and_unpack_us": 2.900476400883712,
+              "memory_us": 4.418
+            },
+            "scenario_us": 7.418,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 3169280.0,
+            "unique_operand_bytes": 1582592,
+            "useful_ops": 419430400,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 13
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 7.418,
+          "tile": [
+            64,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile8",
+          "candidate_sha256": "681d8b441ca66664ea064c51bb81f7ac92b3e573b39473b7118f369bc09f138b",
+          "cost": {
+            "accumulator_register_estimate": 32,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 2.4728,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 419430400,
+            "features": {
+              "block_k_million": 0.0002,
+              "executed_gops": 0.4194304,
+              "intercept": 1.0,
+              "operand_mb": 1.582592,
+              "output_melements": 0.32768,
+              "tile_read_mb": 3.16928
+            },
+            "groups": 20,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 12288000,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "memory_us",
+            "scenario_memory_bytes": 1979264.0,
+            "scenario_terms_us": {
+              "lds_us": 2.4576,
+              "matrix_and_unpack_us": 2.900476400883712,
+              "memory_us": 4.418
+            },
+            "scenario_us": 7.418,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 3169280.0,
+            "unique_operand_bytes": 1582592,
+            "useful_ops": 419430400,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 8
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 7.418,
+          "tile": [
+            64,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile0",
+          "candidate_sha256": "36dfe15ea14811da7ef08430a08e1ff091b437e16127e41346266140739f88bc",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 2.4728,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 419430400,
+            "features": {
+              "block_k_million": 0.0001,
+              "executed_gops": 0.4194304,
+              "intercept": 1.0,
+              "operand_mb": 1.582592,
+              "output_melements": 0.32768,
+              "tile_read_mb": 2.32448
+            },
+            "groups": 10,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 9830400,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 1768064.0,
+            "scenario_terms_us": {
+              "lds_us": 1.96608,
+              "matrix_and_unpack_us": 5.493752801767424,
+              "memory_us": 3.9465714285714286
+            },
+            "scenario_us": 8.493752801767425,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 2324480.0,
+            "unique_operand_bytes": 1582592,
+            "useful_ops": 419430400,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 0
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 8.493752801767425,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile2",
+          "candidate_sha256": "a90753badc2213afe66818f13acba93d4caf8b9d1662f9af9ce4db95fbd9e58b",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 2.4728,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 419430400,
+            "features": {
+              "block_k_million": 0.0001,
+              "executed_gops": 0.4194304,
+              "intercept": 1.0,
+              "operand_mb": 1.582592,
+              "output_melements": 0.32768,
+              "tile_read_mb": 2.32448
+            },
+            "groups": 10,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 9830400,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 1768064.0,
+            "scenario_terms_us": {
+              "lds_us": 1.96608,
+              "matrix_and_unpack_us": 5.493752801767424,
+              "memory_us": 3.9465714285714286
+            },
+            "scenario_us": 8.493752801767425,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 2324480.0,
+            "unique_operand_bytes": 1582592,
+            "useful_ops": 419430400,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 2
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 8.493752801767425,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile27",
+          "candidate_sha256": "146df628513e3d4ffea6371d892c8f94dd7548785a5f776517ba1252aef7dad9",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 2.4728,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 419430400,
+            "features": {
+              "block_k_million": 0.0001,
+              "executed_gops": 0.4194304,
+              "intercept": 1.0,
+              "operand_mb": 1.582592,
+              "output_melements": 0.32768,
+              "tile_read_mb": 2.32448
+            },
+            "groups": 10,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 9830400,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 1768064.0,
+            "scenario_terms_us": {
+              "lds_us": 1.96608,
+              "matrix_and_unpack_us": 5.493752801767424,
+              "memory_us": 3.9465714285714286
+            },
+            "scenario_us": 8.493752801767425,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 2324480.0,
+            "unique_operand_bytes": 1582592,
+            "useful_ops": 419430400,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 27
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 8.493752801767425,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile28",
+          "candidate_sha256": "af96974cbb9e8f3f10697a3312b45161a409949b55f975c4c8848d09d83f88a4",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 2.4728,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 419430400,
+            "features": {
+              "block_k_million": 0.0001,
+              "executed_gops": 0.4194304,
+              "intercept": 1.0,
+              "operand_mb": 1.582592,
+              "output_melements": 0.32768,
+              "tile_read_mb": 2.32448
+            },
+            "groups": 10,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 9830400,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 1768064.0,
+            "scenario_terms_us": {
+              "lds_us": 1.96608,
+              "matrix_and_unpack_us": 5.493752801767424,
+              "memory_us": 3.9465714285714286
+            },
+            "scenario_us": 8.493752801767425,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 2324480.0,
+            "unique_operand_bytes": 1582592,
+            "useful_ops": 419430400,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 28
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 8.493752801767425,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile29",
+          "candidate_sha256": "a0b14f7ca8016b1bb184361219562ff3a83f36d42b1501165aa3d12c72295b74",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 2.4728,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 419430400,
+            "features": {
+              "block_k_million": 0.0001,
+              "executed_gops": 0.4194304,
+              "intercept": 1.0,
+              "operand_mb": 1.582592,
+              "output_melements": 0.32768,
+              "tile_read_mb": 2.32448
+            },
+            "groups": 10,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 9830400,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 1768064.0,
+            "scenario_terms_us": {
+              "lds_us": 1.96608,
+              "matrix_and_unpack_us": 5.493752801767424,
+              "memory_us": 3.9465714285714286
+            },
+            "scenario_us": 8.493752801767425,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 2324480.0,
+            "unique_operand_bytes": 1582592,
+            "useful_ops": 419430400,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 29
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 8.493752801767425,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile3",
+          "candidate_sha256": "53dab8160243fde64000c60d7ef968bb2de449bc62aa304cfc2e5f358b7ea26b",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 2.4728,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 419430400,
+            "features": {
+              "block_k_million": 0.0001,
+              "executed_gops": 0.4194304,
+              "intercept": 1.0,
+              "operand_mb": 1.582592,
+              "output_melements": 0.32768,
+              "tile_read_mb": 2.32448
+            },
+            "groups": 10,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 9830400,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 1768064.0,
+            "scenario_terms_us": {
+              "lds_us": 1.96608,
+              "matrix_and_unpack_us": 5.493752801767424,
+              "memory_us": 3.9465714285714286
+            },
+            "scenario_us": 8.493752801767425,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 2324480.0,
+            "unique_operand_bytes": 1582592,
+            "useful_ops": 419430400,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 3
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 8.493752801767425,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile30",
+          "candidate_sha256": "f95b3baea9025f635634c8416b41fe1edb9f22dd448bcfc9731162962c17e6e8",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 2.4728,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 419430400,
+            "features": {
+              "block_k_million": 0.0001,
+              "executed_gops": 0.4194304,
+              "intercept": 1.0,
+              "operand_mb": 1.582592,
+              "output_melements": 0.32768,
+              "tile_read_mb": 2.32448
+            },
+            "groups": 10,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 9830400,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 1768064.0,
+            "scenario_terms_us": {
+              "lds_us": 1.96608,
+              "matrix_and_unpack_us": 5.493752801767424,
+              "memory_us": 3.9465714285714286
+            },
+            "scenario_us": 8.493752801767425,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 2324480.0,
+            "unique_operand_bytes": 1582592,
+            "useful_ops": 419430400,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 30
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 8.493752801767425,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile5",
+          "candidate_sha256": "7e53f3b95df6f0d428179ed86e3128d20254c82f98d38d760bb64f8e790c3d26",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 2.4728,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 419430400,
+            "features": {
+              "block_k_million": 0.0001,
+              "executed_gops": 0.4194304,
+              "intercept": 1.0,
+              "operand_mb": 1.582592,
+              "output_melements": 0.32768,
+              "tile_read_mb": 2.32448
+            },
+            "groups": 10,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 9830400,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 1768064.0,
+            "scenario_terms_us": {
+              "lds_us": 1.96608,
+              "matrix_and_unpack_us": 5.493752801767424,
+              "memory_us": 3.9465714285714286
+            },
+            "scenario_us": 8.493752801767425,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 2324480.0,
+            "unique_operand_bytes": 1582592,
+            "useful_ops": 419430400,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 5
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 8.493752801767425,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile6",
+          "candidate_sha256": "fb93400cfee73063c83b3068b49be1c286d0fa9ea0024d25a8e5deb0fe23f163",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 2.4728,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 419430400,
+            "features": {
+              "block_k_million": 0.0001,
+              "executed_gops": 0.4194304,
+              "intercept": 1.0,
+              "operand_mb": 1.582592,
+              "output_melements": 0.32768,
+              "tile_read_mb": 2.32448
+            },
+            "groups": 10,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 9830400,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 1768064.0,
+            "scenario_terms_us": {
+              "lds_us": 1.96608,
+              "matrix_and_unpack_us": 5.493752801767424,
+              "memory_us": 3.9465714285714286
+            },
+            "scenario_us": 8.493752801767425,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 2324480.0,
+            "unique_operand_bytes": 1582592,
+            "useful_ops": 419430400,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 6
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 8.493752801767425,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        }
+      ],
+      "ranking_basis": "uncalibrated analytic scenario",
+      "rejected": [
+        {
+          "candidate_id": "w4a8-prefill-tile9",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile14",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        }
+      ],
+      "shape": {
+        "K": 640,
+        "M": 128,
+        "N": 2560
+      },
+      "shape_key": "e15ec46d7e544da5f71f702aa9da4e3f868a5cc5be77ec9428134a598bf95354",
+      "status": "NEEDS_MEASUREMENT",
+      "suggested_candidate": "w4a8-prefill-tile10",
+      "workload_id": "dense-M128-N2560-K640"
+    },
+    {
+      "automatic_dispatch_changed": false,
+      "correctness_validation_still_required": true,
+      "decision_reason": "missing calibration, changed candidate or out-of-domain prediction",
+      "measurement_queue": [
+        "w4a8-prefill-tile27",
+        "w4a8-prefill-tile28",
+        "w4a8-prefill-tile29",
+        "w4a8-prefill-tile30"
+      ],
+      "ranked": [
+        {
+          "candidate_id": "w4a8-prefill-tile27",
+          "candidate_sha256": "146df628513e3d4ffea6371d892c8f94dd7548785a5f776517ba1252aef7dad9",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 2.48180625,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 838860800,
+            "features": {
+              "block_k_million": 0.0002,
+              "executed_gops": 0.8388608,
+              "intercept": 1.0,
+              "operand_mb": 1.588356,
+              "output_melements": 0.33024,
+              "tile_read_mb": 3.99364
+            },
+            "groups": 20,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 19660800,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 2189677.0,
+            "scenario_terms_us": {
+              "lds_us": 3.93216,
+              "matrix_and_unpack_us": 5.596152801767423,
+              "memory_us": 4.8876718750000006
+            },
+            "scenario_us": 8.596152801767424,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 0.50390625,
+            "tile_requested_bytes": 3993640.0,
+            "unique_operand_bytes": 1588356,
+            "useful_ops": 422707200,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 27
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 8.596152801767424,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile28",
+          "candidate_sha256": "af96974cbb9e8f3f10697a3312b45161a409949b55f975c4c8848d09d83f88a4",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 2.48180625,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 838860800,
+            "features": {
+              "block_k_million": 0.0002,
+              "executed_gops": 0.8388608,
+              "intercept": 1.0,
+              "operand_mb": 1.588356,
+              "output_melements": 0.33024,
+              "tile_read_mb": 3.99364
+            },
+            "groups": 20,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 19660800,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 2189677.0,
+            "scenario_terms_us": {
+              "lds_us": 3.93216,
+              "matrix_and_unpack_us": 5.596152801767423,
+              "memory_us": 4.8876718750000006
+            },
+            "scenario_us": 8.596152801767424,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 0.50390625,
+            "tile_requested_bytes": 3993640.0,
+            "unique_operand_bytes": 1588356,
+            "useful_ops": 422707200,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 28
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 8.596152801767424,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile29",
+          "candidate_sha256": "a0b14f7ca8016b1bb184361219562ff3a83f36d42b1501165aa3d12c72295b74",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 2.48180625,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 838860800,
+            "features": {
+              "block_k_million": 0.0002,
+              "executed_gops": 0.8388608,
+              "intercept": 1.0,
+              "operand_mb": 1.588356,
+              "output_melements": 0.33024,
+              "tile_read_mb": 3.99364
+            },
+            "groups": 20,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 19660800,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 2189677.0,
+            "scenario_terms_us": {
+              "lds_us": 3.93216,
+              "matrix_and_unpack_us": 5.596152801767423,
+              "memory_us": 4.8876718750000006
+            },
+            "scenario_us": 8.596152801767424,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 0.50390625,
+            "tile_requested_bytes": 3993640.0,
+            "unique_operand_bytes": 1588356,
+            "useful_ops": 422707200,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 29
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 8.596152801767424,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile30",
+          "candidate_sha256": "f95b3baea9025f635634c8416b41fe1edb9f22dd448bcfc9731162962c17e6e8",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 2.48180625,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 838860800,
+            "features": {
+              "block_k_million": 0.0002,
+              "executed_gops": 0.8388608,
+              "intercept": 1.0,
+              "operand_mb": 1.588356,
+              "output_melements": 0.33024,
+              "tile_read_mb": 3.99364
+            },
+            "groups": 20,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 19660800,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 2189677.0,
+            "scenario_terms_us": {
+              "lds_us": 3.93216,
+              "matrix_and_unpack_us": 5.596152801767423,
+              "memory_us": 4.8876718750000006
+            },
+            "scenario_us": 8.596152801767424,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 0.50390625,
+            "tile_requested_bytes": 3993640.0,
+            "unique_operand_bytes": 1588356,
+            "useful_ops": 422707200,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 30
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 8.596152801767424,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        }
+      ],
+      "ranking_basis": "uncalibrated analytic scenario",
+      "rejected": [
+        {
+          "candidate_id": "w4a8-prefill-tile0",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile2",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile3",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile5",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile6",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile8",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile9",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile10",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile13",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile14",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        }
+      ],
+      "shape": {
+        "K": 640,
+        "M": 129,
+        "N": 2560
+      },
+      "shape_key": "ee6a1b8c3a3bc6aef54f4922886fe005daaf7272c5921153bb505303a06febaf",
+      "status": "NEEDS_MEASUREMENT",
+      "suggested_candidate": "w4a8-prefill-tile27",
+      "workload_id": "dense-M129-N2560-K640"
+    },
+    {
+      "automatic_dispatch_changed": false,
+      "correctness_validation_still_required": true,
+      "decision_reason": "missing calibration, changed candidate or out-of-domain prediction",
+      "measurement_queue": [
+        "w4a8-prefill-tile0",
+        "w4a8-prefill-tile2",
+        "w4a8-prefill-tile27",
+        "w4a8-prefill-tile28",
+        "w4a8-prefill-tile29",
+        "w4a8-prefill-tile3",
+        "w4a8-prefill-tile30",
+        "w4a8-prefill-tile5",
+        "w4a8-prefill-tile6",
+        "w4a8-prefill-tile14",
+        "w4a8-prefill-tile10",
+        "w4a8-prefill-tile13",
+        "w4a8-prefill-tile8"
+      ],
+      "ranked": [
+        {
+          "candidate_id": "w4a8-prefill-tile0",
+          "candidate_sha256": "36dfe15ea14811da7ef08430a08e1ff091b437e16127e41346266140739f88bc",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 3.6256,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 838860800,
+            "features": {
+              "block_k_million": 0.0002,
+              "executed_gops": 0.8388608,
+              "intercept": 1.0,
+              "operand_mb": 2.320384,
+              "output_melements": 0.65536,
+              "tile_read_mb": 4.64896
+            },
+            "groups": 20,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 19660800,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "memory_us",
+            "scenario_memory_bytes": 2902528.0,
+            "scenario_terms_us": {
+              "lds_us": 3.93216,
+              "matrix_and_unpack_us": 5.596152801767423,
+              "memory_us": 6.478857142857143
+            },
+            "scenario_us": 9.478857142857143,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 4648960.0,
+            "unique_operand_bytes": 2320384,
+            "useful_ops": 838860800,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 0
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 9.478857142857143,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile2",
+          "candidate_sha256": "a90753badc2213afe66818f13acba93d4caf8b9d1662f9af9ce4db95fbd9e58b",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 3.6256,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 838860800,
+            "features": {
+              "block_k_million": 0.0002,
+              "executed_gops": 0.8388608,
+              "intercept": 1.0,
+              "operand_mb": 2.320384,
+              "output_melements": 0.65536,
+              "tile_read_mb": 4.64896
+            },
+            "groups": 20,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 19660800,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "memory_us",
+            "scenario_memory_bytes": 2902528.0,
+            "scenario_terms_us": {
+              "lds_us": 3.93216,
+              "matrix_and_unpack_us": 5.596152801767423,
+              "memory_us": 6.478857142857143
+            },
+            "scenario_us": 9.478857142857143,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 4648960.0,
+            "unique_operand_bytes": 2320384,
+            "useful_ops": 838860800,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 2
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 9.478857142857143,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile27",
+          "candidate_sha256": "146df628513e3d4ffea6371d892c8f94dd7548785a5f776517ba1252aef7dad9",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 3.6256,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 838860800,
+            "features": {
+              "block_k_million": 0.0002,
+              "executed_gops": 0.8388608,
+              "intercept": 1.0,
+              "operand_mb": 2.320384,
+              "output_melements": 0.65536,
+              "tile_read_mb": 4.64896
+            },
+            "groups": 20,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 19660800,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "memory_us",
+            "scenario_memory_bytes": 2902528.0,
+            "scenario_terms_us": {
+              "lds_us": 3.93216,
+              "matrix_and_unpack_us": 5.596152801767423,
+              "memory_us": 6.478857142857143
+            },
+            "scenario_us": 9.478857142857143,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 4648960.0,
+            "unique_operand_bytes": 2320384,
+            "useful_ops": 838860800,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 27
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 9.478857142857143,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile28",
+          "candidate_sha256": "af96974cbb9e8f3f10697a3312b45161a409949b55f975c4c8848d09d83f88a4",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 3.6256,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 838860800,
+            "features": {
+              "block_k_million": 0.0002,
+              "executed_gops": 0.8388608,
+              "intercept": 1.0,
+              "operand_mb": 2.320384,
+              "output_melements": 0.65536,
+              "tile_read_mb": 4.64896
+            },
+            "groups": 20,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 19660800,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "memory_us",
+            "scenario_memory_bytes": 2902528.0,
+            "scenario_terms_us": {
+              "lds_us": 3.93216,
+              "matrix_and_unpack_us": 5.596152801767423,
+              "memory_us": 6.478857142857143
+            },
+            "scenario_us": 9.478857142857143,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 4648960.0,
+            "unique_operand_bytes": 2320384,
+            "useful_ops": 838860800,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 28
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 9.478857142857143,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile29",
+          "candidate_sha256": "a0b14f7ca8016b1bb184361219562ff3a83f36d42b1501165aa3d12c72295b74",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 3.6256,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 838860800,
+            "features": {
+              "block_k_million": 0.0002,
+              "executed_gops": 0.8388608,
+              "intercept": 1.0,
+              "operand_mb": 2.320384,
+              "output_melements": 0.65536,
+              "tile_read_mb": 4.64896
+            },
+            "groups": 20,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 19660800,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "memory_us",
+            "scenario_memory_bytes": 2902528.0,
+            "scenario_terms_us": {
+              "lds_us": 3.93216,
+              "matrix_and_unpack_us": 5.596152801767423,
+              "memory_us": 6.478857142857143
+            },
+            "scenario_us": 9.478857142857143,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 4648960.0,
+            "unique_operand_bytes": 2320384,
+            "useful_ops": 838860800,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 29
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 9.478857142857143,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile3",
+          "candidate_sha256": "53dab8160243fde64000c60d7ef968bb2de449bc62aa304cfc2e5f358b7ea26b",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 3.6256,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 838860800,
+            "features": {
+              "block_k_million": 0.0002,
+              "executed_gops": 0.8388608,
+              "intercept": 1.0,
+              "operand_mb": 2.320384,
+              "output_melements": 0.65536,
+              "tile_read_mb": 4.64896
+            },
+            "groups": 20,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 19660800,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "memory_us",
+            "scenario_memory_bytes": 2902528.0,
+            "scenario_terms_us": {
+              "lds_us": 3.93216,
+              "matrix_and_unpack_us": 5.596152801767423,
+              "memory_us": 6.478857142857143
+            },
+            "scenario_us": 9.478857142857143,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 4648960.0,
+            "unique_operand_bytes": 2320384,
+            "useful_ops": 838860800,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 3
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 9.478857142857143,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile30",
+          "candidate_sha256": "f95b3baea9025f635634c8416b41fe1edb9f22dd448bcfc9731162962c17e6e8",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 3.6256,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 838860800,
+            "features": {
+              "block_k_million": 0.0002,
+              "executed_gops": 0.8388608,
+              "intercept": 1.0,
+              "operand_mb": 2.320384,
+              "output_melements": 0.65536,
+              "tile_read_mb": 4.64896
+            },
+            "groups": 20,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 19660800,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "memory_us",
+            "scenario_memory_bytes": 2902528.0,
+            "scenario_terms_us": {
+              "lds_us": 3.93216,
+              "matrix_and_unpack_us": 5.596152801767423,
+              "memory_us": 6.478857142857143
+            },
+            "scenario_us": 9.478857142857143,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 4648960.0,
+            "unique_operand_bytes": 2320384,
+            "useful_ops": 838860800,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 30
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 9.478857142857143,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile5",
+          "candidate_sha256": "7e53f3b95df6f0d428179ed86e3128d20254c82f98d38d760bb64f8e790c3d26",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 3.6256,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 838860800,
+            "features": {
+              "block_k_million": 0.0002,
+              "executed_gops": 0.8388608,
+              "intercept": 1.0,
+              "operand_mb": 2.320384,
+              "output_melements": 0.65536,
+              "tile_read_mb": 4.64896
+            },
+            "groups": 20,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 19660800,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "memory_us",
+            "scenario_memory_bytes": 2902528.0,
+            "scenario_terms_us": {
+              "lds_us": 3.93216,
+              "matrix_and_unpack_us": 5.596152801767423,
+              "memory_us": 6.478857142857143
+            },
+            "scenario_us": 9.478857142857143,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 4648960.0,
+            "unique_operand_bytes": 2320384,
+            "useful_ops": 838860800,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 5
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 9.478857142857143,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile6",
+          "candidate_sha256": "fb93400cfee73063c83b3068b49be1c286d0fa9ea0024d25a8e5deb0fe23f163",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 3.6256,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 838860800,
+            "features": {
+              "block_k_million": 0.0002,
+              "executed_gops": 0.8388608,
+              "intercept": 1.0,
+              "operand_mb": 2.320384,
+              "output_melements": 0.65536,
+              "tile_read_mb": 4.64896
+            },
+            "groups": 20,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 19660800,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "memory_us",
+            "scenario_memory_bytes": 2902528.0,
+            "scenario_terms_us": {
+              "lds_us": 3.93216,
+              "matrix_and_unpack_us": 5.596152801767423,
+              "memory_us": 6.478857142857143
+            },
+            "scenario_us": 9.478857142857143,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 4648960.0,
+            "unique_operand_bytes": 2320384,
+            "useful_ops": 838860800,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 6
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 9.478857142857143,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile14",
+          "candidate_sha256": "c0030d2d6a6ad31134f4a07181e7112fada0fef5ecd204fe1eb73d82b10fae6a",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 3.6256,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 838860800,
+            "features": {
+              "block_k_million": 0.0002,
+              "executed_gops": 0.8388608,
+              "intercept": 1.0,
+              "operand_mb": 2.320384,
+              "output_melements": 0.65536,
+              "tile_read_mb": 5.4528
+            },
+            "groups": 20,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 31948800,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "memory_us",
+            "scenario_memory_bytes": 3103488.0,
+            "scenario_terms_us": {
+              "lds_us": 6.38976,
+              "matrix_and_unpack_us": 5.493752801767424,
+              "memory_us": 6.927428571428571
+            },
+            "scenario_us": 9.927428571428571,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 5452800.0,
+            "unique_operand_bytes": 2320384,
+            "useful_ops": 838860800,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 14
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 9.927428571428571,
+          "tile": [
+            256,
+            128,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile10",
+          "candidate_sha256": "5d57b9f425f99f47a64f073db2e65cd692ecdc85a17ab931f03035f2dab01c99",
+          "cost": {
+            "accumulator_register_estimate": 32,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 3.6256,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 838860800,
+            "features": {
+              "block_k_million": 0.0004,
+              "executed_gops": 0.8388608,
+              "intercept": 1.0,
+              "operand_mb": 2.320384,
+              "output_melements": 0.65536,
+              "tile_read_mb": 6.2976
+            },
+            "groups": 40,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 34406400,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "memory_us",
+            "scenario_memory_bytes": 3314688.0,
+            "scenario_terms_us": {
+              "lds_us": 6.88128,
+              "matrix_and_unpack_us": 3.5743955011046395,
+              "memory_us": 7.3988571428571435
+            },
+            "scenario_us": 10.398857142857143,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 6297600.0,
+            "unique_operand_bytes": 2320384,
+            "useful_ops": 838860800,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 10
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 10.398857142857143,
+          "tile": [
+            128,
+            128,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile13",
+          "candidate_sha256": "71deda2de10bde8bdda21c6ecc6cb1fbea822f1b6ff2f052d22cb529d3c2e50f",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 3.6256,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 838860800,
+            "features": {
+              "block_k_million": 0.0004,
+              "executed_gops": 0.8388608,
+              "intercept": 1.0,
+              "operand_mb": 2.320384,
+              "output_melements": 0.65536,
+              "tile_read_mb": 6.33856
+            },
+            "groups": 40,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 21299200,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "memory_us",
+            "scenario_memory_bytes": 3324928.0,
+            "scenario_terms_us": {
+              "lds_us": 4.25984,
+              "matrix_and_unpack_us": 3.7791955011046396,
+              "memory_us": 7.421714285714286
+            },
+            "scenario_us": 10.421714285714286,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 6338560.0,
+            "unique_operand_bytes": 2320384,
+            "useful_ops": 838860800,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 13
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 10.421714285714286,
+          "tile": [
+            64,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile8",
+          "candidate_sha256": "681d8b441ca66664ea064c51bb81f7ac92b3e573b39473b7118f369bc09f138b",
+          "cost": {
+            "accumulator_register_estimate": 32,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 3.6256,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 838860800,
+            "features": {
+              "block_k_million": 0.0004,
+              "executed_gops": 0.8388608,
+              "intercept": 1.0,
+              "operand_mb": 2.320384,
+              "output_melements": 0.65536,
+              "tile_read_mb": 6.33856
+            },
+            "groups": 40,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 24576000,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "memory_us",
+            "scenario_memory_bytes": 3324928.0,
+            "scenario_terms_us": {
+              "lds_us": 4.9152,
+              "matrix_and_unpack_us": 3.7791955011046396,
+              "memory_us": 7.421714285714286
+            },
+            "scenario_us": 10.421714285714286,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 6338560.0,
+            "unique_operand_bytes": 2320384,
+            "useful_ops": 838860800,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 8
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 10.421714285714286,
+          "tile": [
+            64,
+            256,
+            64
+          ]
+        }
+      ],
+      "ranking_basis": "uncalibrated analytic scenario",
+      "rejected": [
+        {
+          "candidate_id": "w4a8-prefill-tile9",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        }
+      ],
+      "shape": {
+        "K": 640,
+        "M": 256,
+        "N": 2560
+      },
+      "shape_key": "bd1d2044ee46566070fe9616db67fc235ebd1a5126121167009ff87a2ad32797",
+      "status": "NEEDS_MEASUREMENT",
+      "suggested_candidate": "w4a8-prefill-tile0",
+      "workload_id": "dense-M256-N2560-K640"
+    },
+    {
+      "automatic_dispatch_changed": false,
+      "correctness_validation_still_required": true,
+      "decision_reason": "missing calibration, changed candidate or out-of-domain prediction",
+      "measurement_queue": [
+        "w4a8-prefill-tile0",
+        "w4a8-prefill-tile2",
+        "w4a8-prefill-tile27",
+        "w4a8-prefill-tile28",
+        "w4a8-prefill-tile29",
+        "w4a8-prefill-tile3",
+        "w4a8-prefill-tile30",
+        "w4a8-prefill-tile5",
+        "w4a8-prefill-tile6",
+        "w4a8-prefill-tile13",
+        "w4a8-prefill-tile8",
+        "w4a8-prefill-tile14",
+        "w4a8-prefill-tile10"
+      ],
+      "ranked": [
+        {
+          "candidate_id": "w4a8-prefill-tile0",
+          "candidate_sha256": "36dfe15ea14811da7ef08430a08e1ff091b437e16127e41346266140739f88bc",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 10.5424,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 3355443200,
+            "features": {
+              "block_k_million": 0.0008,
+              "executed_gops": 3.3554432,
+              "intercept": 1.0,
+              "operand_mb": 6.747136,
+              "output_melements": 2.62144,
+              "tile_read_mb": 18.59584
+            },
+            "groups": 80,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 78643200,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "memory_us",
+            "scenario_memory_bytes": 9709312.0,
+            "scenario_terms_us": {
+              "lds_us": 15.72864,
+              "matrix_and_unpack_us": 14.297582004418558,
+              "memory_us": 21.67257142857143
+            },
+            "scenario_us": 24.67257142857143,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 18595840.0,
+            "unique_operand_bytes": 6747136,
+            "useful_ops": 3355443200,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 0
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 24.67257142857143,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile2",
+          "candidate_sha256": "a90753badc2213afe66818f13acba93d4caf8b9d1662f9af9ce4db95fbd9e58b",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 10.5424,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 3355443200,
+            "features": {
+              "block_k_million": 0.0008,
+              "executed_gops": 3.3554432,
+              "intercept": 1.0,
+              "operand_mb": 6.747136,
+              "output_melements": 2.62144,
+              "tile_read_mb": 18.59584
+            },
+            "groups": 80,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 78643200,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "memory_us",
+            "scenario_memory_bytes": 9709312.0,
+            "scenario_terms_us": {
+              "lds_us": 15.72864,
+              "matrix_and_unpack_us": 14.297582004418558,
+              "memory_us": 21.67257142857143
+            },
+            "scenario_us": 24.67257142857143,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 18595840.0,
+            "unique_operand_bytes": 6747136,
+            "useful_ops": 3355443200,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 2
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 24.67257142857143,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile27",
+          "candidate_sha256": "146df628513e3d4ffea6371d892c8f94dd7548785a5f776517ba1252aef7dad9",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 10.5424,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 3355443200,
+            "features": {
+              "block_k_million": 0.0008,
+              "executed_gops": 3.3554432,
+              "intercept": 1.0,
+              "operand_mb": 6.747136,
+              "output_melements": 2.62144,
+              "tile_read_mb": 18.59584
+            },
+            "groups": 80,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 78643200,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "memory_us",
+            "scenario_memory_bytes": 9709312.0,
+            "scenario_terms_us": {
+              "lds_us": 15.72864,
+              "matrix_and_unpack_us": 14.297582004418558,
+              "memory_us": 21.67257142857143
+            },
+            "scenario_us": 24.67257142857143,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 18595840.0,
+            "unique_operand_bytes": 6747136,
+            "useful_ops": 3355443200,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 27
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 24.67257142857143,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile28",
+          "candidate_sha256": "af96974cbb9e8f3f10697a3312b45161a409949b55f975c4c8848d09d83f88a4",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 10.5424,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 3355443200,
+            "features": {
+              "block_k_million": 0.0008,
+              "executed_gops": 3.3554432,
+              "intercept": 1.0,
+              "operand_mb": 6.747136,
+              "output_melements": 2.62144,
+              "tile_read_mb": 18.59584
+            },
+            "groups": 80,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 78643200,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "memory_us",
+            "scenario_memory_bytes": 9709312.0,
+            "scenario_terms_us": {
+              "lds_us": 15.72864,
+              "matrix_and_unpack_us": 14.297582004418558,
+              "memory_us": 21.67257142857143
+            },
+            "scenario_us": 24.67257142857143,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 18595840.0,
+            "unique_operand_bytes": 6747136,
+            "useful_ops": 3355443200,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 28
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 24.67257142857143,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile29",
+          "candidate_sha256": "a0b14f7ca8016b1bb184361219562ff3a83f36d42b1501165aa3d12c72295b74",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 10.5424,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 3355443200,
+            "features": {
+              "block_k_million": 0.0008,
+              "executed_gops": 3.3554432,
+              "intercept": 1.0,
+              "operand_mb": 6.747136,
+              "output_melements": 2.62144,
+              "tile_read_mb": 18.59584
+            },
+            "groups": 80,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 78643200,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "memory_us",
+            "scenario_memory_bytes": 9709312.0,
+            "scenario_terms_us": {
+              "lds_us": 15.72864,
+              "matrix_and_unpack_us": 14.297582004418558,
+              "memory_us": 21.67257142857143
+            },
+            "scenario_us": 24.67257142857143,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 18595840.0,
+            "unique_operand_bytes": 6747136,
+            "useful_ops": 3355443200,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 29
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 24.67257142857143,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile3",
+          "candidate_sha256": "53dab8160243fde64000c60d7ef968bb2de449bc62aa304cfc2e5f358b7ea26b",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 10.5424,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 3355443200,
+            "features": {
+              "block_k_million": 0.0008,
+              "executed_gops": 3.3554432,
+              "intercept": 1.0,
+              "operand_mb": 6.747136,
+              "output_melements": 2.62144,
+              "tile_read_mb": 18.59584
+            },
+            "groups": 80,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 78643200,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "memory_us",
+            "scenario_memory_bytes": 9709312.0,
+            "scenario_terms_us": {
+              "lds_us": 15.72864,
+              "matrix_and_unpack_us": 14.297582004418558,
+              "memory_us": 21.67257142857143
+            },
+            "scenario_us": 24.67257142857143,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 18595840.0,
+            "unique_operand_bytes": 6747136,
+            "useful_ops": 3355443200,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 3
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 24.67257142857143,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile30",
+          "candidate_sha256": "f95b3baea9025f635634c8416b41fe1edb9f22dd448bcfc9731162962c17e6e8",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 10.5424,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 3355443200,
+            "features": {
+              "block_k_million": 0.0008,
+              "executed_gops": 3.3554432,
+              "intercept": 1.0,
+              "operand_mb": 6.747136,
+              "output_melements": 2.62144,
+              "tile_read_mb": 18.59584
+            },
+            "groups": 80,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 78643200,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "memory_us",
+            "scenario_memory_bytes": 9709312.0,
+            "scenario_terms_us": {
+              "lds_us": 15.72864,
+              "matrix_and_unpack_us": 14.297582004418558,
+              "memory_us": 21.67257142857143
+            },
+            "scenario_us": 24.67257142857143,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 18595840.0,
+            "unique_operand_bytes": 6747136,
+            "useful_ops": 3355443200,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 30
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 24.67257142857143,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile5",
+          "candidate_sha256": "7e53f3b95df6f0d428179ed86e3128d20254c82f98d38d760bb64f8e790c3d26",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 10.5424,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 3355443200,
+            "features": {
+              "block_k_million": 0.0008,
+              "executed_gops": 3.3554432,
+              "intercept": 1.0,
+              "operand_mb": 6.747136,
+              "output_melements": 2.62144,
+              "tile_read_mb": 18.59584
+            },
+            "groups": 80,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 78643200,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "memory_us",
+            "scenario_memory_bytes": 9709312.0,
+            "scenario_terms_us": {
+              "lds_us": 15.72864,
+              "matrix_and_unpack_us": 14.297582004418558,
+              "memory_us": 21.67257142857143
+            },
+            "scenario_us": 24.67257142857143,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 18595840.0,
+            "unique_operand_bytes": 6747136,
+            "useful_ops": 3355443200,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 5
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 24.67257142857143,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile6",
+          "candidate_sha256": "fb93400cfee73063c83b3068b49be1c286d0fa9ea0024d25a8e5deb0fe23f163",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 10.5424,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 3355443200,
+            "features": {
+              "block_k_million": 0.0008,
+              "executed_gops": 3.3554432,
+              "intercept": 1.0,
+              "operand_mb": 6.747136,
+              "output_melements": 2.62144,
+              "tile_read_mb": 18.59584
+            },
+            "groups": 80,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 78643200,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "memory_us",
+            "scenario_memory_bytes": 9709312.0,
+            "scenario_terms_us": {
+              "lds_us": 15.72864,
+              "matrix_and_unpack_us": 14.297582004418558,
+              "memory_us": 21.67257142857143
+            },
+            "scenario_us": 24.67257142857143,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 18595840.0,
+            "unique_operand_bytes": 6747136,
+            "useful_ops": 3355443200,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 6
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 24.67257142857143,
+          "tile": [
+            128,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile13",
+          "candidate_sha256": "71deda2de10bde8bdda21c6ecc6cb1fbea822f1b6ff2f052d22cb529d3c2e50f",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 10.5424,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 3355443200,
+            "features": {
+              "block_k_million": 0.0016,
+              "executed_gops": 3.3554432,
+              "intercept": 1.0,
+              "operand_mb": 6.747136,
+              "output_melements": 2.62144,
+              "tile_read_mb": 25.35424
+            },
+            "groups": 160,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 85196800,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "memory_us",
+            "scenario_memory_bytes": 11398912.0,
+            "scenario_terms_us": {
+              "lds_us": 17.03936,
+              "matrix_and_unpack_us": 15.116782004418559,
+              "memory_us": 25.444000000000003
+            },
+            "scenario_us": 28.444000000000003,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 25354240.0,
+            "unique_operand_bytes": 6747136,
+            "useful_ops": 3355443200,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 13
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 28.444000000000003,
+          "tile": [
+            64,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile8",
+          "candidate_sha256": "681d8b441ca66664ea064c51bb81f7ac92b3e573b39473b7118f369bc09f138b",
+          "cost": {
+            "accumulator_register_estimate": 32,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 10.5424,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 3355443200,
+            "features": {
+              "block_k_million": 0.0016,
+              "executed_gops": 3.3554432,
+              "intercept": 1.0,
+              "operand_mb": 6.747136,
+              "output_melements": 2.62144,
+              "tile_read_mb": 25.35424
+            },
+            "groups": 160,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 98304000,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "memory_us",
+            "scenario_memory_bytes": 11398912.0,
+            "scenario_terms_us": {
+              "lds_us": 19.6608,
+              "matrix_and_unpack_us": 15.116782004418559,
+              "memory_us": 25.444000000000003
+            },
+            "scenario_us": 28.444000000000003,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 25354240.0,
+            "unique_operand_bytes": 6747136,
+            "useful_ops": 3355443200,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 8
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 28.444000000000003,
+          "tile": [
+            64,
+            256,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile14",
+          "candidate_sha256": "c0030d2d6a6ad31134f4a07181e7112fada0fef5ecd204fe1eb73d82b10fae6a",
+          "cost": {
+            "accumulator_register_estimate": 64,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 10.5424,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 3355443200,
+            "features": {
+              "block_k_million": 0.0008,
+              "executed_gops": 3.3554432,
+              "intercept": 1.0,
+              "operand_mb": 6.747136,
+              "output_melements": 2.62144,
+              "tile_read_mb": 21.8112
+            },
+            "groups": 80,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 127795200,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "lds_us",
+            "scenario_memory_bytes": 10513152.0,
+            "scenario_terms_us": {
+              "lds_us": 25.55904,
+              "matrix_and_unpack_us": 13.887982004418557,
+              "memory_us": 23.466857142857144
+            },
+            "scenario_us": 28.55904,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 21811200.0,
+            "unique_operand_bytes": 6747136,
+            "useful_ops": 3355443200,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 14
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 28.55904,
+          "tile": [
+            256,
+            128,
+            64
+          ]
+        },
+        {
+          "candidate_id": "w4a8-prefill-tile10",
+          "candidate_sha256": "5d57b9f425f99f47a64f073db2e65cd692ecdc85a17ab931f03035f2dab01c99",
+          "cost": {
+            "accumulator_register_estimate": 32,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": 10.5424,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 3355443200,
+            "features": {
+              "block_k_million": 0.0016,
+              "executed_gops": 3.3554432,
+              "intercept": 1.0,
+              "operand_mb": 6.747136,
+              "output_melements": 2.62144,
+              "tile_read_mb": 25.1904
+            },
+            "groups": 160,
+            "k_blocks_per_group": 10,
+            "lds_traffic_bytes": 137625600,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "lds_us",
+            "scenario_memory_bytes": 11357952.0,
+            "scenario_terms_us": {
+              "lds_us": 27.52512,
+              "matrix_and_unpack_us": 14.297582004418558,
+              "memory_us": 25.35257142857143
+            },
+            "scenario_us": 30.52512,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 25190400.0,
+            "unique_operand_bytes": 6747136,
+            "useful_ops": 3355443200,
+            "warnings": [
+              "scale-fold/address instructions not fully counted",
+              "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+              "no GPU correctness/ISA result for this source arm",
+              "missing compiler register counts; occupancy not known"
+            ]
+          },
+          "identity": {
+            "kind": "source",
+            "provenance": "hash-pinned source adapter; not compiled binary",
+            "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+          },
+          "input_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "launch": {
+            "op": "gemm_nt_q",
+            "params": {
+              "dtype": "w4a8",
+              "group": 128,
+              "tile": 10
+            },
+            "row": "gemm_w4a8_prefill"
+          },
+          "output_layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+          "prediction": {
+            "interval_us": null,
+            "prediction_us": null,
+            "status": "UNCALIBRATED"
+          },
+          "ranking_score_us": 30.52512,
+          "tile": [
+            128,
+            128,
+            64
+          ]
+        }
+      ],
+      "ranking_basis": "uncalibrated analytic scenario",
+      "rejected": [
+        {
+          "candidate_id": "w4a8-prefill-tile9",
+          "reason": "source-known scalar Ascale tail read: candidate excluded for this M"
+        }
+      ],
+      "shape": {
+        "K": 640,
+        "M": 1024,
+        "N": 2560
+      },
+      "shape_key": "f1e8862520b1d13b5c90e98e45fde91d54e46f0fd11fd7a062b120c085dfee64",
+      "status": "NEEDS_MEASUREMENT",
+      "suggested_candidate": "w4a8-prefill-tile0",
+      "workload_id": "dense-M1024-N2560-K640"
+    }
+  ],
+  "workloads_sha256": "2a45c9ce7b92cfd4e7d0e36cadda80b469684261e3f0620333028c3818733ea8"
+}

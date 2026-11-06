@@ -1,0 +1,189 @@
+{
+  "schema": "radiance-kernel-replay/1",
+  "id": "cpu-M32-N32-K128-panel1",
+  "provenance": {
+    "kind": "synthetic",
+    "reference": "independent",
+    "note": "CPU-only planner comparison; independent fsum oracle; not production activation snapshot."
+  },
+  "target": {
+    "backend": "host",
+    "arch": "host",
+    "world_size": 1
+  },
+  "plugins": [
+    {
+      "id": "p0",
+      "name": "planner_cpu",
+      "sha256": "03b59a75fcaf67ae320e0287c2e348d4d9f073400c8a67e39b2530053892313e",
+      "abi": 30
+    }
+  ],
+  "allocations": [
+    {
+      "id": "a",
+      "kind": "host",
+      "bytes": 16384,
+      "alignment": 256,
+      "initial": {
+        "path": "blobs/153f0501f854410ef456e2d9806e7c94bdc4b6b348270aa2bd104fcafdffcd0f",
+        "sha256": "153f0501f854410ef456e2d9806e7c94bdc4b6b348270aa2bd104fcafdffcd0f",
+        "bytes": 16384
+      },
+      "mutable": false,
+      "relocations": []
+    },
+    {
+      "id": "b",
+      "kind": "host",
+      "bytes": 16384,
+      "alignment": 256,
+      "initial": {
+        "path": "blobs/39a635e58b2889e725f5d1f3800cee2feb40a2d51f042e8f562c434eda541d52",
+        "sha256": "39a635e58b2889e725f5d1f3800cee2feb40a2d51f042e8f562c434eda541d52",
+        "bytes": 16384
+      },
+      "mutable": false,
+      "relocations": []
+    },
+    {
+      "id": "y",
+      "kind": "host",
+      "bytes": 4096,
+      "alignment": 256,
+      "initial": {
+        "path": "blobs/ad7facb2586fc6e966c004d7d1d16b024f5805ff7cb47c7a85dabd8b48892ca7",
+        "sha256": "ad7facb2586fc6e966c004d7d1d16b024f5805ff7cb47c7a85dabd8b48892ca7",
+        "bytes": 4096
+      },
+      "mutable": true,
+      "relocations": []
+    }
+  ],
+  "views": [
+    {
+      "id": "a",
+      "allocation": "a",
+      "offset": 0,
+      "bytes": 16384,
+      "dtype": 1,
+      "shape": [
+        32,
+        128
+      ],
+      "stride": [
+        128,
+        1
+      ]
+    },
+    {
+      "id": "b",
+      "allocation": "b",
+      "offset": 0,
+      "bytes": 16384,
+      "dtype": 1,
+      "shape": [
+        32,
+        128
+      ],
+      "stride": [
+        128,
+        1
+      ]
+    },
+    {
+      "id": "y",
+      "allocation": "y",
+      "offset": 0,
+      "bytes": 4096,
+      "dtype": 1,
+      "shape": [
+        32,
+        32
+      ],
+      "stride": [
+        32,
+        1
+      ]
+    }
+  ],
+  "streams": [
+    {
+      "id": "q0",
+      "priority": 0
+    }
+  ],
+  "nodes": [
+    {
+      "id": "gemm",
+      "kind": "kernel",
+      "stream": "q0",
+      "phase": "measure",
+      "plugin": "p0",
+      "row": "cpu_panel1",
+      "op": "gemm_nt",
+      "tensors": [
+        "a",
+        "b",
+        "y"
+      ],
+      "accesses": [
+        {
+          "view": "a",
+          "mode": "r"
+        },
+        {
+          "view": "b",
+          "mode": "r"
+        },
+        {
+          "view": "y",
+          "mode": "w"
+        }
+      ],
+      "params": [
+        {
+          "key": "M",
+          "kind": "int",
+          "value": 32
+        },
+        {
+          "key": "N",
+          "kind": "int",
+          "value": 32
+        },
+        {
+          "key": "K",
+          "kind": "int",
+          "value": 128
+        },
+        {
+          "key": "dtype",
+          "kind": "str",
+          "value": "f32"
+        }
+      ],
+      "scratch_bytes": 0
+    }
+  ],
+  "checks": [
+    {
+      "view": "y",
+      "expected": {
+        "path": "blobs/7372d04cab17dff8c8526ccf5f9ba442fc29700e004ec6301eae445e1036f5c2",
+        "sha256": "7372d04cab17dff8c8526ccf5f9ba442fc29700e004ec6301eae445e1036f5c2",
+        "bytes": 4096
+      },
+      "mode": "float",
+      "atol": 2e-05,
+      "rtol": 2e-05,
+      "rel_l2": 2e-05,
+      "nonfinite": "reject"
+    }
+  ],
+  "contract": {
+    "pointer_fields_complete": true,
+    "hidden_state": "none",
+    "execution": "ordered-launchers"
+  }
+}

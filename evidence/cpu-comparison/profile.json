@@ -1,0 +1,42 @@
+{
+  "arch": "host",
+  "assumptions": {
+    "alu_gops": 1.0,
+    "compute_efficiency": 1.0,
+    "latency_hiding_waves": 1,
+    "launch_us": 0.05,
+    "lds_gbs": 1.0,
+    "memory_efficiency": 1.0,
+    "reuse_fraction": 1.0
+  },
+  "backend": "host",
+  "environment": {
+    "affinity": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "clock_power": "not controlled; authoring container",
+    "compiler": "14.2.0",
+    "cpu_threading": "single-threaded kernels; no OpenMP in libref build",
+    "device_name": "AMD EPYC 9V74 80-Core Processor",
+    "measurement_mode": "host ordered launcher-window steady_clock time",
+    "platform": "Linux-6.18.55-x86_64-with-glibc2.41",
+    "worker_sha256": "3823f1d0568af49403a46380984a5b4ec2a7e1cb24077fb6c972798dd7c7c8a8"
+  },
+  "id": "authoring-host-only",
+  "notes": "CPU peak numbers are illustrative baseline coefficients, NOT hardware measurements. Only empirical held-out model evaluates this machine. No GPU transfer.",
+  "schema": "radiance-planner-profile/1",
+  "spec": {
+    "bandwidth_gbs": 10.0,
+    "compute_units": 1,
+    "max_lds_per_group": 65536,
+    "max_threads": 1024,
+    "peak_gops": {
+      "cpu_f32": 10.0
+    },
+    "simds_per_cu": 1
+  }
+}

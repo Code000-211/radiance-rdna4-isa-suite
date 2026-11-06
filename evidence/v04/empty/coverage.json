@@ -1,0 +1,19 @@
+{
+  "coverage": {
+    "all_source_instantiations_proved": false,
+    "analyzed_kernels": 0,
+    "decoded_bytes": 0,
+    "expected_bytes": 0,
+    "expected_kernels": 0,
+    "fully_decoded_kernels": 0,
+    "helper_call_graph_proved": false,
+    "objects": 0
+  },
+  "full_isa_certification": false,
+  "runtime_coverage": {
+    "exhaustive_workload_coverage": false,
+    "mode": "not-collected"
+  },
+  "schema": "radiance-rdna4-isa/2",
+  "status": "INCOMPLETE"
+}

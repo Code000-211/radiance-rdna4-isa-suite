@@ -1,0 +1,289 @@
+{
+  "schema": "radiance-kernel-replay/1",
+  "id": "c3.window0",
+  "provenance": {
+    "kind": "synthetic",
+    "reference": "independent",
+    "note": "Synthetic finite f32 paged-attention host fixture; permuted pages; independent Python fsum/stable-softmax oracle. Not production activations."
+  },
+  "target": {
+    "backend": "host",
+    "arch": "host",
+    "world_size": 1
+  },
+  "plugins": [
+    {
+      "id": "p0",
+      "name": "libref",
+      "sha256": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513",
+      "abi": 30
+    }
+  ],
+  "allocations": [
+    {
+      "id": "q",
+      "kind": "host",
+      "bytes": 192,
+      "alignment": 256,
+      "initial": {
+        "path": "blobs/c681941e5eafe5dac1e4a3c4906af9118de4e3c2068571282d88362d59ef2759",
+        "sha256": "c681941e5eafe5dac1e4a3c4906af9118de4e3c2068571282d88362d59ef2759",
+        "bytes": 192
+      },
+      "mutable": false,
+      "relocations": []
+    },
+    {
+      "id": "kv",
+      "kind": "host",
+      "bytes": 512,
+      "alignment": 256,
+      "initial": {
+        "path": "blobs/19846cc48d6c3c4c5e52cbbcbc898871729b200220557cfcbc9d24a7e9a27238",
+        "sha256": "19846cc48d6c3c4c5e52cbbcbc898871729b200220557cfcbc9d24a7e9a27238",
+        "bytes": 512
+      },
+      "mutable": false,
+      "relocations": []
+    },
+    {
+      "id": "bt",
+      "kind": "host",
+      "bytes": 4,
+      "alignment": 256,
+      "initial": {
+        "path": "blobs/df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119",
+        "sha256": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119",
+        "bytes": 4
+      },
+      "mutable": false,
+      "relocations": []
+    },
+    {
+      "id": "su",
+      "kind": "host",
+      "bytes": 4,
+      "alignment": 256,
+      "initial": {
+        "path": "blobs/9d9f290527a6be626a8f5985b26e19b237b44872b03631811df4416fc1713178",
+        "sha256": "9d9f290527a6be626a8f5985b26e19b237b44872b03631811df4416fc1713178",
+        "bytes": 4
+      },
+      "mutable": false,
+      "relocations": []
+    },
+    {
+      "id": "out",
+      "kind": "host",
+      "bytes": 192,
+      "alignment": 256,
+      "initial": {
+        "path": "blobs/5d89f056865052bcb89c910d2d62872e029fb273c3db03f8968a52a41593c1b5",
+        "sha256": "5d89f056865052bcb89c910d2d62872e029fb273c3db03f8968a52a41593c1b5",
+        "bytes": 192
+      },
+      "mutable": true,
+      "relocations": []
+    }
+  ],
+  "views": [
+    {
+      "id": "q",
+      "allocation": "q",
+      "offset": 0,
+      "bytes": 192,
+      "dtype": 1,
+      "shape": [
+        1,
+        6,
+        8
+      ],
+      "stride": [
+        48,
+        8,
+        1
+      ]
+    },
+    {
+      "id": "kv",
+      "allocation": "kv",
+      "offset": 0,
+      "bytes": 512,
+      "dtype": 1,
+      "shape": [
+        1,
+        2,
+        4,
+        16
+      ],
+      "stride": [
+        128,
+        64,
+        16,
+        1
+      ]
+    },
+    {
+      "id": "bt",
+      "allocation": "bt",
+      "offset": 0,
+      "bytes": 4,
+      "dtype": 11,
+      "shape": [
+        1,
+        1
+      ],
+      "stride": [
+        1,
+        1
+      ]
+    },
+    {
+      "id": "su",
+      "allocation": "su",
+      "offset": 0,
+      "bytes": 4,
+      "dtype": 11,
+      "shape": [
+        1
+      ],
+      "stride": [
+        1
+      ]
+    },
+    {
+      "id": "out",
+      "allocation": "out",
+      "offset": 0,
+      "bytes": 192,
+      "dtype": 1,
+      "shape": [
+        1,
+        6,
+        8
+      ],
+      "stride": [
+        48,
+        8,
+        1
+      ]
+    }
+  ],
+  "streams": [
+    {
+      "id": "q0",
+      "priority": 0
+    }
+  ],
+  "nodes": [
+    {
+      "id": "attention",
+      "kind": "kernel",
+      "stream": "q0",
+      "phase": "measure",
+      "plugin": "p0",
+      "row": "ref_attn_paged",
+      "op": "attn_paged",
+      "tensors": [
+        "q",
+        "kv",
+        "bt",
+        "su",
+        null,
+        null,
+        null,
+        "out"
+      ],
+      "accesses": [
+        {
+          "view": "q",
+          "mode": "r"
+        },
+        {
+          "view": "kv",
+          "mode": "r"
+        },
+        {
+          "view": "bt",
+          "mode": "r"
+        },
+        {
+          "view": "su",
+          "mode": "r"
+        },
+        {
+          "view": "out",
+          "mode": "w"
+        }
+      ],
+      "params": [
+        {
+          "key": "q_len",
+          "kind": "int",
+          "value": 1
+        },
+        {
+          "key": "head_dim",
+          "kind": "int",
+          "value": 8
+        },
+        {
+          "key": "gqa",
+          "kind": "int",
+          "value": 3
+        },
+        {
+          "key": "block_size",
+          "kind": "int",
+          "value": 4
+        },
+        {
+          "key": "causal",
+          "kind": "int",
+          "value": 1
+        },
+        {
+          "key": "window",
+          "kind": "int",
+          "value": 0
+        },
+        {
+          "key": "q_dtype",
+          "kind": "str",
+          "value": "f32"
+        },
+        {
+          "key": "kv_dtype",
+          "kind": "str",
+          "value": "f32"
+        },
+        {
+          "key": "scale",
+          "kind": "f64",
+          "value": 0.35355339059327373
+        }
+      ],
+      "scratch_bytes": 0
+    }
+  ],
+  "checks": [
+    {
+      "view": "out",
+      "expected": {
+        "path": "blobs/282b6d414ed15a0ce806d0579c90157d7a93b9395e07a7bb72ee9d551621ed2f",
+        "sha256": "282b6d414ed15a0ce806d0579c90157d7a93b9395e07a7bb72ee9d551621ed2f",
+        "bytes": 192
+      },
+      "mode": "float",
+      "atol": 3e-05,
+      "rtol": 3e-05,
+      "rel_l2": 3e-05,
+      "nonfinite": "reject"
+    }
+  ],
+  "contract": {
+    "pointer_fields_complete": true,
+    "hidden_state": "none",
+    "execution": "ordered-launchers"
+  }
+}

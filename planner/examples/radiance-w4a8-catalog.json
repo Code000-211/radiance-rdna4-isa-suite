@@ -1,0 +1,874 @@
+{
+  "candidates": [
+    {
+      "arch": "gfx1201",
+      "backend": "aql",
+      "compute_path": "wmma_i8",
+      "contract": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+      "family": "radiance-w4a8-prefill",
+      "format": {
+        "a_bits": 8,
+        "activation_scale_bytes": 4,
+        "b_bits": 4,
+        "out_bits": 16,
+        "weight_group": 128,
+        "weight_scale_bytes": 2
+      },
+      "id": "w4a8-prefill-tile0",
+      "identity": {
+        "kind": "source",
+        "provenance": "hash-pinned source adapter; not compiled binary",
+        "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+      },
+      "known_issues": [
+        "scalar_scale_tail"
+      ],
+      "launch": {
+        "op": "gemm_nt_q",
+        "params": {
+          "dtype": "w4a8",
+          "group": 128,
+          "tile": 0
+        },
+        "row": "gemm_w4a8_prefill"
+      },
+      "lds_bytes": 32768,
+      "lds_bytes_per_kblock": 98304,
+      "matrix_alu_overlap": false,
+      "multiples": {
+        "K": 128,
+        "M": 1,
+        "N": 256
+      },
+      "notes": "WM=2, WN=8, TM=4, TN=2, OPT=2, GSW=1. Registry additionally requires N%256, even for BN=128.",
+      "stages": 2,
+      "tail": {
+        "K": false,
+        "M": true,
+        "N": false
+      },
+      "tile": [
+        128,
+        256,
+        64
+      ],
+      "unmodeled": [
+        "scale-fold/address instructions not fully counted",
+        "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+        "no GPU correctness/ISA result for this source arm"
+      ],
+      "unpack_ops_per_weight": 0.375,
+      "wave_size": 32,
+      "waves_per_group": 16,
+      "work_policy": "full_tiles"
+    },
+    {
+      "arch": "gfx1201",
+      "backend": "aql",
+      "compute_path": "wmma_i8",
+      "contract": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+      "family": "radiance-w4a8-prefill",
+      "format": {
+        "a_bits": 8,
+        "activation_scale_bytes": 4,
+        "b_bits": 4,
+        "out_bits": 16,
+        "weight_group": 128,
+        "weight_scale_bytes": 2
+      },
+      "id": "w4a8-prefill-tile2",
+      "identity": {
+        "kind": "source",
+        "provenance": "hash-pinned source adapter; not compiled binary",
+        "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+      },
+      "known_issues": [
+        "scalar_scale_tail"
+      ],
+      "launch": {
+        "op": "gemm_nt_q",
+        "params": {
+          "dtype": "w4a8",
+          "group": 128,
+          "tile": 2
+        },
+        "row": "gemm_w4a8_prefill"
+      },
+      "lds_bytes": 32768,
+      "lds_bytes_per_kblock": 98304,
+      "matrix_alu_overlap": false,
+      "multiples": {
+        "K": 128,
+        "M": 1,
+        "N": 256
+      },
+      "notes": "WM=2, WN=8, TM=4, TN=2, OPT=8, GSW=1. Registry additionally requires N%256, even for BN=128.",
+      "stages": 2,
+      "tail": {
+        "K": false,
+        "M": true,
+        "N": false
+      },
+      "tile": [
+        128,
+        256,
+        64
+      ],
+      "unmodeled": [
+        "scale-fold/address instructions not fully counted",
+        "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+        "no GPU correctness/ISA result for this source arm"
+      ],
+      "unpack_ops_per_weight": 0.375,
+      "wave_size": 32,
+      "waves_per_group": 16,
+      "work_policy": "full_tiles"
+    },
+    {
+      "arch": "gfx1201",
+      "backend": "aql",
+      "compute_path": "wmma_i8",
+      "contract": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+      "family": "radiance-w4a8-prefill",
+      "format": {
+        "a_bits": 8,
+        "activation_scale_bytes": 4,
+        "b_bits": 4,
+        "out_bits": 16,
+        "weight_group": 128,
+        "weight_scale_bytes": 2
+      },
+      "id": "w4a8-prefill-tile3",
+      "identity": {
+        "kind": "source",
+        "provenance": "hash-pinned source adapter; not compiled binary",
+        "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+      },
+      "known_issues": [
+        "scalar_scale_tail"
+      ],
+      "launch": {
+        "op": "gemm_nt_q",
+        "params": {
+          "dtype": "w4a8",
+          "group": 128,
+          "tile": 3
+        },
+        "row": "gemm_w4a8_prefill"
+      },
+      "lds_bytes": 32768,
+      "lds_bytes_per_kblock": 98304,
+      "matrix_alu_overlap": false,
+      "multiples": {
+        "K": 128,
+        "M": 1,
+        "N": 256
+      },
+      "notes": "WM=2, WN=8, TM=4, TN=2, OPT=10, GSW=1. Registry additionally requires N%256, even for BN=128.",
+      "stages": 2,
+      "tail": {
+        "K": false,
+        "M": true,
+        "N": false
+      },
+      "tile": [
+        128,
+        256,
+        64
+      ],
+      "unmodeled": [
+        "scale-fold/address instructions not fully counted",
+        "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+        "no GPU correctness/ISA result for this source arm"
+      ],
+      "unpack_ops_per_weight": 0.375,
+      "wave_size": 32,
+      "waves_per_group": 16,
+      "work_policy": "full_tiles"
+    },
+    {
+      "arch": "gfx1201",
+      "backend": "aql",
+      "compute_path": "wmma_i8",
+      "contract": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+      "family": "radiance-w4a8-prefill",
+      "format": {
+        "a_bits": 8,
+        "activation_scale_bytes": 4,
+        "b_bits": 4,
+        "out_bits": 16,
+        "weight_group": 128,
+        "weight_scale_bytes": 2
+      },
+      "id": "w4a8-prefill-tile5",
+      "identity": {
+        "kind": "source",
+        "provenance": "hash-pinned source adapter; not compiled binary",
+        "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+      },
+      "known_issues": [
+        "scalar_scale_tail"
+      ],
+      "launch": {
+        "op": "gemm_nt_q",
+        "params": {
+          "dtype": "w4a8",
+          "group": 128,
+          "tile": 5
+        },
+        "row": "gemm_w4a8_prefill"
+      },
+      "lds_bytes": 32768,
+      "lds_bytes_per_kblock": 98304,
+      "matrix_alu_overlap": false,
+      "multiples": {
+        "K": 128,
+        "M": 1,
+        "N": 256
+      },
+      "notes": "WM=2, WN=8, TM=4, TN=2, OPT=3, GSW=4. Registry additionally requires N%256, even for BN=128.",
+      "stages": 2,
+      "tail": {
+        "K": false,
+        "M": true,
+        "N": false
+      },
+      "tile": [
+        128,
+        256,
+        64
+      ],
+      "unmodeled": [
+        "scale-fold/address instructions not fully counted",
+        "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+        "no GPU correctness/ISA result for this source arm"
+      ],
+      "unpack_ops_per_weight": 0.375,
+      "wave_size": 32,
+      "waves_per_group": 16,
+      "work_policy": "full_tiles"
+    },
+    {
+      "arch": "gfx1201",
+      "backend": "aql",
+      "compute_path": "wmma_i8",
+      "contract": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+      "family": "radiance-w4a8-prefill",
+      "format": {
+        "a_bits": 8,
+        "activation_scale_bytes": 4,
+        "b_bits": 4,
+        "out_bits": 16,
+        "weight_group": 128,
+        "weight_scale_bytes": 2
+      },
+      "id": "w4a8-prefill-tile6",
+      "identity": {
+        "kind": "source",
+        "provenance": "hash-pinned source adapter; not compiled binary",
+        "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+      },
+      "known_issues": [
+        "scalar_scale_tail"
+      ],
+      "launch": {
+        "op": "gemm_nt_q",
+        "params": {
+          "dtype": "w4a8",
+          "group": 128,
+          "tile": 6
+        },
+        "row": "gemm_w4a8_prefill"
+      },
+      "lds_bytes": 32768,
+      "lds_bytes_per_kblock": 98304,
+      "matrix_alu_overlap": false,
+      "multiples": {
+        "K": 128,
+        "M": 1,
+        "N": 256
+      },
+      "notes": "WM=2, WN=8, TM=4, TN=2, OPT=3, GSW=8. Registry additionally requires N%256, even for BN=128.",
+      "stages": 2,
+      "tail": {
+        "K": false,
+        "M": true,
+        "N": false
+      },
+      "tile": [
+        128,
+        256,
+        64
+      ],
+      "unmodeled": [
+        "scale-fold/address instructions not fully counted",
+        "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+        "no GPU correctness/ISA result for this source arm"
+      ],
+      "unpack_ops_per_weight": 0.375,
+      "wave_size": 32,
+      "waves_per_group": 16,
+      "work_policy": "full_tiles"
+    },
+    {
+      "arch": "gfx1201",
+      "backend": "aql",
+      "compute_path": "wmma_i8",
+      "contract": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+      "family": "radiance-w4a8-prefill",
+      "format": {
+        "a_bits": 8,
+        "activation_scale_bytes": 4,
+        "b_bits": 4,
+        "out_bits": 16,
+        "weight_group": 128,
+        "weight_scale_bytes": 2
+      },
+      "id": "w4a8-prefill-tile8",
+      "identity": {
+        "kind": "source",
+        "provenance": "hash-pinned source adapter; not compiled binary",
+        "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+      },
+      "known_issues": [
+        "scalar_scale_tail"
+      ],
+      "launch": {
+        "op": "gemm_nt_q",
+        "params": {
+          "dtype": "w4a8",
+          "group": 128,
+          "tile": 8
+        },
+        "row": "gemm_w4a8_prefill"
+      },
+      "lds_bytes": 24576,
+      "lds_bytes_per_kblock": 61440,
+      "matrix_alu_overlap": false,
+      "multiples": {
+        "K": 128,
+        "M": 1,
+        "N": 256
+      },
+      "notes": "WM=2, WN=8, TM=2, TN=2, OPT=2, GSW=1. Registry additionally requires N%256, even for BN=128.",
+      "stages": 2,
+      "tail": {
+        "K": false,
+        "M": true,
+        "N": false
+      },
+      "tile": [
+        64,
+        256,
+        64
+      ],
+      "unmodeled": [
+        "scale-fold/address instructions not fully counted",
+        "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+        "no GPU correctness/ISA result for this source arm"
+      ],
+      "unpack_ops_per_weight": 0.375,
+      "wave_size": 32,
+      "waves_per_group": 16,
+      "work_policy": "full_tiles"
+    },
+    {
+      "arch": "gfx1201",
+      "backend": "aql",
+      "compute_path": "wmma_i8",
+      "contract": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+      "family": "radiance-w4a8-prefill",
+      "format": {
+        "a_bits": 8,
+        "activation_scale_bytes": 4,
+        "b_bits": 4,
+        "out_bits": 16,
+        "weight_group": 128,
+        "weight_scale_bytes": 2
+      },
+      "id": "w4a8-prefill-tile9",
+      "identity": {
+        "kind": "source",
+        "provenance": "hash-pinned source adapter; not compiled binary",
+        "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+      },
+      "known_issues": [
+        "scalar_scale_tail"
+      ],
+      "launch": {
+        "op": "gemm_nt_q",
+        "params": {
+          "dtype": "w4a8",
+          "group": 128,
+          "tile": 9
+        },
+        "row": "gemm_w4a8_prefill"
+      },
+      "lds_bytes": 28672,
+      "lds_bytes_per_kblock": 79872,
+      "matrix_alu_overlap": false,
+      "multiples": {
+        "K": 128,
+        "M": 1,
+        "N": 256
+      },
+      "notes": "WM=2, WN=8, TM=3, TN=2, OPT=2, GSW=1. Registry additionally requires N%256, even for BN=128.",
+      "stages": 2,
+      "tail": {
+        "K": false,
+        "M": true,
+        "N": false
+      },
+      "tile": [
+        96,
+        256,
+        64
+      ],
+      "unmodeled": [
+        "scale-fold/address instructions not fully counted",
+        "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+        "no GPU correctness/ISA result for this source arm"
+      ],
+      "unpack_ops_per_weight": 0.375,
+      "wave_size": 32,
+      "waves_per_group": 16,
+      "work_policy": "full_tiles"
+    },
+    {
+      "arch": "gfx1201",
+      "backend": "aql",
+      "compute_path": "wmma_i8",
+      "contract": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+      "family": "radiance-w4a8-prefill",
+      "format": {
+        "a_bits": 8,
+        "activation_scale_bytes": 4,
+        "b_bits": 4,
+        "out_bits": 16,
+        "weight_group": 128,
+        "weight_scale_bytes": 2
+      },
+      "id": "w4a8-prefill-tile10",
+      "identity": {
+        "kind": "source",
+        "provenance": "hash-pinned source adapter; not compiled binary",
+        "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+      },
+      "known_issues": [
+        "scalar_scale_tail"
+      ],
+      "launch": {
+        "op": "gemm_nt_q",
+        "params": {
+          "dtype": "w4a8",
+          "group": 128,
+          "tile": 10
+        },
+        "row": "gemm_w4a8_prefill"
+      },
+      "lds_bytes": 24576,
+      "lds_bytes_per_kblock": 86016,
+      "matrix_alu_overlap": false,
+      "multiples": {
+        "K": 128,
+        "M": 1,
+        "N": 256
+      },
+      "notes": "WM=2, WN=8, TM=4, TN=1, OPT=2, GSW=1. Registry additionally requires N%256, even for BN=128.",
+      "stages": 2,
+      "tail": {
+        "K": false,
+        "M": true,
+        "N": false
+      },
+      "tile": [
+        128,
+        128,
+        64
+      ],
+      "unmodeled": [
+        "scale-fold/address instructions not fully counted",
+        "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+        "no GPU correctness/ISA result for this source arm"
+      ],
+      "unpack_ops_per_weight": 0.375,
+      "wave_size": 32,
+      "waves_per_group": 16,
+      "work_policy": "full_tiles"
+    },
+    {
+      "arch": "gfx1201",
+      "backend": "aql",
+      "compute_path": "wmma_i8",
+      "contract": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+      "family": "radiance-w4a8-prefill",
+      "format": {
+        "a_bits": 8,
+        "activation_scale_bytes": 4,
+        "b_bits": 4,
+        "out_bits": 16,
+        "weight_group": 128,
+        "weight_scale_bytes": 2
+      },
+      "id": "w4a8-prefill-tile13",
+      "identity": {
+        "kind": "source",
+        "provenance": "hash-pinned source adapter; not compiled binary",
+        "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+      },
+      "known_issues": [
+        "scalar_scale_tail"
+      ],
+      "launch": {
+        "op": "gemm_nt_q",
+        "params": {
+          "dtype": "w4a8",
+          "group": 128,
+          "tile": 13
+        },
+        "row": "gemm_w4a8_prefill"
+      },
+      "lds_bytes": 24576,
+      "lds_bytes_per_kblock": 53248,
+      "matrix_alu_overlap": false,
+      "multiples": {
+        "K": 128,
+        "M": 1,
+        "N": 256
+      },
+      "notes": "WM=1, WN=8, TM=4, TN=2, OPT=2, GSW=1. Registry additionally requires N%256, even for BN=128.",
+      "stages": 2,
+      "tail": {
+        "K": false,
+        "M": true,
+        "N": false
+      },
+      "tile": [
+        64,
+        256,
+        64
+      ],
+      "unmodeled": [
+        "scale-fold/address instructions not fully counted",
+        "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+        "no GPU correctness/ISA result for this source arm"
+      ],
+      "unpack_ops_per_weight": 0.375,
+      "wave_size": 32,
+      "waves_per_group": 8,
+      "work_policy": "full_tiles"
+    },
+    {
+      "arch": "gfx1201",
+      "backend": "aql",
+      "compute_path": "wmma_i8",
+      "contract": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+      "family": "radiance-w4a8-prefill",
+      "format": {
+        "a_bits": 8,
+        "activation_scale_bytes": 4,
+        "b_bits": 4,
+        "out_bits": 16,
+        "weight_group": 128,
+        "weight_scale_bytes": 2
+      },
+      "id": "w4a8-prefill-tile14",
+      "identity": {
+        "kind": "source",
+        "provenance": "hash-pinned source adapter; not compiled binary",
+        "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+      },
+      "known_issues": [
+        "scalar_scale_tail"
+      ],
+      "launch": {
+        "op": "gemm_nt_q",
+        "params": {
+          "dtype": "w4a8",
+          "group": 128,
+          "tile": 14
+        },
+        "row": "gemm_w4a8_prefill"
+      },
+      "lds_bytes": 40960,
+      "lds_bytes_per_kblock": 159744,
+      "matrix_alu_overlap": false,
+      "multiples": {
+        "K": 128,
+        "M": 1,
+        "N": 256
+      },
+      "notes": "WM=2, WN=8, TM=8, TN=1, OPT=2, GSW=1. Registry additionally requires N%256, even for BN=128.",
+      "stages": 2,
+      "tail": {
+        "K": false,
+        "M": true,
+        "N": false
+      },
+      "tile": [
+        256,
+        128,
+        64
+      ],
+      "unmodeled": [
+        "scale-fold/address instructions not fully counted",
+        "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+        "no GPU correctness/ISA result for this source arm"
+      ],
+      "unpack_ops_per_weight": 0.375,
+      "wave_size": 32,
+      "waves_per_group": 16,
+      "work_policy": "full_tiles"
+    },
+    {
+      "arch": "gfx1201",
+      "backend": "aql",
+      "compute_path": "wmma_i8",
+      "contract": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+      "family": "radiance-w4a8-prefill",
+      "format": {
+        "a_bits": 8,
+        "activation_scale_bytes": 4,
+        "b_bits": 4,
+        "out_bits": 16,
+        "weight_group": 128,
+        "weight_scale_bytes": 2
+      },
+      "id": "w4a8-prefill-tile27",
+      "identity": {
+        "kind": "source",
+        "provenance": "hash-pinned source adapter; not compiled binary",
+        "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+      },
+      "known_issues": [],
+      "launch": {
+        "op": "gemm_nt_q",
+        "params": {
+          "dtype": "w4a8",
+          "group": 128,
+          "tile": 27
+        },
+        "row": "gemm_w4a8_prefill"
+      },
+      "lds_bytes": 32768,
+      "lds_bytes_per_kblock": 98304,
+      "matrix_alu_overlap": false,
+      "multiples": {
+        "K": 128,
+        "M": 1,
+        "N": 256
+      },
+      "notes": "WM=2, WN=8, TM=4, TN=2, OPT=130, GSW=1. Registry additionally requires N%256, even for BN=128.",
+      "stages": 2,
+      "tail": {
+        "K": false,
+        "M": true,
+        "N": false
+      },
+      "tile": [
+        128,
+        256,
+        64
+      ],
+      "unmodeled": [
+        "scale-fold/address instructions not fully counted",
+        "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+        "no GPU correctness/ISA result for this source arm"
+      ],
+      "unpack_ops_per_weight": 0.375,
+      "wave_size": 32,
+      "waves_per_group": 16,
+      "work_policy": "full_tiles"
+    },
+    {
+      "arch": "gfx1201",
+      "backend": "aql",
+      "compute_path": "wmma_i8",
+      "contract": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+      "family": "radiance-w4a8-prefill",
+      "format": {
+        "a_bits": 8,
+        "activation_scale_bytes": 4,
+        "b_bits": 4,
+        "out_bits": 16,
+        "weight_group": 128,
+        "weight_scale_bytes": 2
+      },
+      "id": "w4a8-prefill-tile28",
+      "identity": {
+        "kind": "source",
+        "provenance": "hash-pinned source adapter; not compiled binary",
+        "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+      },
+      "known_issues": [],
+      "launch": {
+        "op": "gemm_nt_q",
+        "params": {
+          "dtype": "w4a8",
+          "group": 128,
+          "tile": 28
+        },
+        "row": "gemm_w4a8_prefill"
+      },
+      "lds_bytes": 32768,
+      "lds_bytes_per_kblock": 98304,
+      "matrix_alu_overlap": false,
+      "multiples": {
+        "K": 128,
+        "M": 1,
+        "N": 256
+      },
+      "notes": "WM=2, WN=8, TM=4, TN=2, OPT=136, GSW=1. Registry additionally requires N%256, even for BN=128.",
+      "stages": 2,
+      "tail": {
+        "K": false,
+        "M": true,
+        "N": false
+      },
+      "tile": [
+        128,
+        256,
+        64
+      ],
+      "unmodeled": [
+        "scale-fold/address instructions not fully counted",
+        "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+        "no GPU correctness/ISA result for this source arm"
+      ],
+      "unpack_ops_per_weight": 0.375,
+      "wave_size": 32,
+      "waves_per_group": 16,
+      "work_policy": "full_tiles"
+    },
+    {
+      "arch": "gfx1201",
+      "backend": "aql",
+      "compute_path": "wmma_i8",
+      "contract": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+      "family": "radiance-w4a8-prefill",
+      "format": {
+        "a_bits": 8,
+        "activation_scale_bytes": 4,
+        "b_bits": 4,
+        "out_bits": 16,
+        "weight_group": 128,
+        "weight_scale_bytes": 2
+      },
+      "id": "w4a8-prefill-tile29",
+      "identity": {
+        "kind": "source",
+        "provenance": "hash-pinned source adapter; not compiled binary",
+        "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+      },
+      "known_issues": [],
+      "launch": {
+        "op": "gemm_nt_q",
+        "params": {
+          "dtype": "w4a8",
+          "group": 128,
+          "tile": 29
+        },
+        "row": "gemm_w4a8_prefill"
+      },
+      "lds_bytes": 32768,
+      "lds_bytes_per_kblock": 98304,
+      "matrix_alu_overlap": false,
+      "multiples": {
+        "K": 128,
+        "M": 1,
+        "N": 256
+      },
+      "notes": "WM=2, WN=8, TM=4, TN=2, OPT=392, GSW=1. Registry additionally requires N%256, even for BN=128.",
+      "stages": 2,
+      "tail": {
+        "K": false,
+        "M": true,
+        "N": false
+      },
+      "tile": [
+        128,
+        256,
+        64
+      ],
+      "unmodeled": [
+        "scale-fold/address instructions not fully counted",
+        "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+        "no GPU correctness/ISA result for this source arm"
+      ],
+      "unpack_ops_per_weight": 0.375,
+      "wave_size": 32,
+      "waves_per_group": 16,
+      "work_policy": "full_tiles"
+    },
+    {
+      "arch": "gfx1201",
+      "backend": "aql",
+      "compute_path": "wmma_i8",
+      "contract": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+      "family": "radiance-w4a8-prefill",
+      "format": {
+        "a_bits": 8,
+        "activation_scale_bytes": 4,
+        "b_bits": 4,
+        "out_bits": 16,
+        "weight_group": 128,
+        "weight_scale_bytes": 2
+      },
+      "id": "w4a8-prefill-tile30",
+      "identity": {
+        "kind": "source",
+        "provenance": "hash-pinned source adapter; not compiled binary",
+        "sha256": "aca01996b93c181ef7655624bb62193f15ddaded77c99a2d5d5634e08c458efa"
+      },
+      "known_issues": [],
+      "launch": {
+        "op": "gemm_nt_q",
+        "params": {
+          "dtype": "w4a8",
+          "group": 128,
+          "tile": 30
+        },
+        "row": "gemm_w4a8_prefill"
+      },
+      "lds_bytes": 32768,
+      "lds_bytes_per_kblock": 98304,
+      "matrix_alu_overlap": false,
+      "multiples": {
+        "K": 128,
+        "M": 1,
+        "N": 256
+      },
+      "notes": "WM=2, WN=8, TM=4, TN=2, OPT=904, GSW=1. Registry additionally requires N%256, even for BN=128.",
+      "stages": 2,
+      "tail": {
+        "K": false,
+        "M": true,
+        "N": false
+      },
+      "tile": [
+        128,
+        256,
+        64
+      ],
+      "unmodeled": [
+        "scale-fold/address instructions not fully counted",
+        "cache swizzle/hints and b64/b128 instruction scheduling not inferred",
+        "no GPU correctness/ISA result for this source arm"
+      ],
+      "unpack_ops_per_weight": 0.375,
+      "wave_size": 32,
+      "waves_per_group": 16,
+      "work_policy": "full_tiles"
+    }
+  ],
+  "notes": "Only this family is extracted; not all Radiance kernels. Source-known scalar-scale tails excluded. No auto dispatch changes.",
+  "schema": "radiance-planner-catalog/1",
+  "source": {
+    "adapter": "reviewed-w4a8-prefill/1",
+    "files": {
+      "libr4d/r4d_gemm_args.h": "1e3e58015de472dbf7bcc3b9fc77cefd7308b85525ea14f88da45904ce621e1e",
+      "libr4d/r4d_gemm_w4a8_prefill.hip": "775590fdfd31b77fee636228ba820ff8b9943610b55bf0b1ee86d68370597a6e",
+      "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+    }
+  }
+}

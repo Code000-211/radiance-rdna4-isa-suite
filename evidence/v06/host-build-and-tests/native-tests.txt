@@ -1,0 +1,48 @@
+test_checkpoint_cannot_be_silently_ignored (test_hardening.HardeningTests.test_checkpoint_cannot_be_silently_ignored) ... ok
+test_diagnostic_only_has_no_timing (test_hardening.HardeningTests.test_diagnostic_only_has_no_timing) ... ok
+test_disabled_diagnostics_are_visible (test_hardening.HardeningTests.test_disabled_diagnostics_are_visible) ... ok
+test_explicit_checkpoint_good (test_hardening.HardeningTests.test_explicit_checkpoint_good) ... ok
+test_explicit_checkpoint_wrong (test_hardening.HardeningTests.test_explicit_checkpoint_wrong) ... ok
+test_guards_do_not_claim_read_detection (test_hardening.HardeningTests.test_guards_do_not_claim_read_detection) ... ok
+test_kernel_initialized_scratch_good_control (test_hardening.HardeningTests.test_kernel_initialized_scratch_good_control) ... ok
+test_later_write_does_not_hide_earlier_readonly_write (test_hardening.HardeningTests.test_later_write_does_not_hide_earlier_readonly_write) ... ok
+test_legitimate_later_write_is_not_rejected (test_hardening.HardeningTests.test_legitimate_later_write_is_not_rejected) ... ok
+test_long_explicit_inplace_state_sequence (test_hardening.HardeningTests.test_long_explicit_inplace_state_sequence) ... ok
+test_no_store_caught_despite_matching_initial_output (test_hardening.HardeningTests.test_no_store_caught_despite_matching_initial_output) ... ok
+test_noninstrumented_worker_refuses_read_check (test_hardening.HardeningTests.test_noninstrumented_worker_refuses_read_check) ... ok
+test_partial_store_caught_despite_matching_initial_tail (test_hardening.HardeningTests.test_partial_store_caught_despite_matching_initial_tail) ... ok
+test_readable_alias_not_poisoned (test_hardening.HardeningTests.test_readable_alias_not_poisoned) ... ok
+test_scratch_read_before_initialization_caught (test_hardening.HardeningTests.test_scratch_read_before_initialization_caught) ... ok
+test_three_diagnostics_and_four_ordinary_checks (test_hardening.HardeningTests.test_three_diagnostics_and_four_ordinary_checks) ... ok
+test_unknown_scratch_contract_never_green (test_hardening.HardeningTests.test_unknown_scratch_contract_never_green) ... ok
+test_zeroed_scratch_is_valid_only_with_explicit_contract (test_hardening.HardeningTests.test_zeroed_scratch_is_valid_only_with_explicit_contract) ... ok
+test_actual_libref_rows (test_inventory.InventoryTests.test_actual_libref_rows) ... ok
+test_not_a_plugin_refused (test_inventory.InventoryTests.test_not_a_plugin_refused) ... ok
+test_output_overwrite_refused (test_inventory.InventoryTests.test_output_overwrite_refused) ... ok
+test_alias_preserved (test_native.NativeTests.test_alias_preserved) ... ok
+test_allocation_redzone (test_native.NativeTests.test_allocation_redzone) ... ok
+test_capture_fresh_directory (test_native.NativeTests.test_capture_fresh_directory) ... ok
+test_capture_real_libref_then_replay (test_native.NativeTests.test_capture_real_libref_then_replay) ... ok
+test_frozen_tunable_outside_schema (test_native.NativeTests.test_frozen_tunable_outside_schema) ... ok
+test_hidden_state_row_refused (test_native.NativeTests.test_hidden_state_row_refused) ... ok
+test_hung_worker_stopped (test_native.NativeTests.test_hung_worker_stopped) ... ok
+test_illegal_tunable_refused (test_native.NativeTests.test_illegal_tunable_refused) ... ok
+test_immutable_input (test_native.NativeTests.test_immutable_input) ... ok
+test_indirect_pointer_relocation (test_native.NativeTests.test_indirect_pointer_relocation) ... ok
+test_inf_is_not_nan (test_native.NativeTests.test_inf_is_not_nan) ... ok
+test_libref_chain_and_restore (test_native.NativeTests.test_libref_chain_and_restore) ... ok
+test_matching_nan_explicit (test_native.NativeTests.test_matching_nan_explicit) ... ok
+test_missing_tunable_refused (test_native.NativeTests.test_missing_tunable_refused) ... ok
+test_nan_rejected (test_native.NativeTests.test_nan_rejected) ... ok
+test_real_registry_and_host_copy (test_native.NativeTests.test_real_registry_and_host_copy) ... ok
+test_scratch_guard (test_native.NativeTests.test_scratch_guard) ... ok
+test_scratch_restored_each_iteration (test_native.NativeTests.test_scratch_restored_each_iteration) ... ok
+test_scratch_underallocation_refused (test_native.NativeTests.test_scratch_underallocation_refused) ... ok
+test_unknown_kernel_refused (test_native.NativeTests.test_unknown_kernel_refused) ... ok
+test_unknown_parameter_refused (test_native.NativeTests.test_unknown_parameter_refused) ... ok
+test_wrong_output_fails (test_native.NativeTests.test_wrong_output_fails) ... ok
+
+----------------------------------------------------------------------
+Ran 43 tests in 1.292s
+
+OK

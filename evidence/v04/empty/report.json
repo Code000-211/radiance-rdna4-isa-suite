@@ -1,0 +1,64 @@
+{
+  "coverage": {
+    "all_source_instantiations_proved": false,
+    "analyzed_kernels": 0,
+    "decoded_bytes": 0,
+    "expected_bytes": 0,
+    "expected_kernels": 0,
+    "fully_decoded_kernels": 0,
+    "helper_call_graph_proved": false,
+    "objects": 0
+  },
+  "decoder": {
+    "kind": "library",
+    "path": "libLLVM.so.19.1"
+  },
+  "exit_code": 2,
+  "finding_counts": {
+    "error": 0,
+    "incomplete": 3,
+    "info": 1,
+    "review": 0
+  },
+  "full_isa_certification": false,
+  "global_findings": [
+    {
+      "message": "no binary input candidates discovered",
+      "pc": null,
+      "rule": "COLLECTION",
+      "severity": "incomplete",
+      "source": "AMD RDNA4 ISA \u00a7\u00a73.2.1,5.5, printed pp.14,47\u201348"
+    },
+    {
+      "message": "zero enumerated target kernels",
+      "pc": null,
+      "rule": "COLLECTION",
+      "severity": "incomplete",
+      "source": "AMD RDNA4 ISA \u00a7\u00a73.2.1,5.5, printed pp.14,47\u201348"
+    },
+    {
+      "message": "zero expected target kernels",
+      "pc": null,
+      "rule": "EMPTY_COVERAGE",
+      "severity": "incomplete",
+      "source": "AMD RDNA4 ISA \u00a7\u00a73.2.1,5.5, printed pp.14,47\u201348"
+    },
+    {
+      "message": "runtime-resolved kernels not reconciled; scope is supplied build artifacts only",
+      "pc": null,
+      "rule": "RUNTIME_NOT_CAPTURED",
+      "severity": "info",
+      "source": "AMD RDNA4 ISA \u00a7\u00a73.2.1,5.5, printed pp.14,47\u201348"
+    }
+  ],
+  "kernels": [],
+  "manifest_sha256": "a0efe2489fbe7335ab8f640c0cd536e9e1736b0a497f947e8adf5e64d854185b",
+  "runtime_coverage": {
+    "exhaustive_workload_coverage": false,
+    "mode": "not-collected"
+  },
+  "schema": "radiance-rdna4-isa/2",
+  "status": "INCOMPLETE",
+  "strict_review": true,
+  "suite_version": "0.2.0"
+}

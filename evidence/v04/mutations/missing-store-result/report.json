@@ -1,0 +1,93 @@
+{
+  "command": [
+    "/mnt/data/work_v04/build-host/rad-kbench-replay",
+    "/mnt/data/work_v04/mutations-final/missing-store-result/worker-plan.json"
+  ],
+  "exit_code": 1,
+  "fixture": {
+    "all_radiance_kernels_covered": false,
+    "allocation_bytes_including_scratch": 8,
+    "blob_bytes": 12,
+    "id": "missing-store",
+    "kernel_nodes": [
+      "tested"
+    ],
+    "kernel_rows": [
+      "replay_test:audit_no_store"
+    ],
+    "manifest_sha256": "1a5f276929c29f2e4f2e36acb6d0574c89dc7d70878ce5c6b0eb2508f6224788",
+    "node_count": 1,
+    "provenance": {
+      "kind": "synthetic",
+      "note": "Deliberately faulty HOST mutation/control; never GPU code.",
+      "reference": "independent"
+    },
+    "runtime_executed": false,
+    "schema": "radiance-kernel-replay/1",
+    "status": "FIXTURE_VALID",
+    "stream_count": 1
+  },
+  "host": {
+    "platform": "Linux-6.18.55-x86_64-with-glibc2.41",
+    "python": "3.13.5"
+  },
+  "isa": {
+    "status": "NOT_APPLICABLE_HOST"
+  },
+  "options": {
+    "diagnostic_only": false,
+    "diagnostics": "contracts",
+    "gate": false,
+    "memory_check": "none",
+    "repetitions": 3,
+    "timeout_seconds": 120,
+    "trace_dispatches": false,
+    "warmups": 1
+  },
+  "production_equivalence_proved": false,
+  "runtime": {
+    "backend": "host",
+    "checked_iterations": 0,
+    "checks_per_iteration": 1,
+    "device": {
+      "arch": "host",
+      "dma_lane": "",
+      "n_cu": 5,
+      "name": "AMD EPYC 9V74 80-Core Processor",
+      "ordinal": 0,
+      "pci_address": "",
+      "runtime_version": "",
+      "vram_bytes": 3124326400
+    },
+    "diagnostics": {
+      "allocation_byte_bounds_not_scalar_element_bounds": true,
+      "completed_passes": 1,
+      "intermediate_equality": "explicit checkpoint tolerances, then exact bytes for remaining writes against same-candidate baseline",
+      "output_poison_variants": 0,
+      "per_operation_write_contracts": false,
+      "race_freedom_proved": false,
+      "read_checks": "NOT_CHECKED",
+      "scratch_contracts": false,
+      "status": "RUNNING"
+    },
+    "error": "diagnostic output/scratch invariance failed at tested; exact intermediate bytes differ (not a performance or race-freedom claim)",
+    "fixture_sha256": "1a5f276929c29f2e4f2e36acb6d0574c89dc7d70878ce5c6b0eb2508f6224788",
+    "samples_us": [],
+    "schema": "radiance-replay-worker-result/1",
+    "status": "FAIL",
+    "worker_build": {
+      "compiler": "14.2.0",
+      "cxx": 202002,
+      "host_asan": false,
+      "radiance_abi": 30
+    }
+  },
+  "runtime_executed": true,
+  "schema": "radiance-replay-result/1",
+  "status": "FAIL",
+  "telemetry_after": [],
+  "telemetry_before": [],
+  "version": "0.4.0",
+  "wall_seconds": 0.01803215200015984,
+  "worker_sha256": "6db055e6d0735d84c11e6472f5cdf363b20900b1b572824f4cad15713b1debc4"
+}

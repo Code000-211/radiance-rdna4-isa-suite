@@ -1,0 +1,27 @@
+test_alias_preserved (test_native.NativeTests.test_alias_preserved) ... ok
+test_allocation_redzone (test_native.NativeTests.test_allocation_redzone) ... ok
+test_capture_fresh_directory (test_native.NativeTests.test_capture_fresh_directory) ... ok
+test_capture_real_libref_then_replay (test_native.NativeTests.test_capture_real_libref_then_replay) ... ok
+test_frozen_tunable_outside_schema (test_native.NativeTests.test_frozen_tunable_outside_schema) ... ok
+test_hidden_state_row_refused (test_native.NativeTests.test_hidden_state_row_refused) ... ok
+test_hung_worker_stopped (test_native.NativeTests.test_hung_worker_stopped) ... ok
+test_illegal_tunable_refused (test_native.NativeTests.test_illegal_tunable_refused) ... ok
+test_immutable_input (test_native.NativeTests.test_immutable_input) ... ok
+test_indirect_pointer_relocation (test_native.NativeTests.test_indirect_pointer_relocation) ... ok
+test_inf_is_not_nan (test_native.NativeTests.test_inf_is_not_nan) ... ok
+test_libref_chain_and_restore (test_native.NativeTests.test_libref_chain_and_restore) ... ok
+test_matching_nan_explicit (test_native.NativeTests.test_matching_nan_explicit) ... ok
+test_missing_tunable_refused (test_native.NativeTests.test_missing_tunable_refused) ... ok
+test_nan_rejected (test_native.NativeTests.test_nan_rejected) ... ok
+test_real_registry_and_host_copy (test_native.NativeTests.test_real_registry_and_host_copy) ... ok
+test_scratch_guard (test_native.NativeTests.test_scratch_guard) ... ok
+test_scratch_restored_each_iteration (test_native.NativeTests.test_scratch_restored_each_iteration) ... ok
+test_scratch_underallocation_refused (test_native.NativeTests.test_scratch_underallocation_refused) ... ok
+test_unknown_kernel_refused (test_native.NativeTests.test_unknown_kernel_refused) ... ok
+test_unknown_parameter_refused (test_native.NativeTests.test_unknown_parameter_refused) ... ok
+test_wrong_output_fails (test_native.NativeTests.test_wrong_output_fails) ... ok
+
+----------------------------------------------------------------------
+Ran 22 tests in 0.832s
+
+OK

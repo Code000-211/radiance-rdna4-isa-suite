@@ -1,0 +1,127 @@
+{
+  "command": [
+    "/mnt/data/planner_work/host/rad-kbench-replay",
+    "/mnt/data/planner_work/cpu-comparison/runs/cpu-M64-N64-K128-panel1/worker-plan.json"
+  ],
+  "exit_code": 0,
+  "fixture": {
+    "all_radiance_kernels_covered": false,
+    "allocation_bytes_including_scratch": 81920,
+    "blob_bytes": 98304,
+    "id": "cpu-M64-N64-K128-panel1",
+    "kernel_nodes": [
+      "gemm"
+    ],
+    "kernel_rows": [
+      "planner_cpu:cpu_panel1"
+    ],
+    "manifest_sha256": "43c7cfe4f44e917dd0ddeececf17c027239ae97ba6e5afa390cb7570030f8635",
+    "node_count": 1,
+    "provenance": {
+      "kind": "synthetic",
+      "note": "CPU-only planner comparison; independent fsum oracle; not production activation snapshot.",
+      "reference": "independent"
+    },
+    "runtime_executed": false,
+    "schema": "radiance-kernel-replay/1",
+    "status": "FIXTURE_VALID",
+    "stream_count": 1
+  },
+  "host": {
+    "platform": "Linux-6.18.55-x86_64-with-glibc2.41",
+    "python": "3.13.5"
+  },
+  "isa": {
+    "status": "NOT_APPLICABLE_HOST"
+  },
+  "options": {
+    "diagnostic_only": false,
+    "diagnostics": "contracts",
+    "gate": false,
+    "memory_check": "none",
+    "repetitions": 15,
+    "timeout_seconds": 30.0,
+    "trace_dispatches": false,
+    "warmups": 2
+  },
+  "production_equivalence_proved": false,
+  "runtime": {
+    "backend": "host",
+    "checked_iterations": 17,
+    "checks_per_iteration": 1,
+    "device": {
+      "arch": "host",
+      "dma_lane": "",
+      "n_cu": 5,
+      "name": "AMD EPYC 9V74 80-Core Processor",
+      "ordinal": 0,
+      "pci_address": "",
+      "runtime_version": "",
+      "vram_bytes": 3118428160
+    },
+    "diagnostics": {
+      "allocation_byte_bounds_not_scalar_element_bounds": true,
+      "checked_nodes": 1,
+      "completed_passes": 3,
+      "explicit_checkpoints": 0,
+      "intermediate_equality": "explicit checkpoint tolerances, then exact bytes for remaining writes against same-candidate baseline",
+      "output_poison_scope": "packed exact-span output-only operands, excluding all readable aliases; other views not covered",
+      "output_poison_variants": 2,
+      "per_operation_write_contracts": true,
+      "poisoned_output_bytes_total": 32768,
+      "race_freedom_proved": false,
+      "read_checks": "NOT_CHECKED",
+      "scratch_contracts": true,
+      "status": "PASS"
+    },
+    "dispatch_plan": "typed pre-resolved launcher plan; no JSON/disk I/O in measured submit loop",
+    "fixture_sha256": "43c7cfe4f44e917dd0ddeececf17c027239ae97ba6e5afa390cb7570030f8635",
+    "measurement": "host ordered launcher-window steady_clock time",
+    "physical_bytes_with_guards": 84224,
+    "reference": "independent",
+    "restore_policy": "restore every allocation and zero scratch before every checked iteration",
+    "samples_us": [
+      317.781,
+      290.26,
+      293.885,
+      262.888,
+      291.06,
+      396.48,
+      305.252,
+      284.821,
+      337.171,
+      262.237,
+      333.094,
+      262.267,
+      268.857,
+      414.788,
+      357.461
+    ],
+    "schema": "radiance-replay-worker-result/1",
+    "state_policy": "no hidden state; warmups and timed iterations use identical pristine bytes",
+    "statistics": {
+      "median": 293.885,
+      "min": 262.237,
+      "n": 15,
+      "p90": 396.48,
+      "p90_is_per_dispatch": false,
+      "tokens_per_second_estimated": false,
+      "unit": "us per complete window"
+    },
+    "status": "RUNTIME_CHECKS_PASS",
+    "worker_build": {
+      "compiler": "14.2.0",
+      "cxx": 202002,
+      "host_asan": false,
+      "radiance_abi": 30
+    }
+  },
+  "runtime_executed": true,
+  "schema": "radiance-replay-result/1",
+  "status": "RUNTIME_CHECKS_PASS",
+  "telemetry_after": [],
+  "telemetry_before": [],
+  "version": "0.4.0",
+  "wall_seconds": 0.016126328000041212,
+  "worker_sha256": "3823f1d0568af49403a46380984a5b4ec2a7e1cb24077fb6c972798dd7c7c8a8"
+}

@@ -1,0 +1,86 @@
+{
+  "buffers": [
+    {
+      "bytes": 25600,
+      "consumers": [
+        "reduce"
+      ],
+      "device": "gpu0",
+      "id": "partial.r0",
+      "producer": "rank0"
+    },
+    {
+      "bytes": 25600,
+      "consumers": [
+        "reduce"
+      ],
+      "device": "gpu1",
+      "id": "partial.r1",
+      "producer": "rank1"
+    }
+  ],
+  "nodes": [
+    {
+      "allowed_candidates": [
+        "moe.w4a8.m16.n64",
+        "moe.w4a8.m16.n128",
+        "moe.w4a8.m32.n64",
+        "moe.w4a8.m32.n128"
+      ],
+      "deps": [],
+      "id": "rank0",
+      "queue": "gpu0-main",
+      "workload_id": "moe.r0"
+    },
+    {
+      "allowed_candidates": [
+        "moe.w4a8.m16.n64",
+        "moe.w4a8.m16.n128",
+        "moe.w4a8.m32.n64",
+        "moe.w4a8.m32.n128"
+      ],
+      "deps": [],
+      "id": "rank1",
+      "queue": "gpu1-main",
+      "workload_id": "moe.r1"
+    },
+    {
+      "allowed_candidates": [
+        "tp2.oneshot.push.c4096",
+        "tp2.oneshot.push.c65536",
+        "tp2.ring2.push.c1073741824",
+        "tp2.oneshot.pull.c4096",
+        "tp2.oneshot.pull.c65536",
+        "tp2.ring2.pull.c1073741824"
+      ],
+      "deps": [
+        {
+          "kind": "data",
+          "node": "rank0"
+        },
+        {
+          "kind": "data",
+          "node": "rank1"
+        }
+      ],
+      "id": "reduce",
+      "queue": "tp2-protocol",
+      "workload_id": "ar"
+    }
+  ],
+  "resident_bytes": {
+    "gpu0": 21474836480,
+    "gpu1": 21474836480
+  },
+  "schema": "radiance-planner-graph/1",
+  "scope": {
+    "complete_model": false,
+    "hypothesis": "unfused cost phases, not actual fused source dispatch",
+    "window": "MoE with declared synthetic route + explicit two-rank sum"
+  },
+  "search": {
+    "beam_width": 16,
+    "max_combinations": 256
+  },
+  "transitions": []
+}

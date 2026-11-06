@@ -1,0 +1,4 @@
+[1/4] Building CXX object CMakeFiles/replay-test-plugin.dir/mnt/data/RADIANCE_RDNA4_ISA_TESTSUITE_v0.3/tools/rdna4-isa-suite/replay_tests/probe_plugin.cpp.o
+[2/4] Linking CXX shared module replay_test.so
+[3/4] Building CXX object CMakeFiles/rad-kbench-replay.dir/mnt/data/RADIANCE_RDNA4_ISA_TESTSUITE_v0.3/tools/rdna4-isa-suite/replay/worker.cpp.o
+[4/4] Linking CXX executable rad-kbench-replay

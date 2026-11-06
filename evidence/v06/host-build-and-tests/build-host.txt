@@ -1,0 +1,52 @@
+[  4%] Building CXX object CMakeFiles/replay-test-plugin.dir/mnt/data/RADIANCE_RDNA4_ISA_TESTSUITE_v0.6/tools/rdna4-isa-suite/replay_tests/probe_plugin.cpp.o
+[  4%] Building CXX object CMakeFiles/replay-host-common.dir/mnt/data/v06-work/radiance/core/util/rad_util.cpp.o
+[  6%] Building CXX object CMakeFiles/replay-libref.dir/mnt/data/v06-work/radiance/libref/ref_audio.cpp.o
+[  8%] Building CXX object CMakeFiles/replay-libref.dir/mnt/data/v06-work/radiance/libref/ref_attn.cpp.o
+[ 10%] Linking CXX shared module replay_test.so
+[ 10%] Built target replay-test-plugin
+[ 13%] Building CXX object CMakeFiles/replay-host-common.dir/mnt/data/v06-work/radiance/core/device/dispatch.cpp.o
+[ 15%] Building CXX object CMakeFiles/replay-host-common.dir/mnt/data/v06-work/radiance/core/device/host.cpp.o
+[ 17%] Building CXX object CMakeFiles/replay-host-common.dir/mnt/data/v06-work/radiance/core/plugin/loader.cpp.o
+[ 19%] Building CXX object CMakeFiles/replay-libref.dir/mnt/data/v06-work/radiance/libref/ref_collective.cpp.o
+[ 21%] Building CXX object CMakeFiles/replay-host-common.dir/mnt/data/v06-work/radiance/core/plugin/schema.cpp.o
+[ 23%] Building CXX object CMakeFiles/replay-libref.dir/mnt/data/v06-work/radiance/libref/ref_dsa.cpp.o
+[ 26%] Building CXX object CMakeFiles/replay-libref.dir/mnt/data/v06-work/radiance/libref/ref_elementwise.cpp.o
+[ 28%] Building CXX object CMakeFiles/replay-host-common.dir/mnt/data/v06-work/radiance/core/plugin/select.cpp.o
+[ 30%] Building CXX object CMakeFiles/replay-host-common.dir/mnt/data/v06-work/radiance/tools/kbench_core.cpp.o
+[ 32%] Building CXX object CMakeFiles/replay-host-common.dir/mnt/data/v06-work/radiance/core/format/encoding.cpp.o
+[ 34%] Building CXX object CMakeFiles/replay-libref.dir/mnt/data/v06-work/radiance/libref/ref_gdn.cpp.o
+[ 36%] Building CXX object CMakeFiles/replay-libref.dir/mnt/data/v06-work/radiance/libref/ref_gemm.cpp.o
+[ 39%] Building CXX object CMakeFiles/replay-libref.dir/mnt/data/v06-work/radiance/libref/ref_gen.cpp.o
+[ 41%] Linking CXX static library libreplay-host-common.a
+[ 41%] Built target replay-host-common
+[ 43%] Building CXX object CMakeFiles/replay-libref.dir/mnt/data/v06-work/radiance/libref/ref_glm.cpp.o
+[ 45%] Building CXX object CMakeFiles/replay-libref.dir/mnt/data/v06-work/radiance/libref/ref_hc.cpp.o
+[ 47%] Building CXX object CMakeFiles/replay-libref.dir/mnt/data/v06-work/radiance/libref/ref_kda.cpp.o
+[ 50%] Building CXX object CMakeFiles/replay-libref.dir/mnt/data/v06-work/radiance/libref/ref_kvstream.cpp.o
+[ 52%] Building CXX object CMakeFiles/replay-libref.dir/mnt/data/v06-work/radiance/libref/ref_lora.cpp.o
+[ 54%] Building CXX object CMakeFiles/replay-libref.dir/mnt/data/v06-work/radiance/libref/ref_ltx.cpp.o
+[ 56%] Building CXX object CMakeFiles/replay-libref.dir/mnt/data/v06-work/radiance/libref/ref_m2xfp4.cpp.o
+[ 58%] Building CXX object CMakeFiles/replay-libref.dir/mnt/data/v06-work/radiance/libref/ref_mhc.cpp.o
+[ 60%] Building CXX object CMakeFiles/replay-libref.dir/mnt/data/v06-work/radiance/libref/ref_mla.cpp.o
+[ 63%] Building CXX object CMakeFiles/replay-libref.dir/mnt/data/v06-work/radiance/libref/ref_moe.cpp.o
+[ 65%] Building CXX object CMakeFiles/replay-libref.dir/mnt/data/v06-work/radiance/libref/ref_ngram.cpp.o
+[ 67%] Building CXX object CMakeFiles/replay-libref.dir/mnt/data/v06-work/radiance/libref/ref_ple.cpp.o
+[ 69%] Building CXX object CMakeFiles/rad-kbench-replay.dir/mnt/data/RADIANCE_RDNA4_ISA_TESTSUITE_v0.6/tools/rdna4-isa-suite/replay/worker.cpp.o
+[ 71%] Building CXX object CMakeFiles/replay-libref.dir/mnt/data/v06-work/radiance/libref/ref_qsa.cpp.o
+[ 73%] Building CXX object CMakeFiles/replay-libref.dir/mnt/data/v06-work/radiance/libref/ref_quant.cpp.o
+[ 76%] Building CXX object CMakeFiles/replay-capture-harness.dir/mnt/data/RADIANCE_RDNA4_ISA_TESTSUITE_v0.6/tools/rdna4-isa-suite/replay_tests/capture_harness.cpp.o
+[ 78%] Building CXX object CMakeFiles/replay-libref.dir/mnt/data/v06-work/radiance/libref/ref_registry.cpp.o
+[ 80%] Building CXX object CMakeFiles/rad-replay-inventory.dir/mnt/data/RADIANCE_RDNA4_ISA_TESTSUITE_v0.6/tools/rdna4-isa-suite/replay/inventory.cpp.o
+[ 82%] Building CXX object CMakeFiles/replay-libref.dir/mnt/data/v06-work/radiance/libref/ref_sam_attn.cpp.o
+[ 84%] Building CXX object CMakeFiles/replay-libref.dir/mnt/data/v06-work/radiance/libref/ref_sample.cpp.o
+[ 86%] Building CXX object CMakeFiles/replay-libref.dir/mnt/data/v06-work/radiance/libref/ref_shapes.cpp.o
+[ 89%] Linking CXX executable replay-capture-harness
+[ 89%] Built target replay-capture-harness
+[ 91%] Building CXX object CMakeFiles/replay-libref.dir/mnt/data/v06-work/radiance/libref/ref_video.cpp.o
+[ 93%] Linking CXX executable rad-replay-inventory
+[ 93%] Built target rad-replay-inventory
+[ 95%] Building CXX object CMakeFiles/replay-libref.dir/mnt/data/v06-work/radiance/libref/ref_vsa.cpp.o
+[ 97%] Linking CXX shared module libref.so
+[ 97%] Built target replay-libref
+[100%] Linking CXX executable rad-kbench-replay
+[100%] Built target rad-kbench-replay

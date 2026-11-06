@@ -1,0 +1,34 @@
+{
+  "all_radiance_kernels_covered": false,
+  "fixture": {
+    "all_radiance_kernels_covered": false,
+    "allocation_bytes_including_scratch": 12,
+    "blob_bytes": 20,
+    "id": "masked-intermediate-write",
+    "kernel_nodes": [
+      "tested",
+      "later"
+    ],
+    "kernel_rows": [
+      "replay_test:copy",
+      "replay_test:mutate"
+    ],
+    "manifest_sha256": "34afac3bda864c0fa87cdf7569779f0d0f92c30deb283013c5f75e7901fa7fc3",
+    "node_count": 2,
+    "provenance": {
+      "kind": "synthetic",
+      "note": "Deliberately faulty HOST mutation/control; never GPU code.",
+      "reference": "independent"
+    },
+    "runtime_executed": false,
+    "schema": "radiance-kernel-replay/1",
+    "status": "FIXTURE_VALID",
+    "stream_count": 1
+  },
+  "isa": {
+    "status": "NOT_APPLICABLE_HOST"
+  },
+  "production_equivalence_proved": false,
+  "runtime_status": "FAIL",
+  "schema": "radiance-replay-coverage/1"
+}

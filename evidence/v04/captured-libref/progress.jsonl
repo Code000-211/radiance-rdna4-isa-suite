@@ -1,0 +1,12 @@
+{"iteration":0,"phase":"prefix"}
+{"iteration":0,"phase":"measure-submit"}
+{"iteration":0,"phase":"checked","window_us":17.526}
+{"iteration":1,"phase":"prefix"}
+{"iteration":1,"phase":"measure-submit"}
+{"iteration":1,"phase":"checked","window_us":0.821}
+{"iteration":2,"phase":"prefix"}
+{"iteration":2,"phase":"measure-submit"}
+{"iteration":2,"phase":"checked","window_us":0.521}
+{"iteration":3,"phase":"prefix"}
+{"iteration":3,"phase":"measure-submit"}
+{"iteration":3,"phase":"checked","window_us":0.391}

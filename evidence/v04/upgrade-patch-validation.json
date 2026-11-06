@@ -1,0 +1,5 @@
+{
+  "exit_code": 0,
+  "patch_sha256": "61d6a670fe1a05dc722a3cd6559aff96c160d3499fa06af29ec864261d58935c",
+  "scope": "source/docs patch against pristine attached v0.3 overlay; release evidence distributed in ZIP"
+}

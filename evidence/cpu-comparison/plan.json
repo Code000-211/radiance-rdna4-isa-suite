@@ -1,0 +1,3191 @@
+{
+  "arch": "host",
+  "backend": "host",
+  "calibration_sha256": "30e351d2c2bc312e4c63ae289ba8ac7c75e44ae04d74c31d89c636b9fb8a47fb",
+  "catalog_sha256": "ea34c939b2b53d6fac90228354f3b03bed81d462a6c810156a920b844d637216",
+  "cpu_timings_are_gpu_timings": false,
+  "deployment_approved": false,
+  "full_model_speed_predicted": false,
+  "gpu_executed": false,
+  "offline": true,
+  "profile_sha256": "72c24361abb8d1593d496a439405e1843e340748805e2ee49bb17b613ca95c47",
+  "schema": "radiance-offline-plan/1",
+  "status": "OFFLINE_PLAN_CREATED",
+  "workloads": [
+    {
+      "automatic_dispatch_changed": false,
+      "correctness_validation_still_required": true,
+      "decision_reason": "ranking intervals overlap or only one measured candidate",
+      "measurement_queue": [
+        "libref",
+        "panel16"
+      ],
+      "ranked": [
+        {
+          "candidate_id": "libref",
+          "candidate_sha256": "1daf27bf860f5619bfc21c9cbd8dace607c29187f26b4a5824812527b9a1f7b5",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 15360,
+            "features": {
+              "block_k_million": 0.00768,
+              "executed_gops": 1.536e-05,
+              "intercept": 1.0,
+              "operand_mb": 0.008384,
+              "output_melements": 8e-05,
+              "tile_read_mb": 0.06176
+            },
+            "groups": 80,
+            "k_blocks_per_group": 96,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 8384.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 1.536,
+              "memory_us": 0.8384
+            },
+            "scenario_us": 1.586,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 61760,
+            "unique_operand_bytes": 8384,
+            "useful_ops": 15360,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "ref_gemm_nt"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              1.1389866812334681,
+              1.9177532338140693
+            ],
+            "measured_here": false,
+            "prediction_us": 1.4779361932122232,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 1.9177532338140693,
+          "tile": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "candidate_id": "panel16",
+          "candidate_sha256": "95b1d7dd100a2215c4268b45ae9fc1aa00cfce8cc309bb415a3f9c963df6106d",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 15360,
+            "features": {
+              "block_k_million": 0.00048,
+              "executed_gops": 1.536e-05,
+              "intercept": 1.0,
+              "operand_mb": 0.008384,
+              "output_melements": 8e-05,
+              "tile_read_mb": 0.03296
+            },
+            "groups": 5,
+            "k_blocks_per_group": 96,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 8384.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 1.536,
+              "memory_us": 0.8384
+            },
+            "scenario_us": 1.586,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 32960,
+            "unique_operand_bytes": 8384,
+            "useful_ops": 15360,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "03b59a75fcaf67ae320e0287c2e348d4d9f073400c8a67e39b2530053892313e"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "cpu_panel16"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              1.5004169974089059,
+              2.526306581332809
+            ],
+            "measured_here": false,
+            "prediction_us": 1.9469240702445822,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 2.526306581332809,
+          "tile": [
+            1,
+            16,
+            1
+          ]
+        },
+        {
+          "candidate_id": "panel1",
+          "candidate_sha256": "45a5f1c3fe7662d04fcbf9fa6ddaf6c0a33940a718dab5ccf57c2b94b15394cc",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 15360,
+            "features": {
+              "block_k_million": 0.00768,
+              "executed_gops": 1.536e-05,
+              "intercept": 1.0,
+              "operand_mb": 0.008384,
+              "output_melements": 8e-05,
+              "tile_read_mb": 0.06176
+            },
+            "groups": 80,
+            "k_blocks_per_group": 96,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 8384.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 1.536,
+              "memory_us": 0.8384
+            },
+            "scenario_us": 1.586,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 61760,
+            "unique_operand_bytes": 8384,
+            "useful_ops": 15360,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "03b59a75fcaf67ae320e0287c2e348d4d9f073400c8a67e39b2530053892313e"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "cpu_panel1"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              2.6518007152061553,
+              4.464933155767645
+            ],
+            "measured_here": false,
+            "prediction_us": 3.4409465174298073,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 4.464933155767645,
+          "tile": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "candidate_id": "panel4",
+          "candidate_sha256": "580a25dfc2dbe962ad66888f48f33093377e42c255f67bfc7db19df8717e68c3",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 15360,
+            "features": {
+              "block_k_million": 0.00192,
+              "executed_gops": 1.536e-05,
+              "intercept": 1.0,
+              "operand_mb": 0.008384,
+              "output_melements": 8e-05,
+              "tile_read_mb": 0.03872
+            },
+            "groups": 20,
+            "k_blocks_per_group": 96,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 8384.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 1.536,
+              "memory_us": 0.8384
+            },
+            "scenario_us": 1.586,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 38720,
+            "unique_operand_bytes": 8384,
+            "useful_ops": 15360,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "03b59a75fcaf67ae320e0287c2e348d4d9f073400c8a67e39b2530053892313e"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "cpu_panel4"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              4.063113024100726,
+              6.841210937500001
+            ],
+            "measured_here": false,
+            "prediction_us": 5.27224935495056,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 6.841210937500001,
+          "tile": [
+            1,
+            4,
+            1
+          ]
+        }
+      ],
+      "ranking_basis": "calibrated upper envelope",
+      "rejected": [],
+      "shape": {
+        "K": 96,
+        "M": 5,
+        "N": 16
+      },
+      "shape_key": "aefdb4d0e62504df26077a16ec3e9b86c664b4802ad45f5998c5a7aa7b20fe2a",
+      "status": "NEEDS_MEASUREMENT",
+      "suggested_candidate": "libref",
+      "workload_id": "cpu-M5-N16-K96"
+    },
+    {
+      "automatic_dispatch_changed": false,
+      "correctness_validation_still_required": true,
+      "decision_reason": "ranking intervals overlap or only one measured candidate",
+      "measurement_queue": [
+        "libref",
+        "panel16"
+      ],
+      "ranked": [
+        {
+          "candidate_id": "libref",
+          "candidate_sha256": "1daf27bf860f5619bfc21c9cbd8dace607c29187f26b4a5824812527b9a1f7b5",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 61440,
+            "features": {
+              "block_k_million": 0.03072,
+              "executed_gops": 6.144e-05,
+              "intercept": 1.0,
+              "operand_mb": 0.027776,
+              "output_melements": 0.00048,
+              "tile_read_mb": 0.24768
+            },
+            "groups": 480,
+            "k_blocks_per_group": 64,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 27776.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 6.144,
+              "memory_us": 2.7776
+            },
+            "scenario_us": 6.194,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 247680,
+            "unique_operand_bytes": 27776,
+            "useful_ops": 61440,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "ref_gemm_nt"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              3.7189731929567658,
+              6.261770207476857
+            ],
+            "measured_here": false,
+            "prediction_us": 4.825697415095745,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 6.261770207476857,
+          "tile": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "candidate_id": "panel16",
+          "candidate_sha256": "95b1d7dd100a2215c4268b45ae9fc1aa00cfce8cc309bb415a3f9c963df6106d",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 61440,
+            "features": {
+              "block_k_million": 0.00192,
+              "executed_gops": 6.144e-05,
+              "intercept": 1.0,
+              "operand_mb": 0.027776,
+              "output_melements": 0.00048,
+              "tile_read_mb": 0.13248
+            },
+            "groups": 30,
+            "k_blocks_per_group": 64,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 27776.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 6.144,
+              "memory_us": 2.7776
+            },
+            "scenario_us": 6.194,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 132480,
+            "unique_operand_bytes": 27776,
+            "useful_ops": 61440,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "03b59a75fcaf67ae320e0287c2e348d4d9f073400c8a67e39b2530053892313e"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "cpu_panel16"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              5.955434665591253,
+              10.027381598823947
+            ],
+            "measured_here": false,
+            "prediction_us": 7.727704444319023,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 10.027381598823947,
+          "tile": [
+            1,
+            16,
+            1
+          ]
+        },
+        {
+          "candidate_id": "panel1",
+          "candidate_sha256": "45a5f1c3fe7662d04fcbf9fa6ddaf6c0a33940a718dab5ccf57c2b94b15394cc",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 61440,
+            "features": {
+              "block_k_million": 0.03072,
+              "executed_gops": 6.144e-05,
+              "intercept": 1.0,
+              "operand_mb": 0.027776,
+              "output_melements": 0.00048,
+              "tile_read_mb": 0.24768
+            },
+            "groups": 480,
+            "k_blocks_per_group": 64,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 27776.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 6.144,
+              "memory_us": 2.7776
+            },
+            "scenario_us": 6.194,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 247680,
+            "unique_operand_bytes": 27776,
+            "useful_ops": 61440,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "03b59a75fcaf67ae320e0287c2e348d4d9f073400c8a67e39b2530053892313e"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "cpu_panel1"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              10.592162106023025,
+              17.83440795805472
+            ],
+            "measured_here": false,
+            "prediction_us": 13.744269356959746,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 17.83440795805472,
+          "tile": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "candidate_id": "panel4",
+          "candidate_sha256": "580a25dfc2dbe962ad66888f48f33093377e42c255f67bfc7db19df8717e68c3",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 61440,
+            "features": {
+              "block_k_million": 0.00768,
+              "executed_gops": 6.144e-05,
+              "intercept": 1.0,
+              "operand_mb": 0.027776,
+              "output_melements": 0.00048,
+              "tile_read_mb": 0.15552
+            },
+            "groups": 120,
+            "k_blocks_per_group": 64,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 27776.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 6.144,
+              "memory_us": 2.7776
+            },
+            "scenario_us": 6.194,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 155520,
+            "unique_operand_bytes": 27776,
+            "useful_ops": 61440,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "03b59a75fcaf67ae320e0287c2e348d4d9f073400c8a67e39b2530053892313e"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "cpu_panel4"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              16.252452096402905,
+              27.364843750000006
+            ],
+            "measured_here": false,
+            "prediction_us": 21.08899741980224,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 27.364843750000006,
+          "tile": [
+            1,
+            4,
+            1
+          ]
+        }
+      ],
+      "ranking_basis": "calibrated upper envelope",
+      "rejected": [],
+      "shape": {
+        "K": 64,
+        "M": 5,
+        "N": 96
+      },
+      "shape_key": "01f52ceed5ab8bd2a5335b5f5602898acb9faa22c5b8a567eb405d3b9d046c9c",
+      "status": "NEEDS_MEASUREMENT",
+      "suggested_candidate": "libref",
+      "workload_id": "cpu-M5-N96-K64"
+    },
+    {
+      "automatic_dispatch_changed": false,
+      "correctness_validation_still_required": true,
+      "decision_reason": "separated within stated calibration scope",
+      "measurement_queue": [],
+      "ranked": [
+        {
+          "candidate_id": "libref",
+          "candidate_sha256": "1daf27bf860f5619bfc21c9cbd8dace607c29187f26b4a5824812527b9a1f7b5",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 507904,
+            "features": {
+              "block_k_million": 0.253952,
+              "executed_gops": 0.000507904,
+              "intercept": 1.0,
+              "operand_mb": 0.056576,
+              "output_melements": 0.001984,
+              "tile_read_mb": 2.039552
+            },
+            "groups": 1984,
+            "k_blocks_per_group": 128,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 56576.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 50.7904,
+              "memory_us": 5.6576
+            },
+            "scenario_us": 50.840399999999995,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 2039552,
+            "unique_operand_bytes": 56576,
+            "useful_ops": 507904,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "ref_gemm_nt"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              16.21788909020046,
+              27.306648761413054
+            ],
+            "measured_here": false,
+            "prediction_us": 21.04414885514871,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 27.306648761413054,
+          "tile": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "candidate_id": "panel16",
+          "candidate_sha256": "95b1d7dd100a2215c4268b45ae9fc1aa00cfce8cc309bb415a3f9c963df6106d",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 507904,
+            "features": {
+              "block_k_million": 0.015872,
+              "executed_gops": 0.000507904,
+              "intercept": 1.0,
+              "operand_mb": 0.056576,
+              "output_melements": 0.001984,
+              "tile_read_mb": 1.087232
+            },
+            "groups": 124,
+            "k_blocks_per_group": 128,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 56576.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 50.7904,
+              "memory_us": 5.6576
+            },
+            "scenario_us": 50.840399999999995,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 1087232,
+            "unique_operand_bytes": 56576,
+            "useful_ops": 507904,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "03b59a75fcaf67ae320e0287c2e348d4d9f073400c8a67e39b2530053892313e"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "cpu_panel16"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              48.46986784081936,
+              81.61047651023273
+            ],
+            "measured_here": false,
+            "prediction_us": 62.89395051097739,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 81.61047651023273,
+          "tile": [
+            1,
+            16,
+            1
+          ]
+        },
+        {
+          "candidate_id": "panel1",
+          "candidate_sha256": "45a5f1c3fe7662d04fcbf9fa6ddaf6c0a33940a718dab5ccf57c2b94b15394cc",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 507904,
+            "features": {
+              "block_k_million": 0.253952,
+              "executed_gops": 0.000507904,
+              "intercept": 1.0,
+              "operand_mb": 0.056576,
+              "output_melements": 0.001984,
+              "tile_read_mb": 2.039552
+            },
+            "groups": 1984,
+            "k_blocks_per_group": 128,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 56576.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 50.7904,
+              "memory_us": 5.6576
+            },
+            "scenario_us": 50.840399999999995,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 2039552,
+            "unique_operand_bytes": 56576,
+            "useful_ops": 507904,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "03b59a75fcaf67ae320e0287c2e348d4d9f073400c8a67e39b2530053892313e"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "cpu_panel1"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              87.52544135927091,
+              147.36976382021393
+            ],
+            "measured_here": false,
+            "prediction_us": 113.57201953551649,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 147.36976382021393,
+          "tile": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "candidate_id": "panel4",
+          "candidate_sha256": "580a25dfc2dbe962ad66888f48f33093377e42c255f67bfc7db19df8717e68c3",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 507904,
+            "features": {
+              "block_k_million": 0.063488,
+              "executed_gops": 0.000507904,
+              "intercept": 1.0,
+              "operand_mb": 0.056576,
+              "output_melements": 0.001984,
+              "tile_read_mb": 1.277696
+            },
+            "groups": 496,
+            "k_blocks_per_group": 128,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 56576.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 50.7904,
+              "memory_us": 5.6576
+            },
+            "scenario_us": 50.840399999999995,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 1277696,
+            "unique_operand_bytes": 56576,
+            "useful_ops": 507904,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "03b59a75fcaf67ae320e0287c2e348d4d9f073400c8a67e39b2530053892313e"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "cpu_panel4"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              134.3536039969307,
+              226.2160416666667
+            ],
+            "measured_here": false,
+            "prediction_us": 174.33571200369852,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 226.2160416666667,
+          "tile": [
+            1,
+            4,
+            1
+          ]
+        }
+      ],
+      "ranking_basis": "calibrated upper envelope",
+      "rejected": [],
+      "shape": {
+        "K": 128,
+        "M": 31,
+        "N": 64
+      },
+      "shape_key": "fb490806ae654ac488c7eb2b223f2cb48d4643264ee08b15ec136bf9e4fcba79",
+      "status": "CALIBRATED_SEPARATION",
+      "suggested_candidate": "libref",
+      "workload_id": "cpu-M31-N64-K128"
+    },
+    {
+      "automatic_dispatch_changed": false,
+      "correctness_validation_still_required": true,
+      "decision_reason": "separated within stated calibration scope",
+      "measurement_queue": [],
+      "ranked": [
+        {
+          "candidate_id": "libref",
+          "candidate_sha256": "1daf27bf860f5619bfc21c9cbd8dace607c29187f26b4a5824812527b9a1f7b5",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 131072,
+            "features": {
+              "block_k_million": 0.065536,
+              "executed_gops": 0.000131072,
+              "intercept": 1.0,
+              "operand_mb": 0.02048,
+              "output_melements": 0.002048,
+              "tile_read_mb": 0.53248
+            },
+            "groups": 2048,
+            "k_blocks_per_group": 32,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 20480.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 13.1072,
+              "memory_us": 2.048
+            },
+            "scenario_us": 13.157200000000001,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 532480,
+            "unique_operand_bytes": 20480,
+            "useful_ops": 131072,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "ref_gemm_nt"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              7.255954448003788,
+              12.217113980645868
+            ],
+            "measured_here": false,
+            "prediction_us": 9.41524415666618,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 12.217113980645868,
+          "tile": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "candidate_id": "panel16",
+          "candidate_sha256": "95b1d7dd100a2215c4268b45ae9fc1aa00cfce8cc309bb415a3f9c963df6106d",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 131072,
+            "features": {
+              "block_k_million": 0.004096,
+              "executed_gops": 0.000131072,
+              "intercept": 1.0,
+              "operand_mb": 0.02048,
+              "output_melements": 0.002048,
+              "tile_read_mb": 0.28672
+            },
+            "groups": 128,
+            "k_blocks_per_group": 32,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 20480.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 13.1072,
+              "memory_us": 2.048
+            },
+            "scenario_us": 13.157200000000001,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 286720,
+            "unique_operand_bytes": 20480,
+            "useful_ops": 131072,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "03b59a75fcaf67ae320e0287c2e348d4d9f073400c8a67e39b2530053892313e"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "cpu_panel16"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              12.95144787191893,
+              21.806823071933422
+            ],
+            "measured_here": false,
+            "prediction_us": 16.805651795402188,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 21.806823071933422,
+          "tile": [
+            1,
+            16,
+            1
+          ]
+        },
+        {
+          "candidate_id": "panel1",
+          "candidate_sha256": "45a5f1c3fe7662d04fcbf9fa6ddaf6c0a33940a718dab5ccf57c2b94b15394cc",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 131072,
+            "features": {
+              "block_k_million": 0.065536,
+              "executed_gops": 0.000131072,
+              "intercept": 1.0,
+              "operand_mb": 0.02048,
+              "output_melements": 0.002048,
+              "tile_read_mb": 0.53248
+            },
+            "groups": 2048,
+            "k_blocks_per_group": 32,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 20480.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 13.1072,
+              "memory_us": 2.048
+            },
+            "scenario_us": 13.157200000000001,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 532480,
+            "unique_operand_bytes": 20480,
+            "useful_ops": 131072,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "03b59a75fcaf67ae320e0287c2e348d4d9f073400c8a67e39b2530053892313e"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "cpu_panel1"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              22.590930429924075,
+              38.03716988151074
+            ],
+            "measured_here": false,
+            "prediction_us": 29.31373498113832,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 38.03716988151074,
+          "tile": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "candidate_id": "panel4",
+          "candidate_sha256": "580a25dfc2dbe962ad66888f48f33093377e42c255f67bfc7db19df8717e68c3",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 131072,
+            "features": {
+              "block_k_million": 0.016384,
+              "executed_gops": 0.000131072,
+              "intercept": 1.0,
+              "operand_mb": 0.02048,
+              "output_melements": 0.002048,
+              "tile_read_mb": 0.335872
+            },
+            "groups": 512,
+            "k_blocks_per_group": 32,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 20480.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 13.1072,
+              "memory_us": 2.048
+            },
+            "scenario_us": 13.157200000000001,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 335872,
+            "unique_operand_bytes": 20480,
+            "useful_ops": 131072,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "03b59a75fcaf67ae320e0287c2e348d4d9f073400c8a67e39b2530053892313e"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "cpu_panel4"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              34.67189780565954,
+              58.37833333333335
+            ],
+            "measured_here": false,
+            "prediction_us": 44.989861162244786,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 58.37833333333335,
+          "tile": [
+            1,
+            4,
+            1
+          ]
+        }
+      ],
+      "ranking_basis": "calibrated upper envelope",
+      "rejected": [],
+      "shape": {
+        "K": 32,
+        "M": 32,
+        "N": 64
+      },
+      "shape_key": "ac9c95fd67898e751552e2b02b0364009a49dbc8da6509e4ee2f36b148f2ea65",
+      "status": "CALIBRATED_SEPARATION",
+      "suggested_candidate": "libref",
+      "workload_id": "cpu-M32-N64-K32"
+    },
+    {
+      "automatic_dispatch_changed": false,
+      "correctness_validation_still_required": true,
+      "decision_reason": "ranking intervals overlap or only one measured candidate",
+      "measurement_queue": [
+        "libref",
+        "panel16"
+      ],
+      "ranked": [
+        {
+          "candidate_id": "libref",
+          "candidate_sha256": "1daf27bf860f5619bfc21c9cbd8dace607c29187f26b4a5824812527b9a1f7b5",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 16384,
+            "features": {
+              "block_k_million": 0.008192,
+              "executed_gops": 1.6384e-05,
+              "intercept": 1.0,
+              "operand_mb": 0.006144,
+              "output_melements": 0.000256,
+              "tile_read_mb": 0.06656
+            },
+            "groups": 256,
+            "k_blocks_per_group": 32,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 6144.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 1.6384,
+              "memory_us": 0.6144
+            },
+            "scenario_us": 1.6884000000000001,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 66560,
+            "unique_operand_bytes": 6144,
+            "useful_ops": 16384,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "ref_gemm_nt"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              1.3311477370863438,
+              2.2413017812614293
+            ],
+            "measured_here": false,
+            "prediction_us": 1.7272821987891103,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 2.2413017812614293,
+          "tile": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "candidate_id": "panel16",
+          "candidate_sha256": "95b1d7dd100a2215c4268b45ae9fc1aa00cfce8cc309bb415a3f9c963df6106d",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 16384,
+            "features": {
+              "block_k_million": 0.000512,
+              "executed_gops": 1.6384e-05,
+              "intercept": 1.0,
+              "operand_mb": 0.006144,
+              "output_melements": 0.000256,
+              "tile_read_mb": 0.03584
+            },
+            "groups": 16,
+            "k_blocks_per_group": 32,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 6144.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 1.6384,
+              "memory_us": 0.6144
+            },
+            "scenario_us": 1.6884000000000001,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 35840,
+            "unique_operand_bytes": 6144,
+            "useful_ops": 16384,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "03b59a75fcaf67ae320e0287c2e348d4d9f073400c8a67e39b2530053892313e"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "cpu_panel16"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              1.6452010279090838,
+              2.7700847108502313
+            ],
+            "measured_here": false,
+            "prediction_us": 2.1347941853223316,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 2.7700847108502313,
+          "tile": [
+            1,
+            16,
+            1
+          ]
+        },
+        {
+          "candidate_id": "panel1",
+          "candidate_sha256": "45a5f1c3fe7662d04fcbf9fa6ddaf6c0a33940a718dab5ccf57c2b94b15394cc",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 16384,
+            "features": {
+              "block_k_million": 0.008192,
+              "executed_gops": 1.6384e-05,
+              "intercept": 1.0,
+              "operand_mb": 0.006144,
+              "output_melements": 0.000256,
+              "tile_read_mb": 0.06656
+            },
+            "groups": 256,
+            "k_blocks_per_group": 32,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 6144.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 1.6384,
+              "memory_us": 0.6144
+            },
+            "scenario_us": 1.6884000000000001,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 66560,
+            "unique_operand_bytes": 6144,
+            "useful_ops": 16384,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "03b59a75fcaf67ae320e0287c2e348d4d9f073400c8a67e39b2530053892313e"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "cpu_panel1"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              2.828253190557642,
+              4.76203259581847
+            ],
+            "measured_here": false,
+            "prediction_us": 3.6699092471971397,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 4.76203259581847,
+          "tile": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "candidate_id": "panel4",
+          "candidate_sha256": "580a25dfc2dbe962ad66888f48f33093377e42c255f67bfc7db19df8717e68c3",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 16384,
+            "features": {
+              "block_k_million": 0.002048,
+              "executed_gops": 1.6384e-05,
+              "intercept": 1.0,
+              "operand_mb": 0.006144,
+              "output_melements": 0.000256,
+              "tile_read_mb": 0.041984
+            },
+            "groups": 64,
+            "k_blocks_per_group": 32,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 6144.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 1.6384,
+              "memory_us": 0.6144
+            },
+            "scenario_us": 1.6884000000000001,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 41984,
+            "unique_operand_bytes": 6144,
+            "useful_ops": 16384,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "03b59a75fcaf67ae320e0287c2e348d4d9f073400c8a67e39b2530053892313e"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "cpu_panel4"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              4.3339872257074425,
+              7.297291666666669
+            ],
+            "measured_here": false,
+            "prediction_us": 5.623732645280598,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 7.297291666666669,
+          "tile": [
+            1,
+            4,
+            1
+          ]
+        }
+      ],
+      "ranking_basis": "calibrated upper envelope",
+      "rejected": [],
+      "shape": {
+        "K": 32,
+        "M": 8,
+        "N": 32
+      },
+      "shape_key": "cc91869da7662eb5515e11e7754e8a06c7e97c0483e368ddb09b0281fbbfbf47",
+      "status": "NEEDS_MEASUREMENT",
+      "suggested_candidate": "libref",
+      "workload_id": "cpu-M8-N32-K32"
+    },
+    {
+      "automatic_dispatch_changed": false,
+      "correctness_validation_still_required": true,
+      "decision_reason": "ranking intervals overlap or only one measured candidate",
+      "measurement_queue": [
+        "panel16",
+        "libref"
+      ],
+      "ranked": [
+        {
+          "candidate_id": "panel16",
+          "candidate_sha256": "95b1d7dd100a2215c4268b45ae9fc1aa00cfce8cc309bb415a3f9c963df6106d",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 12288,
+            "features": {
+              "block_k_million": 0.000384,
+              "executed_gops": 1.2288e-05,
+              "intercept": 1.0,
+              "operand_mb": 0.025216,
+              "output_melements": 6.4e-05,
+              "tile_read_mb": 0.026368
+            },
+            "groups": 4,
+            "k_blocks_per_group": 96,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "memory_us",
+            "scenario_memory_bytes": 25216.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 1.2288,
+              "memory_us": 2.5216
+            },
+            "scenario_us": 2.5715999999999997,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 26368,
+            "unique_operand_bytes": 25216,
+            "useful_ops": 12288,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "03b59a75fcaf67ae320e0287c2e348d4d9f073400c8a67e39b2530053892313e"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "cpu_panel16"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              1.2063381793943746,
+              2.031155396919631
+            ],
+            "measured_here": false,
+            "prediction_us": 1.5653307329721364,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 2.031155396919631,
+          "tile": [
+            1,
+            16,
+            1
+          ]
+        },
+        {
+          "candidate_id": "libref",
+          "candidate_sha256": "1daf27bf860f5619bfc21c9cbd8dace607c29187f26b4a5824812527b9a1f7b5",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 12288,
+            "features": {
+              "block_k_million": 0.006144,
+              "executed_gops": 1.2288e-05,
+              "intercept": 1.0,
+              "operand_mb": 0.025216,
+              "output_melements": 6.4e-05,
+              "tile_read_mb": 0.049408
+            },
+            "groups": 64,
+            "k_blocks_per_group": 96,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "memory_us",
+            "scenario_memory_bytes": 25216.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 1.2288,
+              "memory_us": 2.5216
+            },
+            "scenario_us": 2.5715999999999997,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 49408,
+            "unique_operand_bytes": 25216,
+            "useful_ops": 12288,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "ref_gemm_nt"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              1.958648090025188,
+              3.2978469111524333
+            ],
+            "measured_here": false,
+            "prediction_us": 2.5415195363648455,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 3.2978469111524333,
+          "tile": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "candidate_id": "panel1",
+          "candidate_sha256": "45a5f1c3fe7662d04fcbf9fa6ddaf6c0a33940a718dab5ccf57c2b94b15394cc",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 12288,
+            "features": {
+              "block_k_million": 0.006144,
+              "executed_gops": 1.2288e-05,
+              "intercept": 1.0,
+              "operand_mb": 0.025216,
+              "output_melements": 6.4e-05,
+              "tile_read_mb": 0.049408
+            },
+            "groups": 64,
+            "k_blocks_per_group": 96,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "memory_us",
+            "scenario_memory_bytes": 25216.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 1.2288,
+              "memory_us": 2.5216
+            },
+            "scenario_us": 2.5715999999999997,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 49408,
+            "unique_operand_bytes": 25216,
+            "useful_ops": 12288,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "03b59a75fcaf67ae320e0287c2e348d4d9f073400c8a67e39b2530053892313e"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "cpu_panel1"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              2.1224432891516973,
+              3.5736348356151737
+            ],
+            "measured_here": false,
+            "prediction_us": 2.7540583281278113,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 3.5736348356151737,
+          "tile": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "candidate_id": "panel4",
+          "candidate_sha256": "580a25dfc2dbe962ad66888f48f33093377e42c255f67bfc7db19df8717e68c3",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 12288,
+            "features": {
+              "block_k_million": 0.001536,
+              "executed_gops": 1.2288e-05,
+              "intercept": 1.0,
+              "operand_mb": 0.025216,
+              "output_melements": 6.4e-05,
+              "tile_read_mb": 0.030976
+            },
+            "groups": 16,
+            "k_blocks_per_group": 96,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "memory_us",
+            "scenario_memory_bytes": 25216.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 1.2288,
+              "memory_us": 2.5216
+            },
+            "scenario_us": 2.5715999999999997,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 30976,
+            "unique_operand_bytes": 25216,
+            "useful_ops": 12288,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "03b59a75fcaf67ae320e0287c2e348d4d9f073400c8a67e39b2530053892313e"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "cpu_panel4"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              3.2504904192805806,
+              5.47296875
+            ],
+            "measured_here": false,
+            "prediction_us": 4.217799483960447,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 5.47296875,
+          "tile": [
+            1,
+            4,
+            1
+          ]
+        }
+      ],
+      "ranking_basis": "calibrated upper envelope",
+      "rejected": [],
+      "shape": {
+        "K": 96,
+        "M": 1,
+        "N": 64
+      },
+      "shape_key": "76ef5f9e2a129aa10829d2ed12238b333f7d96994815c966541da473f074e716",
+      "status": "NEEDS_MEASUREMENT",
+      "suggested_candidate": "panel16",
+      "workload_id": "cpu-M1-N64-K96"
+    },
+    {
+      "automatic_dispatch_changed": false,
+      "correctness_validation_still_required": true,
+      "decision_reason": "ranking intervals overlap or only one measured candidate",
+      "measurement_queue": [
+        "libref",
+        "panel16"
+      ],
+      "ranked": [
+        {
+          "candidate_id": "libref",
+          "candidate_sha256": "1daf27bf860f5619bfc21c9cbd8dace607c29187f26b4a5824812527b9a1f7b5",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 16384,
+            "features": {
+              "block_k_million": 0.008192,
+              "executed_gops": 1.6384e-05,
+              "intercept": 1.0,
+              "operand_mb": 0.00512,
+              "output_melements": 0.000256,
+              "tile_read_mb": 0.06656
+            },
+            "groups": 256,
+            "k_blocks_per_group": 32,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 5120.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 1.6384,
+              "memory_us": 0.512
+            },
+            "scenario_us": 1.6884000000000001,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 66560,
+            "unique_operand_bytes": 5120,
+            "useful_ops": 16384,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "ref_gemm_nt"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              1.276125485893195,
+              2.148658818972249
+            ],
+            "measured_here": false,
+            "prediction_us": 1.655885949991623,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 2.148658818972249,
+          "tile": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "candidate_id": "panel16",
+          "candidate_sha256": "95b1d7dd100a2215c4268b45ae9fc1aa00cfce8cc309bb415a3f9c963df6106d",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 16384,
+            "features": {
+              "block_k_million": 0.000512,
+              "executed_gops": 1.6384e-05,
+              "intercept": 1.0,
+              "operand_mb": 0.00512,
+              "output_melements": 0.000256,
+              "tile_read_mb": 0.03584
+            },
+            "groups": 16,
+            "k_blocks_per_group": 32,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 5120.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 1.6384,
+              "memory_us": 0.512
+            },
+            "scenario_us": 1.6884000000000001,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 35840,
+            "unique_operand_bytes": 5120,
+            "useful_ops": 16384,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "03b59a75fcaf67ae320e0287c2e348d4d9f073400c8a67e39b2530053892313e"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "cpu_panel16"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              1.6452010279090838,
+              2.7700847108502313
+            ],
+            "measured_here": false,
+            "prediction_us": 2.1347941853223316,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 2.7700847108502313,
+          "tile": [
+            1,
+            16,
+            1
+          ]
+        },
+        {
+          "candidate_id": "panel1",
+          "candidate_sha256": "45a5f1c3fe7662d04fcbf9fa6ddaf6c0a33940a718dab5ccf57c2b94b15394cc",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 16384,
+            "features": {
+              "block_k_million": 0.008192,
+              "executed_gops": 1.6384e-05,
+              "intercept": 1.0,
+              "operand_mb": 0.00512,
+              "output_melements": 0.000256,
+              "tile_read_mb": 0.06656
+            },
+            "groups": 256,
+            "k_blocks_per_group": 32,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 5120.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 1.6384,
+              "memory_us": 0.512
+            },
+            "scenario_us": 1.6884000000000001,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 66560,
+            "unique_operand_bytes": 5120,
+            "useful_ops": 16384,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "03b59a75fcaf67ae320e0287c2e348d4d9f073400c8a67e39b2530053892313e"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "cpu_panel1"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              2.828253190557642,
+              4.76203259581847
+            ],
+            "measured_here": false,
+            "prediction_us": 3.6699092471971397,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 4.76203259581847,
+          "tile": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "candidate_id": "panel4",
+          "candidate_sha256": "580a25dfc2dbe962ad66888f48f33093377e42c255f67bfc7db19df8717e68c3",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 16384,
+            "features": {
+              "block_k_million": 0.002048,
+              "executed_gops": 1.6384e-05,
+              "intercept": 1.0,
+              "operand_mb": 0.00512,
+              "output_melements": 0.000256,
+              "tile_read_mb": 0.041984
+            },
+            "groups": 64,
+            "k_blocks_per_group": 32,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 5120.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 1.6384,
+              "memory_us": 0.512
+            },
+            "scenario_us": 1.6884000000000001,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 41984,
+            "unique_operand_bytes": 5120,
+            "useful_ops": 16384,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "03b59a75fcaf67ae320e0287c2e348d4d9f073400c8a67e39b2530053892313e"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "cpu_panel4"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              4.3339872257074425,
+              7.297291666666669
+            ],
+            "measured_here": false,
+            "prediction_us": 5.623732645280598,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 7.297291666666669,
+          "tile": [
+            1,
+            4,
+            1
+          ]
+        }
+      ],
+      "ranking_basis": "calibrated upper envelope",
+      "rejected": [],
+      "shape": {
+        "K": 32,
+        "M": 16,
+        "N": 16
+      },
+      "shape_key": "99174486acb6f3f1aa108da9413b000d65927dff3c774fe494f8020af92448f5",
+      "status": "NEEDS_MEASUREMENT",
+      "suggested_candidate": "libref",
+      "workload_id": "cpu-M16-N16-K32"
+    },
+    {
+      "automatic_dispatch_changed": false,
+      "correctness_validation_still_required": true,
+      "decision_reason": "ranking intervals overlap or only one measured candidate",
+      "measurement_queue": [
+        "libref",
+        "panel16"
+      ],
+      "ranked": [
+        {
+          "candidate_id": "libref",
+          "candidate_sha256": "1daf27bf860f5619bfc21c9cbd8dace607c29187f26b4a5824812527b9a1f7b5",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 67584,
+            "features": {
+              "block_k_million": 0.033792,
+              "executed_gops": 6.7584e-05,
+              "intercept": 1.0,
+              "operand_mb": 0.012544,
+              "output_melements": 0.001056,
+              "tile_read_mb": 0.27456
+            },
+            "groups": 1056,
+            "k_blocks_per_group": 32,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 12544.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 6.7584,
+              "memory_us": 1.2544
+            },
+            "scenario_us": 6.8084,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 274560,
+            "unique_operand_bytes": 12544,
+            "useful_ops": 67584,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "ref_gemm_nt"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              3.9761507330316306,
+              6.694789370272339
+            ],
+            "measured_here": false,
+            "prediction_us": 5.159408072841373,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 6.694789370272339,
+          "tile": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "candidate_id": "panel16",
+          "candidate_sha256": "95b1d7dd100a2215c4268b45ae9fc1aa00cfce8cc309bb415a3f9c963df6106d",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 67584,
+            "features": {
+              "block_k_million": 0.002112,
+              "executed_gops": 6.7584e-05,
+              "intercept": 1.0,
+              "operand_mb": 0.012544,
+              "output_melements": 0.001056,
+              "tile_read_mb": 0.14784
+            },
+            "groups": 66,
+            "k_blocks_per_group": 32,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 12544.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 6.7584,
+              "memory_us": 1.2544
+            },
+            "scenario_us": 6.8084,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 147840,
+            "unique_operand_bytes": 12544,
+            "useful_ops": 67584,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "03b59a75fcaf67ae320e0287c2e348d4d9f073400c8a67e39b2530053892313e"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "cpu_panel16"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              6.692632654699193,
+              11.268628622048084
+            ],
+            "measured_here": false,
+            "prediction_us": 8.684284189822266,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 11.268628622048084,
+          "tile": [
+            1,
+            16,
+            1
+          ]
+        },
+        {
+          "candidate_id": "panel1",
+          "candidate_sha256": "45a5f1c3fe7662d04fcbf9fa6ddaf6c0a33940a718dab5ccf57c2b94b15394cc",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 67584,
+            "features": {
+              "block_k_million": 0.033792,
+              "executed_gops": 6.7584e-05,
+              "intercept": 1.0,
+              "operand_mb": 0.012544,
+              "output_melements": 0.001056,
+              "tile_read_mb": 0.27456
+            },
+            "groups": 1056,
+            "k_blocks_per_group": 32,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 12544.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 6.7584,
+              "memory_us": 1.2544
+            },
+            "scenario_us": 6.8084,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 274560,
+            "unique_operand_bytes": 12544,
+            "useful_ops": 67584,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "03b59a75fcaf67ae320e0287c2e348d4d9f073400c8a67e39b2530053892313e"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "cpu_panel1"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              11.65087695813194,
+              19.61700459835966
+            ],
+            "measured_here": false,
+            "prediction_us": 15.118045735563737,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 19.61700459835966,
+          "tile": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "candidate_id": "panel4",
+          "candidate_sha256": "580a25dfc2dbe962ad66888f48f33093377e42c255f67bfc7db19df8717e68c3",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 67584,
+            "features": {
+              "block_k_million": 0.008448,
+              "executed_gops": 6.7584e-05,
+              "intercept": 1.0,
+              "operand_mb": 0.012544,
+              "output_melements": 0.001056,
+              "tile_read_mb": 0.173184
+            },
+            "groups": 264,
+            "k_blocks_per_group": 32,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 12544.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 6.7584,
+              "memory_us": 1.2544
+            },
+            "scenario_us": 6.8084,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 173184,
+            "unique_operand_bytes": 12544,
+            "useful_ops": 67584,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "03b59a75fcaf67ae320e0287c2e348d4d9f073400c8a67e39b2530053892313e"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "cpu_panel4"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              17.877697306043196,
+              30.101328125000006
+            ],
+            "measured_here": false,
+            "prediction_us": 23.197897161782464,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 30.101328125000006,
+          "tile": [
+            1,
+            4,
+            1
+          ]
+        }
+      ],
+      "ranking_basis": "calibrated upper envelope",
+      "rejected": [],
+      "shape": {
+        "K": 32,
+        "M": 33,
+        "N": 32
+      },
+      "shape_key": "a3c9591163f6723baa245664e8b980e26ea11669fb2e5d332c79adfe9564b84b",
+      "status": "NEEDS_MEASUREMENT",
+      "suggested_candidate": "libref",
+      "workload_id": "cpu-M33-N32-K32"
+    },
+    {
+      "automatic_dispatch_changed": false,
+      "correctness_validation_still_required": true,
+      "decision_reason": "ranking intervals overlap or only one measured candidate",
+      "measurement_queue": [
+        "libref",
+        "panel16"
+      ],
+      "ranked": [
+        {
+          "candidate_id": "libref",
+          "candidate_sha256": "1daf27bf860f5619bfc21c9cbd8dace607c29187f26b4a5824812527b9a1f7b5",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 32768,
+            "features": {
+              "block_k_million": 0.016384,
+              "executed_gops": 3.2768e-05,
+              "intercept": 1.0,
+              "operand_mb": 0.034304,
+              "output_melements": 0.000128,
+              "tile_read_mb": 0.131584
+            },
+            "groups": 128,
+            "k_blocks_per_group": 128,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "memory_us",
+            "scenario_memory_bytes": 34304.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 3.2768,
+              "memory_us": 3.4304
+            },
+            "scenario_us": 3.4804,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 131584,
+            "unique_operand_bytes": 34304,
+            "useful_ops": 32768,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "ref_gemm_nt"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              2.941016216850624,
+              4.951895797812928
+            ],
+            "measured_here": false,
+            "prediction_us": 3.816229270565682,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 4.951895797812928,
+          "tile": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "candidate_id": "panel16",
+          "candidate_sha256": "95b1d7dd100a2215c4268b45ae9fc1aa00cfce8cc309bb415a3f9c963df6106d",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 32768,
+            "features": {
+              "block_k_million": 0.001024,
+              "executed_gops": 3.2768e-05,
+              "intercept": 1.0,
+              "operand_mb": 0.034304,
+              "output_melements": 0.000128,
+              "tile_read_mb": 0.070144
+            },
+            "groups": 8,
+            "k_blocks_per_group": 128,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "memory_us",
+            "scenario_memory_bytes": 34304.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 3.2768,
+              "memory_us": 3.4304
+            },
+            "scenario_us": 3.4804,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 70144,
+            "unique_operand_bytes": 34304,
+            "useful_ops": 32768,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "03b59a75fcaf67ae320e0287c2e348d4d9f073400c8a67e39b2530053892313e"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "cpu_panel16"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              3.155174193367418,
+              5.3124813593292295
+            ],
+            "measured_here": false,
+            "prediction_us": 4.09411823079171,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 5.3124813593292295,
+          "tile": [
+            1,
+            16,
+            1
+          ]
+        },
+        {
+          "candidate_id": "panel1",
+          "candidate_sha256": "45a5f1c3fe7662d04fcbf9fa6ddaf6c0a33940a718dab5ccf57c2b94b15394cc",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 32768,
+            "features": {
+              "block_k_million": 0.016384,
+              "executed_gops": 3.2768e-05,
+              "intercept": 1.0,
+              "operand_mb": 0.034304,
+              "output_melements": 0.000128,
+              "tile_read_mb": 0.131584
+            },
+            "groups": 128,
+            "k_blocks_per_group": 128,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "memory_us",
+            "scenario_memory_bytes": 34304.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 3.2768,
+              "memory_us": 3.4304
+            },
+            "scenario_us": 3.4804,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 131584,
+            "unique_operand_bytes": 34304,
+            "useful_ops": 32768,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "03b59a75fcaf67ae320e0287c2e348d4d9f073400c8a67e39b2530053892313e"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "cpu_panel1"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              5.651492796181418,
+              9.515623636631652
+            ],
+            "measured_here": false,
+            "prediction_us": 7.333312923474451,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 9.515623636631652,
+          "tile": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "candidate_id": "panel4",
+          "candidate_sha256": "580a25dfc2dbe962ad66888f48f33093377e42c255f67bfc7db19df8717e68c3",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 32768,
+            "features": {
+              "block_k_million": 0.004096,
+              "executed_gops": 3.2768e-05,
+              "intercept": 1.0,
+              "operand_mb": 0.034304,
+              "output_melements": 0.000128,
+              "tile_read_mb": 0.082432
+            },
+            "groups": 32,
+            "k_blocks_per_group": 128,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "memory_us",
+            "scenario_memory_bytes": 34304.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 3.2768,
+              "memory_us": 3.4304
+            },
+            "scenario_us": 3.4804,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 82432,
+            "unique_operand_bytes": 34304,
+            "useful_ops": 32768,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "03b59a75fcaf67ae320e0287c2e348d4d9f073400c8a67e39b2530053892313e"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "cpu_panel4"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              8.667974451414885,
+              14.594583333333338
+            ],
+            "measured_here": false,
+            "prediction_us": 11.247465290561196,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 14.594583333333338,
+          "tile": [
+            1,
+            4,
+            1
+          ]
+        }
+      ],
+      "ranking_basis": "calibrated upper envelope",
+      "rejected": [],
+      "shape": {
+        "K": 128,
+        "M": 2,
+        "N": 64
+      },
+      "shape_key": "63bf6747b6c51446a023a09a1ee6d19d6e80f9e6c0cd7e618f4d261efce152e9",
+      "status": "NEEDS_MEASUREMENT",
+      "suggested_candidate": "libref",
+      "workload_id": "cpu-M2-N64-K128"
+    },
+    {
+      "automatic_dispatch_changed": false,
+      "correctness_validation_still_required": true,
+      "decision_reason": "ranking intervals overlap or only one measured candidate",
+      "measurement_queue": [
+        "libref",
+        "panel16"
+      ],
+      "ranked": [
+        {
+          "candidate_id": "libref",
+          "candidate_sha256": "1daf27bf860f5619bfc21c9cbd8dace607c29187f26b4a5824812527b9a1f7b5",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 40960,
+            "features": {
+              "block_k_million": 0.02048,
+              "executed_gops": 4.096e-05,
+              "intercept": 1.0,
+              "operand_mb": 0.019584,
+              "output_melements": 0.00016,
+              "tile_read_mb": 0.16448
+            },
+            "groups": 160,
+            "k_blocks_per_group": 128,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 19584.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 4.096,
+              "memory_us": 1.9584
+            },
+            "scenario_us": 4.146,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 164480,
+            "unique_operand_bytes": 19584,
+            "useful_ops": 40960,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "ref_gemm_nt"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              2.3583496130163337,
+              3.970838879282003
+            ],
+            "measured_here": false,
+            "prediction_us": 3.0601676970886618,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 3.970838879282003,
+          "tile": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "candidate_id": "panel16",
+          "candidate_sha256": "95b1d7dd100a2215c4268b45ae9fc1aa00cfce8cc309bb415a3f9c963df6106d",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 40960,
+            "features": {
+              "block_k_million": 0.00128,
+              "executed_gops": 4.096e-05,
+              "intercept": 1.0,
+              "operand_mb": 0.019584,
+              "output_melements": 0.00016,
+              "tile_read_mb": 0.08768
+            },
+            "groups": 10,
+            "k_blocks_per_group": 128,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 19584.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 4.096,
+              "memory_us": 1.9584
+            },
+            "scenario_us": 4.146,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 87680,
+            "unique_operand_bytes": 19584,
+            "useful_ops": 40960,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "03b59a75fcaf67ae320e0287c2e348d4d9f073400c8a67e39b2530053892313e"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "cpu_panel16"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              3.93646201487521,
+              6.627964034344807
+            ],
+            "measured_here": false,
+            "prediction_us": 5.10790844251905,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 6.627964034344807,
+          "tile": [
+            1,
+            16,
+            1
+          ]
+        },
+        {
+          "candidate_id": "panel1",
+          "candidate_sha256": "45a5f1c3fe7662d04fcbf9fa6ddaf6c0a33940a718dab5ccf57c2b94b15394cc",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 40960,
+            "features": {
+              "block_k_million": 0.02048,
+              "executed_gops": 4.096e-05,
+              "intercept": 1.0,
+              "operand_mb": 0.019584,
+              "output_melements": 0.00016,
+              "tile_read_mb": 0.16448
+            },
+            "groups": 160,
+            "k_blocks_per_group": 128,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 19584.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 4.096,
+              "memory_us": 1.9584
+            },
+            "scenario_us": 4.146,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 164480,
+            "unique_operand_bytes": 19584,
+            "useful_ops": 40960,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "03b59a75fcaf67ae320e0287c2e348d4d9f073400c8a67e39b2530053892313e"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "cpu_panel1"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              7.063112598993305,
+              11.89241915703824
+            ],
+            "measured_here": false,
+            "prediction_us": 9.165014761613106,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 11.89241915703824,
+          "tile": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "candidate_id": "panel4",
+          "candidate_sha256": "580a25dfc2dbe962ad66888f48f33093377e42c255f67bfc7db19df8717e68c3",
+          "cost": {
+            "accumulator_register_estimate": 1,
+            "achieved_occupancy_proved": false,
+            "cold_resource_floor_us": null,
+            "confidence_interval": null,
+            "estimate_kind": "UNCALIBRATED_SCENARIO",
+            "executed_ops": 40960,
+            "features": {
+              "block_k_million": 0.00512,
+              "executed_gops": 4.096e-05,
+              "intercept": 1.0,
+              "operand_mb": 0.019584,
+              "output_melements": 0.00016,
+              "tile_read_mb": 0.10304
+            },
+            "groups": 40,
+            "k_blocks_per_group": 128,
+            "lds_traffic_bytes": 0,
+            "model": "gemm-cost/1",
+            "physical_vgpr_allocation": null,
+            "register_limited_waves": null,
+            "resident_groups_per_wgp_upper_bound": null,
+            "scenario_bottleneck": "matrix_and_unpack_us",
+            "scenario_memory_bytes": 19584.0,
+            "scenario_terms_us": {
+              "lds_us": 0.0,
+              "matrix_and_unpack_us": 4.096,
+              "memory_us": 1.9584
+            },
+            "scenario_us": 4.146,
+            "scratch_traffic_modeled": false,
+            "split_reduction_bytes": 0,
+            "tile_efficiency": 1.0,
+            "tile_requested_bytes": 103040,
+            "unique_operand_bytes": 19584,
+            "useful_ops": 40960,
+            "warnings": [
+              "warm/unknown cache: VRAM traffic is a cold-style scenario, not a lower bound"
+            ]
+          },
+          "identity": {
+            "kind": "plugin",
+            "provenance": "compiled CPU code, not GPU emulation",
+            "sha256": "03b59a75fcaf67ae320e0287c2e348d4d9f073400c8a67e39b2530053892313e"
+          },
+          "input_layout": "f32-contiguous",
+          "launch": {
+            "op": "gemm_nt",
+            "params": {
+              "dtype": "f32"
+            },
+            "row": "cpu_panel4"
+          },
+          "output_layout": "f32-contiguous",
+          "prediction": {
+            "interval_us": [
+              10.834968064268605,
+              18.24322916666667
+            ],
+            "measured_here": false,
+            "prediction_us": 14.059331613201493,
+            "reasons": [],
+            "status": "CALIBRATED_IN_RANGE"
+          },
+          "ranking_score_us": 18.24322916666667,
+          "tile": [
+            1,
+            4,
+            1
+          ]
+        }
+      ],
+      "ranking_basis": "calibrated upper envelope",
+      "rejected": [],
+      "shape": {
+        "K": 128,
+        "M": 5,
+        "N": 32
+      },
+      "shape_key": "f46e44501d196f6b9b60d48d9479d70a44238b719cda471e2811b223de6c7a9b",
+      "status": "NEEDS_MEASUREMENT",
+      "suggested_candidate": "libref",
+      "workload_id": "cpu-M5-N32-K128"
+    }
+  ],
+  "workloads_sha256": "f9f28671672f114a543a13723a67ac0738716040a1a4c443ca25769bd4c27b54"
+}

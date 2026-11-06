@@ -1,0 +1,7 @@
+SOURCE_FAMILY_COST_CATALOG_CREATED; no code generated
+OPERATOR_SCENARIOS_CREATED; GPU executed: false
+GRAPH_SCENARIO_CREATED; TP2 runtime executed: false
+ASSUMPTION_STRESS_TEST_ONLY; not confidence or measurements
+PARTIAL_MODEL_WORKLOADS_CREATED; no model TPS prediction
+OPERATOR_SCENARIOS_CREATED; GPU executed: false
+FLOW_SCENARIOS_AND_TESTS_COMPLETE: /mnt/data/v06-work/flow-validation. No GPU/TP2 execution or calibration.

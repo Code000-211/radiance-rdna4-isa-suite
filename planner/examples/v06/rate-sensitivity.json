@@ -1,0 +1,309 @@
+{
+  "schema": "radiance-system-scenarios/1",
+  "systems": [
+    {
+      "devices": [
+        {
+          "arch": "gfx1201",
+          "dram_bytes_per_us": 448000.0,
+          "exp_ops_per_us": 10000.0,
+          "id": "gpu0",
+          "kernel_slots": 1,
+          "launch_us": 3.0,
+          "matrix_ops_per_us": {
+            "wmma_f16": 124150000.0,
+            "wmma_fp8": 248950000.0,
+            "wmma_i4": 497900000.0,
+            "wmma_i8": 248950000.0
+          },
+          "memory_bytes": 34359738368,
+          "provenance": "assumed",
+          "vector_ops_per_us": 6000000.0
+        },
+        {
+          "arch": "gfx1201",
+          "dram_bytes_per_us": 448000.0,
+          "exp_ops_per_us": 10000.0,
+          "id": "gpu1",
+          "kernel_slots": 1,
+          "launch_us": 3.0,
+          "matrix_ops_per_us": {
+            "wmma_f16": 124150000.0,
+            "wmma_fp8": 248950000.0,
+            "wmma_i4": 497900000.0,
+            "wmma_i8": 248950000.0
+          },
+          "memory_bytes": 34359738368,
+          "provenance": "assumed",
+          "vector_ops_per_us": 6000000.0
+        }
+      ],
+      "environment": {
+        "compiler": "UNBOUND",
+        "power_clock": "UNMEASURED",
+        "purpose": "analytical demonstration",
+        "runtime": "UNBOUND",
+        "target": "example dual gfx1201"
+      },
+      "id": "nominal-assumptions",
+      "links": [
+        {
+          "access": "push",
+          "bytes_per_us": 25000.0,
+          "id": "gpu0-to-gpu1-push",
+          "latency_us": 2.0,
+          "provenance": "assumed",
+          "shared_resources": [
+            "root-pcie"
+          ],
+          "source": "gpu0",
+          "target": "gpu1"
+        },
+        {
+          "access": "pull",
+          "bytes_per_us": 2500.0,
+          "id": "gpu0-to-gpu1-pull",
+          "latency_us": 2.0,
+          "provenance": "assumed",
+          "shared_resources": [
+            "root-pcie"
+          ],
+          "source": "gpu0",
+          "target": "gpu1"
+        },
+        {
+          "access": "push",
+          "bytes_per_us": 25000.0,
+          "id": "gpu1-to-gpu0-push",
+          "latency_us": 2.0,
+          "provenance": "assumed",
+          "shared_resources": [
+            "root-pcie"
+          ],
+          "source": "gpu1",
+          "target": "gpu0"
+        },
+        {
+          "access": "pull",
+          "bytes_per_us": 2500.0,
+          "id": "gpu1-to-gpu0-pull",
+          "latency_us": 2.0,
+          "provenance": "assumed",
+          "shared_resources": [
+            "root-pcie"
+          ],
+          "source": "gpu1",
+          "target": "gpu0"
+        }
+      ],
+      "notes": "All achieved rates, exp throughput, link rates, starts and concurrency are ILLUSTRATIVE assumptions. Not user hardware measurements. No manufacturer sparse multipliers.",
+      "schema": "radiance-flow-system/1",
+      "shared_resources": {
+        "root-pcie": 40000.0
+      }
+    },
+    {
+      "devices": [
+        {
+          "arch": "gfx1201",
+          "dram_bytes_per_us": 291200.0,
+          "exp_ops_per_us": 10000.0,
+          "id": "gpu0",
+          "kernel_slots": 1,
+          "launch_us": 4.5,
+          "matrix_ops_per_us": {
+            "wmma_f16": 124150000.0,
+            "wmma_fp8": 248950000.0,
+            "wmma_i4": 497900000.0,
+            "wmma_i8": 248950000.0
+          },
+          "memory_bytes": 34359738368,
+          "provenance": "assumed",
+          "vector_ops_per_us": 6000000.0
+        },
+        {
+          "arch": "gfx1201",
+          "dram_bytes_per_us": 291200.0,
+          "exp_ops_per_us": 10000.0,
+          "id": "gpu1",
+          "kernel_slots": 1,
+          "launch_us": 4.5,
+          "matrix_ops_per_us": {
+            "wmma_f16": 124150000.0,
+            "wmma_fp8": 248950000.0,
+            "wmma_i4": 497900000.0,
+            "wmma_i8": 248950000.0
+          },
+          "memory_bytes": 34359738368,
+          "provenance": "assumed",
+          "vector_ops_per_us": 6000000.0
+        }
+      ],
+      "environment": {
+        "compiler": "UNBOUND",
+        "power_clock": "UNMEASURED",
+        "purpose": "analytical demonstration",
+        "runtime": "UNBOUND",
+        "target": "example dual gfx1201"
+      },
+      "id": "lower-memory-rate",
+      "links": [
+        {
+          "access": "push",
+          "bytes_per_us": 17500.0,
+          "id": "gpu0-to-gpu1-push",
+          "latency_us": 3.0,
+          "provenance": "assumed",
+          "shared_resources": [
+            "root-pcie"
+          ],
+          "source": "gpu0",
+          "target": "gpu1"
+        },
+        {
+          "access": "pull",
+          "bytes_per_us": 1750.0,
+          "id": "gpu0-to-gpu1-pull",
+          "latency_us": 3.0,
+          "provenance": "assumed",
+          "shared_resources": [
+            "root-pcie"
+          ],
+          "source": "gpu0",
+          "target": "gpu1"
+        },
+        {
+          "access": "push",
+          "bytes_per_us": 17500.0,
+          "id": "gpu1-to-gpu0-push",
+          "latency_us": 3.0,
+          "provenance": "assumed",
+          "shared_resources": [
+            "root-pcie"
+          ],
+          "source": "gpu1",
+          "target": "gpu0"
+        },
+        {
+          "access": "pull",
+          "bytes_per_us": 1750.0,
+          "id": "gpu1-to-gpu0-pull",
+          "latency_us": 3.0,
+          "provenance": "assumed",
+          "shared_resources": [
+            "root-pcie"
+          ],
+          "source": "gpu1",
+          "target": "gpu0"
+        }
+      ],
+      "notes": "All achieved rates, exp throughput, link rates, starts and concurrency are ILLUSTRATIVE assumptions. Not user hardware measurements. No manufacturer sparse multipliers.",
+      "schema": "radiance-flow-system/1",
+      "shared_resources": {
+        "root-pcie": 28000.0
+      }
+    },
+    {
+      "devices": [
+        {
+          "arch": "gfx1201",
+          "dram_bytes_per_us": 448000.0,
+          "exp_ops_per_us": 10000.0,
+          "id": "gpu0",
+          "kernel_slots": 1,
+          "launch_us": 3.0,
+          "matrix_ops_per_us": {
+            "wmma_f16": 68282500.0,
+            "wmma_fp8": 136922500.0,
+            "wmma_i4": 273845000.0,
+            "wmma_i8": 136922500.0
+          },
+          "memory_bytes": 34359738368,
+          "provenance": "assumed",
+          "vector_ops_per_us": 6000000.0
+        },
+        {
+          "arch": "gfx1201",
+          "dram_bytes_per_us": 448000.0,
+          "exp_ops_per_us": 10000.0,
+          "id": "gpu1",
+          "kernel_slots": 1,
+          "launch_us": 3.0,
+          "matrix_ops_per_us": {
+            "wmma_f16": 68282500.0,
+            "wmma_fp8": 136922500.0,
+            "wmma_i4": 273845000.0,
+            "wmma_i8": 136922500.0
+          },
+          "memory_bytes": 34359738368,
+          "provenance": "assumed",
+          "vector_ops_per_us": 6000000.0
+        }
+      ],
+      "environment": {
+        "compiler": "UNBOUND",
+        "power_clock": "UNMEASURED",
+        "purpose": "analytical demonstration",
+        "runtime": "UNBOUND",
+        "target": "example dual gfx1201"
+      },
+      "id": "lower-matrix-rate",
+      "links": [
+        {
+          "access": "push",
+          "bytes_per_us": 25000.0,
+          "id": "gpu0-to-gpu1-push",
+          "latency_us": 2.0,
+          "provenance": "assumed",
+          "shared_resources": [
+            "root-pcie"
+          ],
+          "source": "gpu0",
+          "target": "gpu1"
+        },
+        {
+          "access": "pull",
+          "bytes_per_us": 2500.0,
+          "id": "gpu0-to-gpu1-pull",
+          "latency_us": 2.0,
+          "provenance": "assumed",
+          "shared_resources": [
+            "root-pcie"
+          ],
+          "source": "gpu0",
+          "target": "gpu1"
+        },
+        {
+          "access": "push",
+          "bytes_per_us": 25000.0,
+          "id": "gpu1-to-gpu0-push",
+          "latency_us": 2.0,
+          "provenance": "assumed",
+          "shared_resources": [
+            "root-pcie"
+          ],
+          "source": "gpu1",
+          "target": "gpu0"
+        },
+        {
+          "access": "pull",
+          "bytes_per_us": 2500.0,
+          "id": "gpu1-to-gpu0-pull",
+          "latency_us": 2.0,
+          "provenance": "assumed",
+          "shared_resources": [
+            "root-pcie"
+          ],
+          "source": "gpu1",
+          "target": "gpu0"
+        }
+      ],
+      "notes": "All achieved rates, exp throughput, link rates, starts and concurrency are ILLUSTRATIVE assumptions. Not user hardware measurements. No manufacturer sparse multipliers.",
+      "schema": "radiance-flow-system/1",
+      "shared_resources": {
+        "root-pcie": 40000.0
+      }
+    }
+  ],
+  "notes": "Three explicitly illustrative rate assumptions. No measured probability or confidence interpretation."
+}

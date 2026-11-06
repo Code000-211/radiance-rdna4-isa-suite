@@ -1,0 +1,30 @@
+{
+  "all_radiance_kernels_covered": false,
+  "cases": [
+    {
+      "backend": "host",
+      "fixture_sha256": "2021d46835a40ad17737fe6d049dd62e0b6277e4a7b358cf1b6fdc4adafe0b90",
+      "id": "libref-add-mul",
+      "kernel_rows": [
+        "libref:ref_add",
+        "libref:ref_mul"
+      ],
+      "provenance": {
+        "kind": "synthetic",
+        "note": "Synthetic integers; independently computed exact float32 oracle.",
+        "reference": "independent"
+      },
+      "report_sha256": "1cf7e7ba413537ee2f0fc0a14b2c36c668b71cdc4eb079fe4d153568e8fef36d",
+      "status": "RUNTIME_CHECKS_PASS"
+    }
+  ],
+  "corpus_sha256": "846588e95f61f9978c993c2a9a08770d03dddae4d337b484c7169ecf2e23c32b",
+  "errors": [],
+  "exit_code": 0,
+  "expected_cases": 1,
+  "passed_cases": 1,
+  "production_equivalence_proved": false,
+  "schema": "radiance-replay-corpus-result/1",
+  "scope": "Synthetic real-libref add/mul host window only",
+  "status": "CORPUS_CHECKS_PASS"
+}

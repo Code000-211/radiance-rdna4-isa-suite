@@ -1,0 +1,127 @@
+{
+  "schema": "radiance-suite-release-validation/1",
+  "suite_version": "0.5",
+  "date": "2026-10-27",
+  "test_groups": {
+    "static_isa": 162,
+    "existing_replay_python": 142,
+    "native_host": 43,
+    "host_asan": 8,
+    "offline_planner": 114,
+    "total": 469,
+    "failed": 0,
+    "skipped": 0
+  },
+  "native_builds": {
+    "host": "freshly built actual supplied-source Radiance components",
+    "asan": "fresh clang instrumented host build",
+    "full_engine_built": false,
+    "monolithic_kbench_built": false,
+    "gpu_execution": false,
+    "hip_compilation": false
+  },
+  "cpu_experiment": {
+    "all_correctness_checks_passed": true,
+    "candidate_count": 4,
+    "cpu_to_gpu_conversion": false,
+    "gpu_execution": false,
+    "host_noise_controlled": false,
+    "hybrid_surrogate_held_out": {
+      "max_selection_regret": 0.0,
+      "median_relative_latency_error": 0.0560099420661212,
+      "median_selection_regret": 0.0,
+      "p90_relative_latency_error": 0.2550989217500479,
+      "per_shape_regret": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "separated_correct": 2,
+      "separated_decisions": 2,
+      "simultaneous_envelope_coverage": 0.9,
+      "test_groups": 10,
+      "test_rows": 40,
+      "top1": 1.0,
+      "top3": 1.0
+    },
+    "replay_executions": 160,
+    "schema": "radiance-planner-cpu-comparison/1",
+    "shape_groups": 40,
+    "simple_ops_only_baseline": {
+      "max_selection_regret": 0.8178415470991891,
+      "median_relative_latency_error": 0.0810348712161243,
+      "median_selection_regret": 0.0
+    },
+    "timed_repetitions_per_run": 15,
+    "warmups_per_run": 2
+  },
+  "source_modules_preserved": [
+    {
+      "directory": "radisa",
+      "byte_identical_files": 7
+    },
+    {
+      "directory": "radreplay",
+      "byte_identical_files": 11
+    },
+    {
+      "directory": "replay",
+      "byte_identical_files": 8
+    },
+    {
+      "directory": "tests",
+      "byte_identical_files": 7
+    },
+    {
+      "directory": "replay_tests",
+      "byte_identical_files": 13
+    },
+    {
+      "directory": "integration",
+      "byte_identical_files": 8
+    }
+  ],
+  "cli_revalidation": {
+    "all_160_replay_reports_reimported": true,
+    "recomputed_calibration_byte_identical": true,
+    "actual_compiled_resource_import_smoke": "resource-import-smoke.json",
+    "r9700_plan": "r9700-offline-plan.json",
+    "serial_path": "serial-path-example.json"
+  },
+  "native_binary_hashes": {
+    "/mnt/data/planner_work/host/rad-kbench-replay": "3823f1d0568af49403a46380984a5b4ec2a7e1cb24077fb6c972798dd7c7c8a8",
+    "/mnt/data/planner_work/host/libref.so": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513",
+    "/mnt/data/planner_work/cpu-plugin/planner_cpu.so": "03b59a75fcaf67ae320e0287c2e348d4d9f073400c8a67e39b2530053892313e",
+    "/mnt/data/planner_work/regression-v05/normal/rad-kbench-replay": "3823f1d0568af49403a46380984a5b4ec2a7e1cb24077fb6c972798dd7c7c8a8",
+    "/mnt/data/planner_work/regression-v05/asan/rad-kbench-replay": "e81826c1c622e47ebc676ebfa6cbb107a3f67ca82bd48cbf990cd191f379af80"
+  },
+  "commands_executed": [
+    "cmake -S replay/host-test -B AUTHORING_HOST -DRADIANCE_SOURCE=SUPPLIED_SOURCE -DCMAKE_BUILD_TYPE=Release; cmake --build AUTHORING_HOST",
+    "cmake -S planner/native -B AUTHORING_PLUGIN -DRADIANCE_SOURCE=SUPPLIED_SOURCE -DCMAKE_BUILD_TYPE=Release; cmake --build AUTHORING_PLUGIN",
+    "planner.sh cpu-demo --worker AUTHORING_HOST/rad-kbench-replay --libref AUTHORING_HOST/libref.so --plugin AUTHORING_PLUGIN/planner_cpu.so --out NEW_EXPERIMENT --execute-trusted-code",
+    "check.sh",
+    "check-planner.sh",
+    "python3 -m unittest discover -s replay_tests/native -v (fresh-build RAD_REPLAY_TEST_BUILD and LIBREF)",
+    "python3 -m unittest discover -s replay_tests/asan -v (fresh-build RAD_REPLAY_ASAN_BUILD)",
+    "planner.sh import-replay (all 160 retained reports)",
+    "planner.sh fit (retained exact inputs, seed 7; output byte comparison)",
+    "radisa collect/audit fixtures/smoke.hsaco; bind_resources actual ELF metadata smoke",
+    "planner.sh plan (seven uncalibrated R9700 workloads); planner.sh path (abstract serial example)"
+  ],
+  "orchestration_note": "Initial fresh host build invocation reached authoring tool time limit; incremental continuation finished successfully before native tests. No timed-out test was counted as pass.",
+  "limits": [
+    "CPU timing is not GPU timing or simulation",
+    "No R9700 calibrated model supplied",
+    "Dense GEMM and one source adapter only",
+    "No auto kernel generation or production dispatch change",
+    "No TP2/overlap/raw-tape or full-model latency proof",
+    "All evidence is trusted local input, not remote attestation"
+  ]
+}

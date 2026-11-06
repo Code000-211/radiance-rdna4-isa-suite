@@ -1,0 +1,11 @@
+{
+  "aql_patch_sequence": [
+    "aql-capture.patch",
+    "aql-dispatch-trace.patch"
+  ],
+  "source_archive_sha256": "fac881c3b20d3918a632221d67d6e15fa110edab75f9d92476be9c405515baa9",
+  "sequential_application_exit_code": 0,
+  "hip_hsa_compile": false,
+  "gpu_execution": false,
+  "scope": "actual supplied source; host C ABI collector tested separately"
+}

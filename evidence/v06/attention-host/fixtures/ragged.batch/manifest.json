@@ -1,0 +1,319 @@
+{
+  "schema": "radiance-kernel-replay/1",
+  "id": "ragged.batch",
+  "provenance": {
+    "kind": "synthetic",
+    "reference": "independent",
+    "note": "Synthetic finite f32 paged-attention host fixture; permuted pages; independent Python fsum/stable-softmax oracle. Not production activations."
+  },
+  "target": {
+    "backend": "host",
+    "arch": "host",
+    "world_size": 1
+  },
+  "plugins": [
+    {
+      "id": "p0",
+      "name": "libref",
+      "sha256": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513",
+      "abi": 30
+    }
+  ],
+  "allocations": [
+    {
+      "id": "q",
+      "kind": "host",
+      "bytes": 512,
+      "alignment": 256,
+      "initial": {
+        "path": "blobs/ebb07e8d897acd537b9a897451e8532b5094682efae670442b5e14224fde9572",
+        "sha256": "ebb07e8d897acd537b9a897451e8532b5094682efae670442b5e14224fde9572",
+        "bytes": 512
+      },
+      "mutable": false,
+      "relocations": []
+    },
+    {
+      "id": "kv",
+      "kind": "host",
+      "bytes": 3584,
+      "alignment": 256,
+      "initial": {
+        "path": "blobs/64a879c1b55469d088f0b71cdc66d54ff4d68e906a682b657e3040a21ec80fa7",
+        "sha256": "64a879c1b55469d088f0b71cdc66d54ff4d68e906a682b657e3040a21ec80fa7",
+        "bytes": 3584
+      },
+      "mutable": false,
+      "relocations": []
+    },
+    {
+      "id": "bt",
+      "kind": "host",
+      "bytes": 40,
+      "alignment": 256,
+      "initial": {
+        "path": "blobs/f0f9a3734bcd6c6a90085650ada1fce29b641bc7b4339f3fa96c2aa55bf89def",
+        "sha256": "f0f9a3734bcd6c6a90085650ada1fce29b641bc7b4339f3fa96c2aa55bf89def",
+        "bytes": 40
+      },
+      "mutable": false,
+      "relocations": []
+    },
+    {
+      "id": "su",
+      "kind": "host",
+      "bytes": 8,
+      "alignment": 256,
+      "initial": {
+        "path": "blobs/776cb3ac6d27fd18cd976f89e1a2c2c2c9d42192de9dc7dde3d7df7beffb8d1d",
+        "sha256": "776cb3ac6d27fd18cd976f89e1a2c2c2c9d42192de9dc7dde3d7df7beffb8d1d",
+        "bytes": 8
+      },
+      "mutable": false,
+      "relocations": []
+    },
+    {
+      "id": "out",
+      "kind": "host",
+      "bytes": 512,
+      "alignment": 256,
+      "initial": {
+        "path": "blobs/076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+        "sha256": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+        "bytes": 512
+      },
+      "mutable": true,
+      "relocations": []
+    },
+    {
+      "id": "cu",
+      "kind": "host",
+      "bytes": 12,
+      "alignment": 256,
+      "initial": {
+        "path": "blobs/e9df879ac2410b03261a92cd22d1f967bc107f8a4cdfa343f43027fa5e654156",
+        "sha256": "e9df879ac2410b03261a92cd22d1f967bc107f8a4cdfa343f43027fa5e654156",
+        "bytes": 12
+      },
+      "mutable": false,
+      "relocations": []
+    }
+  ],
+  "views": [
+    {
+      "id": "q",
+      "allocation": "q",
+      "offset": 0,
+      "bytes": 512,
+      "dtype": 1,
+      "shape": [
+        4,
+        4,
+        8
+      ],
+      "stride": [
+        32,
+        8,
+        1
+      ]
+    },
+    {
+      "id": "kv",
+      "allocation": "kv",
+      "offset": 0,
+      "bytes": 3584,
+      "dtype": 1,
+      "shape": [
+        7,
+        2,
+        4,
+        16
+      ],
+      "stride": [
+        128,
+        64,
+        16,
+        1
+      ]
+    },
+    {
+      "id": "bt",
+      "allocation": "bt",
+      "offset": 0,
+      "bytes": 40,
+      "dtype": 11,
+      "shape": [
+        2,
+        5
+      ],
+      "stride": [
+        5,
+        1
+      ]
+    },
+    {
+      "id": "su",
+      "allocation": "su",
+      "offset": 0,
+      "bytes": 8,
+      "dtype": 11,
+      "shape": [
+        2
+      ],
+      "stride": [
+        1
+      ]
+    },
+    {
+      "id": "out",
+      "allocation": "out",
+      "offset": 0,
+      "bytes": 512,
+      "dtype": 1,
+      "shape": [
+        4,
+        4,
+        8
+      ],
+      "stride": [
+        32,
+        8,
+        1
+      ]
+    },
+    {
+      "id": "cu",
+      "allocation": "cu",
+      "offset": 0,
+      "bytes": 12,
+      "dtype": 11,
+      "shape": [
+        3
+      ],
+      "stride": [
+        1
+      ]
+    }
+  ],
+  "streams": [
+    {
+      "id": "q0",
+      "priority": 0
+    }
+  ],
+  "nodes": [
+    {
+      "id": "attention",
+      "kind": "kernel",
+      "stream": "q0",
+      "phase": "measure",
+      "plugin": "p0",
+      "row": "ref_attn_paged",
+      "op": "attn_paged",
+      "tensors": [
+        "q",
+        "kv",
+        "bt",
+        "su",
+        null,
+        null,
+        "cu",
+        "out"
+      ],
+      "accesses": [
+        {
+          "view": "q",
+          "mode": "r"
+        },
+        {
+          "view": "kv",
+          "mode": "r"
+        },
+        {
+          "view": "bt",
+          "mode": "r"
+        },
+        {
+          "view": "su",
+          "mode": "r"
+        },
+        {
+          "view": "out",
+          "mode": "w"
+        },
+        {
+          "view": "cu",
+          "mode": "r"
+        }
+      ],
+      "params": [
+        {
+          "key": "q_len",
+          "kind": "int",
+          "value": 3
+        },
+        {
+          "key": "head_dim",
+          "kind": "int",
+          "value": 8
+        },
+        {
+          "key": "gqa",
+          "kind": "int",
+          "value": 2
+        },
+        {
+          "key": "block_size",
+          "kind": "int",
+          "value": 4
+        },
+        {
+          "key": "causal",
+          "kind": "int",
+          "value": 1
+        },
+        {
+          "key": "window",
+          "kind": "int",
+          "value": 0
+        },
+        {
+          "key": "q_dtype",
+          "kind": "str",
+          "value": "f32"
+        },
+        {
+          "key": "kv_dtype",
+          "kind": "str",
+          "value": "f32"
+        },
+        {
+          "key": "scale",
+          "kind": "f64",
+          "value": 0.35355339059327373
+        }
+      ],
+      "scratch_bytes": 0
+    }
+  ],
+  "checks": [
+    {
+      "view": "out",
+      "expected": {
+        "path": "blobs/6086807feeed062d53f3114d3fe9059d4b5c18db0773e57f06c8b7ab90c0128f",
+        "sha256": "6086807feeed062d53f3114d3fe9059d4b5c18db0773e57f06c8b7ab90c0128f",
+        "bytes": 512
+      },
+      "mode": "float",
+      "atol": 3e-05,
+      "rtol": 3e-05,
+      "rel_l2": 3e-05,
+      "nonfinite": "reject"
+    }
+  ],
+  "contract": {
+    "pointer_fields_complete": true,
+    "hidden_state": "none",
+    "execution": "ordered-launchers"
+  }
+}

@@ -1,0 +1,48 @@
+[0/2] Re-checking globbed directories...
+[1/184] Building CXX object vendor/CMakeFiles/rad_vendor_llama.dir/llama/src/unicode-data.cpp.o
+[2/184] Building CXX object vendor/CMakeFiles/rad_vendor_llama.dir/llama/common/unicode.cpp.o
+[3/184] Building CXX object vendor/CMakeFiles/rad_vendor_llama.dir/llama/common/jinja/lexer.cpp.o
+[4/184] Building CXX object vendor/CMakeFiles/rad_vendor_llama.dir/llama/common/jinja/parser.cpp.o
+[5/184] Building CXX object vendor/CMakeFiles/rad_vendor_llama.dir/llama/src/unicode.cpp.o
+[6/184] Building CXX object vendor/CMakeFiles/rad_vendor_llama.dir/llama/common/jinja/string.cpp.o
+[7/184] Building CXX object vendor/CMakeFiles/rad_vendor_llama.dir/llama/common/jinja/runtime.cpp.o
+[8/184] Building CXX object vendor/CMakeFiles/rad_vendor_llama.dir/llama/common/jinja/caps.cpp.o
+[9/184] Building CXX object vendor/CMakeFiles/rad_vendor_llama.dir/llama/common/jinja/value.cpp.o
+[10/184] Building CXX object vendor/CMakeFiles/rad_vendor_llama.dir/llama/common/chat-peg-parser.cpp.o
+[11/184] Building CXX object vendor/CMakeFiles/rad_vendor_llama.dir/llama/common/chat.cpp.o
+[12/184] Building CXX object vendor/CMakeFiles/rad_vendor_llama.dir/llama/common/chat-auto-parser-generator.cpp.o
+[13/184] Building CXX object vendor/CMakeFiles/rad_vendor_llama.dir/llama/common/chat-auto-parser-helpers.cpp.o
+[14/184] Building CXX object vendor/CMakeFiles/rad_vendor_llama.dir/llama/common/chat-diff-analyzer.cpp.o
+[15/184] Building CXX object vendor/CMakeFiles/rad_vendor_llama.dir/llama/common/peg-parser.cpp.o
+[16/184] Building CXX object vendor/CMakeFiles/rad_vendor_llama.dir/llama/common/json-schema-to-grammar.cpp.o
+[17/184] Building CXX object vendor/CMakeFiles/rad_vendor_llama.dir/llama/common/regex-partial.cpp.o
+[18/184] Building CXX object vendor/CMakeFiles/rad_vendor_llama.dir/llama/common/json-partial.cpp.o
+[19/184] Building CXX object vendor/CMakeFiles/rad_vendor_llama.dir/shim/llama_shim.cpp.o
+[20/184] Linking CXX static library vendor/librad_vendor_llama.a
+[21/184] Building CXX object core/CMakeFiles/rad_core.dir/util/rad_util.cpp.o
+[22/184] Building CXX object core/CMakeFiles/rad_core.dir/util/stallwatch.cpp.o
+[23/184] Building CXX object core/CMakeFiles/rad_core.dir/device/aql.cpp.o
+[24/184] Building CXX object core/CMakeFiles/rad_core.dir/device/aql_code.cpp.o
+[25/184] Building CXX object core/CMakeFiles/rad_core.dir/device/directio.cpp.o
+[26/184] Building CXX object core/CMakeFiles/rad_core.dir/device/dispatch.cpp.o
+[27/184] Building CXX object core/CMakeFiles/rad_core.dir/device/hip.cpp.o
+[28/184] Building CXX object core/CMakeFiles/rad_core.dir/device/host.cpp.o
+[29/184] Building CXX object core/CMakeFiles/rad_core.dir/plugin/bands.cpp.o
+[30/184] Building CXX object core/CMakeFiles/rad_core.dir/plugin/loader.cpp.o
+[31/184] Building CXX object core/CMakeFiles/rad_core.dir/plugin/schema.cpp.o
+[32/184] Building CXX object vendor/CMakeFiles/rad_vendor_httplib.dir/cpp-httplib/httplib.cpp.o
+[33/184] Linking CXX static library vendor/librad_vendor_httplib.a
+[34/184] Building CXX object core/CMakeFiles/rad_core.dir/build/rad_bufplan.cpp.o
+[35/184] Building CXX object core/CMakeFiles/rad_core.dir/plugin/select.cpp.o
+[36/184] Building CXX object core/CMakeFiles/rad_core.dir/build/rad_builder.cpp.o
+[37/184] Building CXX object core/CMakeFiles/rad_core.dir/build/rad_graph.cpp.o
+[38/184] Building CXX object core/CMakeFiles/rad_core.dir/runtime/arena.cpp.o
+[39/184] Building CXX object core/CMakeFiles/rad_core.dir/runtime/ctx.cpp.o
+FAILED: core/CMakeFiles/rad_core.dir/runtime/ctx.cpp.o 
+/usr/bin/c++ -DCPPHTTPLIB_FORM_URL_ENCODED_PAYLOAD_MAX_LENGTH=1048576 -DCPPHTTPLIB_LISTEN_BACKLOG=512 -DCPPHTTPLIB_REQUEST_URI_MAX_LENGTH=32768 -DCPPHTTPLIB_TCP_NODELAY=1 -DCPPHTTPLIB_WEBSOCKET_MAX_PAYLOAD_LENGTH=2097152 -DCPPHTTPLIB_WEBSOCKET_READ_TIMEOUT_SECOND=60 -DRAD_DEFAULT_HOME=\"/usr/local/share/radiance\" -DRAD_VERSION=\"1.12.0\" -I/mnt/data/v03_work/src/radiance/core -I/mnt/data/v03_work/src/radiance/abi -I/mnt/data/v03_work/build-host/rad_include -I/mnt/data/v03_work/src/radiance/vendor/cpp-httplib -isystem /mnt/data/v03_work/src/radiance/vendor -isystem /mnt/data/v03_work/src/radiance/vendor/shim -isystem /mnt/data/v03_work/src/radiance/vendor/llama/common -O3 -DNDEBUG -std=gnu++20 -fPIC -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -MD -MT core/CMakeFiles/rad_core.dir/runtime/ctx.cpp.o -MF core/CMakeFiles/rad_core.dir/runtime/ctx.cpp.o.d -o core/CMakeFiles/rad_core.dir/runtime/ctx.cpp.o -c /mnt/data/v03_work/src/radiance/core/runtime/ctx.cpp
+/mnt/data/v03_work/src/radiance/core/runtime/ctx.cpp:6:10: fatal error: kvstream/bind.h: No such file or directory
+    6 | #include "kvstream/bind.h"
+      |          ^~~~~~~~~~~~~~~~~
+compilation terminated.
+[40/184] Building CXX object core/CMakeFiles/rad_core.dir/build/startup.cpp.o
+ninja: build stopped: subcommand failed.

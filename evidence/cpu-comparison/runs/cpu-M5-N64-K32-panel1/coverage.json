@@ -1,0 +1,32 @@
+{
+  "all_radiance_kernels_covered": false,
+  "fixture": {
+    "all_radiance_kernels_covered": false,
+    "allocation_bytes_including_scratch": 10112,
+    "blob_bytes": 11392,
+    "id": "cpu-M5-N64-K32-panel1",
+    "kernel_nodes": [
+      "gemm"
+    ],
+    "kernel_rows": [
+      "planner_cpu:cpu_panel1"
+    ],
+    "manifest_sha256": "3a96b561c1c2970f9d285aba7628c26a9f8964480e0bebe03fb55f82fbb20690",
+    "node_count": 1,
+    "provenance": {
+      "kind": "synthetic",
+      "note": "CPU-only planner comparison; independent fsum oracle; not production activation snapshot.",
+      "reference": "independent"
+    },
+    "runtime_executed": false,
+    "schema": "radiance-kernel-replay/1",
+    "status": "FIXTURE_VALID",
+    "stream_count": 1
+  },
+  "isa": {
+    "status": "NOT_APPLICABLE_HOST"
+  },
+  "production_equivalence_proved": false,
+  "runtime_status": "RUNTIME_CHECKS_PASS",
+  "schema": "radiance-replay-coverage/1"
+}

@@ -1,0 +1,71 @@
+{
+  "backend": "host",
+  "checked_iterations": 17,
+  "checks_per_iteration": 1,
+  "device": {
+    "arch": "host",
+    "dma_lane": "",
+    "n_cu": 5,
+    "name": "AMD EPYC 9V74 80-Core Processor",
+    "ordinal": 0,
+    "pci_address": "",
+    "runtime_version": "",
+    "vram_bytes": 3118428160
+  },
+  "diagnostics": {
+    "allocation_byte_bounds_not_scalar_element_bounds": true,
+    "checked_nodes": 1,
+    "completed_passes": 3,
+    "explicit_checkpoints": 0,
+    "intermediate_equality": "explicit checkpoint tolerances, then exact bytes for remaining writes against same-candidate baseline",
+    "output_poison_scope": "packed exact-span output-only operands, excluding all readable aliases; other views not covered",
+    "output_poison_variants": 2,
+    "per_operation_write_contracts": true,
+    "poisoned_output_bytes_total": 8192,
+    "race_freedom_proved": false,
+    "read_checks": "NOT_CHECKED",
+    "scratch_contracts": true,
+    "status": "PASS"
+  },
+  "dispatch_plan": "typed pre-resolved launcher plan; no JSON/disk I/O in measured submit loop",
+  "fixture_sha256": "050efcc0d2580b219e7494728359bb2a9b50cfb01357a3bc67174ec6af42fb71",
+  "measurement": "host ordered launcher-window steady_clock time",
+  "physical_bytes_with_guards": 37120,
+  "reference": "independent",
+  "restore_policy": "restore every allocation and zero scratch before every checked iteration",
+  "samples_us": [
+    71.338,
+    79.901,
+    71.589,
+    71.449,
+    71.478,
+    85.89,
+    71.508,
+    91.359,
+    71.448,
+    71.458,
+    71.559,
+    71.398,
+    71.478,
+    71.448,
+    71.478
+  ],
+  "schema": "radiance-replay-worker-result/1",
+  "state_policy": "no hidden state; warmups and timed iterations use identical pristine bytes",
+  "statistics": {
+    "median": 71.478,
+    "min": 71.338,
+    "n": 15,
+    "p90": 85.89,
+    "p90_is_per_dispatch": false,
+    "tokens_per_second_estimated": false,
+    "unit": "us per complete window"
+  },
+  "status": "RUNTIME_CHECKS_PASS",
+  "worker_build": {
+    "compiler": "14.2.0",
+    "cxx": 202002,
+    "host_asan": false,
+    "radiance_abi": 30
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "object_sha256": "37a144d918a72dfcc4c6a283291a2173ba34bf55145aea79923eba5acd38315a",
+  "resources": {
+    "descriptor_vgprs": 8,
+    "object_sha256": "37a144d918a72dfcc4c6a283291a2173ba34bf55145aea79923eba5acd38315a",
+    "origin": "compiler_metadata",
+    "report_sha256": "28d53b9932b932ab517266d16b59d15614dda867a42b52756710baaba2f9c443",
+    "scratch_bytes": 0,
+    "symbol": "smoke.kd",
+    "vgprs": 2
+  },
+  "status": "PASS",
+  "test": "synthetic smoke-object metadata import; not a Radiance kernel mapping"
+}

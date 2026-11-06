@@ -1,0 +1,133 @@
+{
+  "schema": "radiance-suite-release-validation/4",
+  "date": "2026-10-27",
+  "bundle_version": "0.4.0",
+  "tests": {
+    "isa_cpu": {
+      "run": 162,
+      "failed": 0,
+      "skipped": 0
+    },
+    "replay_python_and_host_collector": {
+      "run": 142,
+      "failed": 0,
+      "skipped": 0
+    },
+    "native_host": {
+      "run": 43,
+      "failed": 0,
+      "skipped": 0
+    },
+    "host_asan": {
+      "run": 8,
+      "failed": 0,
+      "skipped": 0
+    },
+    "total_run": 355
+  },
+  "standalone_script": {
+    "command": "check-all-host.sh RADIANCE_SOURCE NEW_WORK_DIRECTORY",
+    "executed_end_to_end": true,
+    "fresh_build_directory": true,
+    "exit_code": 0
+  },
+  "additional_executions": {
+    "independent_f32_gemm_fixtures": 46,
+    "declared_libref_rows": 210,
+    "tested_libref_rows_in_boundary_corpus": 1,
+    "aa_control_blocks": 3,
+    "aa_control_worker_runs": 12,
+    "retained_counterexample_and_control_runs": 8,
+    "aa_is_performance_improvement_evidence": false
+  },
+  "environment": {
+    "python": "Python 3.13.5",
+    "compiler": "g++ (Debian 14.2.0-19) 14.2.0",
+    "asan_compiler": "clang version 17.0.0 (https://github.com/swiftlang/llvm-project.git 10999b6d034fe318f3d56c83bddb6572593a8bb0)",
+    "cmake": "cmake version 3.31.6",
+    "gpu_device_available": false,
+    "hip_compiler_available": false
+  },
+  "gpu_execution": false,
+  "full_engine_build": false,
+  "hip_hsa_target_build": false,
+  "tp2_execution": false,
+  "gpu_read_instrumentation_implemented": false,
+  "ordinary_aql_trace": {
+    "patch_application_checked": true,
+    "host_collector_compiled_and_tested": true,
+    "actual_aql_dispatch_validated": false
+  },
+  "static_analyzer_sources_unchanged": [
+    {
+      "path": "radisa/binary.py",
+      "sha256": "a9b500d89027c7470145dde9d39bcb725c8e220e66851f09d10c50972b166d10"
+    },
+    {
+      "path": "radisa/__init__.py",
+      "sha256": "f7403d79993a1c5655d150f77362e3d733105b0b2e4c87bd4783c21d18009bb7"
+    },
+    {
+      "path": "radisa/rules.py",
+      "sha256": "c86cdeacf5a59a856a34aa26f389b1d92156a6440a222b1deefbd827f38344d3"
+    },
+    {
+      "path": "radisa/__main__.py",
+      "sha256": "79ee6f134c5c5193377cf9b189cbdcc3e2095e49ba9cec310114441c15a917c4"
+    },
+    {
+      "path": "radisa/vopd.py",
+      "sha256": "f8fbe22ae577e07bdad123345bb5c6901843866aafb0a29429419d6614a3bdc6"
+    },
+    {
+      "path": "radisa/decode.py",
+      "sha256": "4a791245d729e39d1989371512c7dc07454c7650542df94d527078505ea3e9c6"
+    },
+    {
+      "path": "radisa/cli.py",
+      "sha256": "4a5a222f2cebc614315ea8c0a5226f75ff427ad90e0d21acc22e52aa0bb3b812"
+    }
+  ],
+  "native_artifacts_tested": [
+    {
+      "build": "normal",
+      "name": "rad-kbench-replay",
+      "sha256": "6db055e6d0735d84c11e6472f5cdf363b20900b1b572824f4cad15713b1debc4"
+    },
+    {
+      "build": "normal",
+      "name": "replay_test.so",
+      "sha256": "fb11b3e6b5efeaf7b56e57779505e9278c121315e29fd964caf54cb964bcb1c7"
+    },
+    {
+      "build": "normal",
+      "name": "libref.so",
+      "sha256": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513"
+    },
+    {
+      "build": "normal",
+      "name": "rad-replay-inventory",
+      "sha256": "f8307901c14fe804a0f78ccac3f4c83d2254ce8a49c8854a6e73a8de5c10033f"
+    },
+    {
+      "build": "asan",
+      "name": "rad-kbench-replay",
+      "sha256": "8e280e25ea4f82cc83faaf53bbcbb0d3b176c939e2540e645aaa0af0f54186ff"
+    },
+    {
+      "build": "asan",
+      "name": "replay_test.so",
+      "sha256": "879e5c410ee72fe907b80ca6edab780da616e2b72220c80194703addc1a0b904"
+    }
+  ],
+  "known_unimplemented": [
+    "gfx1201/AQL read sanitizer",
+    "TP2/P2P protocol runner",
+    "raw AQL tape/device-chain replay",
+    "opaque instance lifecycle",
+    "all-op independent oracles",
+    "production activation corpus",
+    "real engine-window performance calibration"
+  ],
+  "important_scope": "Test count is not GPU kernel count. Host-contract qualification is not complete memory safety. Reports are engineering evidence, not authenticated attestations."
+}

@@ -1,0 +1,314 @@
+{
+  "blob_paths": {
+    "939d4094183d75a371cf7dfd439ad9e9cf729e6d62bb5585d095c2a56a1ac1b2": "/mnt/data/v06-work/attention-host-final/runs/verify2/staged/939d4094183d75a371cf7dfd439ad9e9cf729e6d62bb5585d095c2a56a1ac1b2",
+    "9a090610d0aa9445db0890179a9dea330334e3b9086987e93af97dbc978fe311": "/mnt/data/v06-work/attention-host-final/runs/verify2/staged/9a090610d0aa9445db0890179a9dea330334e3b9086987e93af97dbc978fe311",
+    "d22b95a5c34a4de73968723668645eb967adb3d9f9957c762bc8b8c4e848ae87": "/mnt/data/v06-work/attention-host-final/runs/verify2/staged/d22b95a5c34a4de73968723668645eb967adb3d9f9957c762bc8b8c4e848ae87",
+    "e9b4052d1974b5cef78ab63a1889fec4ed4563806982ad8cbc1ac1c482e77fed": "/mnt/data/v06-work/attention-host-final/runs/verify2/staged/e9b4052d1974b5cef78ab63a1889fec4ed4563806982ad8cbc1ac1c482e77fed",
+    "ef115a0e0c15cdc41958ca46b5b14b456115f4baec5e3ca68599d2a8f435e3b8": "/mnt/data/v06-work/attention-host-final/runs/verify2/staged/ef115a0e0c15cdc41958ca46b5b14b456115f4baec5e3ca68599d2a8f435e3b8",
+    "f75413546b69d0fad4ee3a221788a14a9b6d86f3a432ed319c343e5966b9108a": "/mnt/data/v06-work/attention-host-final/runs/verify2/staged/f75413546b69d0fad4ee3a221788a14a9b6d86f3a432ed319c343e5966b9108a"
+  },
+  "device": 0,
+  "diagnostic_only": false,
+  "diagnostics": "contracts",
+  "fixture": {
+    "allocations": [
+      {
+        "alignment": 256,
+        "bytes": 768,
+        "id": "q",
+        "initial": {
+          "bytes": 768,
+          "path": "blobs/939d4094183d75a371cf7dfd439ad9e9cf729e6d62bb5585d095c2a56a1ac1b2",
+          "sha256": "939d4094183d75a371cf7dfd439ad9e9cf729e6d62bb5585d095c2a56a1ac1b2"
+        },
+        "kind": "host",
+        "mutable": false,
+        "relocations": []
+      },
+      {
+        "alignment": 256,
+        "bytes": 9216,
+        "id": "kv",
+        "initial": {
+          "bytes": 9216,
+          "path": "blobs/f75413546b69d0fad4ee3a221788a14a9b6d86f3a432ed319c343e5966b9108a",
+          "sha256": "f75413546b69d0fad4ee3a221788a14a9b6d86f3a432ed319c343e5966b9108a"
+        },
+        "kind": "host",
+        "mutable": false,
+        "relocations": []
+      },
+      {
+        "alignment": 256,
+        "bytes": 36,
+        "id": "bt",
+        "initial": {
+          "bytes": 36,
+          "path": "blobs/d22b95a5c34a4de73968723668645eb967adb3d9f9957c762bc8b8c4e848ae87",
+          "sha256": "d22b95a5c34a4de73968723668645eb967adb3d9f9957c762bc8b8c4e848ae87"
+        },
+        "kind": "host",
+        "mutable": false,
+        "relocations": []
+      },
+      {
+        "alignment": 256,
+        "bytes": 4,
+        "id": "su",
+        "initial": {
+          "bytes": 4,
+          "path": "blobs/9a090610d0aa9445db0890179a9dea330334e3b9086987e93af97dbc978fe311",
+          "sha256": "9a090610d0aa9445db0890179a9dea330334e3b9086987e93af97dbc978fe311"
+        },
+        "kind": "host",
+        "mutable": false,
+        "relocations": []
+      },
+      {
+        "alignment": 256,
+        "bytes": 768,
+        "id": "out",
+        "initial": {
+          "bytes": 768,
+          "path": "blobs/ef115a0e0c15cdc41958ca46b5b14b456115f4baec5e3ca68599d2a8f435e3b8",
+          "sha256": "ef115a0e0c15cdc41958ca46b5b14b456115f4baec5e3ca68599d2a8f435e3b8"
+        },
+        "kind": "host",
+        "mutable": true,
+        "relocations": []
+      }
+    ],
+    "checks": [
+      {
+        "atol": 3e-05,
+        "expected": {
+          "bytes": 768,
+          "path": "blobs/e9b4052d1974b5cef78ab63a1889fec4ed4563806982ad8cbc1ac1c482e77fed",
+          "sha256": "e9b4052d1974b5cef78ab63a1889fec4ed4563806982ad8cbc1ac1c482e77fed"
+        },
+        "mode": "float",
+        "nonfinite": "reject",
+        "rel_l2": 3e-05,
+        "rtol": 3e-05,
+        "view": "out"
+      }
+    ],
+    "contract": {
+      "execution": "ordered-launchers",
+      "hidden_state": "none",
+      "pointer_fields_complete": true
+    },
+    "id": "verify2",
+    "nodes": [
+      {
+        "accesses": [
+          {
+            "mode": "r",
+            "view": "q"
+          },
+          {
+            "mode": "r",
+            "view": "kv"
+          },
+          {
+            "mode": "r",
+            "view": "bt"
+          },
+          {
+            "mode": "r",
+            "view": "su"
+          },
+          {
+            "mode": "w",
+            "view": "out"
+          }
+        ],
+        "id": "attention",
+        "kind": "kernel",
+        "op": "attn_paged",
+        "params": [
+          {
+            "key": "q_len",
+            "kind": "int",
+            "value": 2
+          },
+          {
+            "key": "head_dim",
+            "kind": "int",
+            "value": 16
+          },
+          {
+            "key": "gqa",
+            "kind": "int",
+            "value": 3
+          },
+          {
+            "key": "block_size",
+            "kind": "int",
+            "value": 4
+          },
+          {
+            "key": "causal",
+            "kind": "int",
+            "value": 1
+          },
+          {
+            "key": "window",
+            "kind": "int",
+            "value": 0
+          },
+          {
+            "key": "q_dtype",
+            "kind": "str",
+            "value": "f32"
+          },
+          {
+            "key": "kv_dtype",
+            "kind": "str",
+            "value": "f32"
+          },
+          {
+            "key": "scale",
+            "kind": "f64",
+            "value": 0.25
+          }
+        ],
+        "phase": "measure",
+        "plugin": "p0",
+        "row": "ref_attn_paged",
+        "scratch_bytes": 0,
+        "stream": "q0",
+        "tensors": [
+          "q",
+          "kv",
+          "bt",
+          "su",
+          null,
+          null,
+          null,
+          "out"
+        ]
+      }
+    ],
+    "plugins": [
+      {
+        "abi": 30,
+        "id": "p0",
+        "name": "libref",
+        "sha256": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513"
+      }
+    ],
+    "provenance": {
+      "kind": "synthetic",
+      "note": "Synthetic finite f32 paged-attention host fixture; permuted pages; independent Python fsum/stable-softmax oracle. Not production activations.",
+      "reference": "independent"
+    },
+    "schema": "radiance-kernel-replay/1",
+    "streams": [
+      {
+        "id": "q0",
+        "priority": 0
+      }
+    ],
+    "target": {
+      "arch": "host",
+      "backend": "host",
+      "world_size": 1
+    },
+    "views": [
+      {
+        "allocation": "q",
+        "bytes": 768,
+        "dtype": 1,
+        "id": "q",
+        "offset": 0,
+        "shape": [
+          2,
+          6,
+          16
+        ],
+        "stride": [
+          96,
+          16,
+          1
+        ]
+      },
+      {
+        "allocation": "kv",
+        "bytes": 9216,
+        "dtype": 1,
+        "id": "kv",
+        "offset": 0,
+        "shape": [
+          9,
+          2,
+          4,
+          32
+        ],
+        "stride": [
+          256,
+          128,
+          32,
+          1
+        ]
+      },
+      {
+        "allocation": "bt",
+        "bytes": 36,
+        "dtype": 11,
+        "id": "bt",
+        "offset": 0,
+        "shape": [
+          1,
+          9
+        ],
+        "stride": [
+          9,
+          1
+        ]
+      },
+      {
+        "allocation": "su",
+        "bytes": 4,
+        "dtype": 11,
+        "id": "su",
+        "offset": 0,
+        "shape": [
+          1
+        ],
+        "stride": [
+          1
+        ]
+      },
+      {
+        "allocation": "out",
+        "bytes": 768,
+        "dtype": 1,
+        "id": "out",
+        "offset": 0,
+        "shape": [
+          2,
+          6,
+          16
+        ],
+        "stride": [
+          96,
+          16,
+          1
+        ]
+      }
+    ]
+  },
+  "fixture_sha256": "abe7dd5a82706ab9d082039fd6ad13a85d71da18fb3fe95e92937f14e8708e1c",
+  "gate": false,
+  "max_bytes": 2147483648,
+  "memory_check": "none",
+  "out": "/mnt/data/v06-work/attention-host-final/runs/verify2",
+  "plugin_paths": {
+    "p0": "/mnt/data/v06-work/host-validation/normal/libref.so"
+  },
+  "repetitions": 5,
+  "schema": "radiance-replay-worker/1",
+  "trace_dispatches": false,
+  "warmups": 1
+}

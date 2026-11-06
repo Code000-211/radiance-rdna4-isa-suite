@@ -1,0 +1,177 @@
+{
+  "baseline_manifest_sha256": "d5a2c005bd523c344b77daa3bcfc57d3ac5651d3f68f3132433b98974e7d8a69",
+  "baseline_worker_sha256": "6db055e6d0735d84c11e6472f5cdf363b20900b1b572824f4cad15713b1debc4",
+  "blocks": [
+    {
+      "a_us": [
+        4.497,
+        2.654
+      ],
+      "b_us": [
+        2.674,
+        4.226
+      ],
+      "index": 0
+    },
+    {
+      "a_us": [
+        2.604,
+        2.604
+      ],
+      "b_us": [
+        2.574,
+        3.315
+      ],
+      "index": 1
+    },
+    {
+      "a_us": [
+        2.684,
+        2.694
+      ],
+      "b_us": [
+        2.654,
+        2.674
+      ],
+      "index": 2
+    }
+  ],
+  "candidate_manifest_sha256": "d5a2c005bd523c344b77daa3bcfc57d3ac5651d3f68f3132433b98974e7d8a69",
+  "candidate_worker_sha256": "6db055e6d0735d84c11e6472f5cdf363b20900b1b572824f4cad15713b1debc4",
+  "exit_code": 0,
+  "order": "ABBA",
+  "production_equivalence_proved": false,
+  "requested_blocks": 3,
+  "runs": [
+    {
+      "arm": "a",
+      "block": 0,
+      "exit_code": 0,
+      "path": "0000-0-a/report.json",
+      "sha256": "a890b488e89673841d74305b256c71d37e3d3502c5103d67e8c2694dd1c24b8a",
+      "slot": 0,
+      "status": "RUNTIME_CHECKS_PASS"
+    },
+    {
+      "arm": "b",
+      "block": 0,
+      "exit_code": 0,
+      "path": "0000-1-b/report.json",
+      "sha256": "7ce2e25db93b4d1c72dd8e6155dea67adcd890a11c621f10e74896d89dbf6dee",
+      "slot": 1,
+      "status": "RUNTIME_CHECKS_PASS"
+    },
+    {
+      "arm": "b",
+      "block": 0,
+      "exit_code": 0,
+      "path": "0000-2-b/report.json",
+      "sha256": "cad869f3ddc8cf6bca631271920b6afc1a1cbe4c48b815fa9547c285dd8d9090",
+      "slot": 2,
+      "status": "RUNTIME_CHECKS_PASS"
+    },
+    {
+      "arm": "a",
+      "block": 0,
+      "exit_code": 0,
+      "path": "0000-3-a/report.json",
+      "sha256": "407423f6dc52e382eac8cb938db34f06d07b2de6358713fb06a4b3384234be3c",
+      "slot": 3,
+      "status": "RUNTIME_CHECKS_PASS"
+    },
+    {
+      "arm": "a",
+      "block": 1,
+      "exit_code": 0,
+      "path": "0001-0-a/report.json",
+      "sha256": "829e2ae826c1291bfbdfe13715d7e0465d87c90b336a941ce7ee7707175faf03",
+      "slot": 0,
+      "status": "RUNTIME_CHECKS_PASS"
+    },
+    {
+      "arm": "b",
+      "block": 1,
+      "exit_code": 0,
+      "path": "0001-1-b/report.json",
+      "sha256": "2dab075e3954a349ae45cf4692ad2ab71803b642cb549bd351d5a1068740a00d",
+      "slot": 1,
+      "status": "RUNTIME_CHECKS_PASS"
+    },
+    {
+      "arm": "b",
+      "block": 1,
+      "exit_code": 0,
+      "path": "0001-2-b/report.json",
+      "sha256": "37a2063d74f69975ff1a8592145f339204d0f1c830bf6d4591ae37254821c6b5",
+      "slot": 2,
+      "status": "RUNTIME_CHECKS_PASS"
+    },
+    {
+      "arm": "a",
+      "block": 1,
+      "exit_code": 0,
+      "path": "0001-3-a/report.json",
+      "sha256": "e4a20d8fded19a05775998b45503b2b5477fc929e4a40c098fdb6f3217911ee3",
+      "slot": 3,
+      "status": "RUNTIME_CHECKS_PASS"
+    },
+    {
+      "arm": "a",
+      "block": 2,
+      "exit_code": 0,
+      "path": "0002-0-a/report.json",
+      "sha256": "0c330a442173b94d6ecfc391d0090a4e9b79516e6cd927f8c09158449058c325",
+      "slot": 0,
+      "status": "RUNTIME_CHECKS_PASS"
+    },
+    {
+      "arm": "b",
+      "block": 2,
+      "exit_code": 0,
+      "path": "0002-1-b/report.json",
+      "sha256": "be2021e324e6dcf45db50f87db2886ae890956f973a3ed792fadd3e53991cbf7",
+      "slot": 1,
+      "status": "RUNTIME_CHECKS_PASS"
+    },
+    {
+      "arm": "b",
+      "block": 2,
+      "exit_code": 0,
+      "path": "0002-2-b/report.json",
+      "sha256": "432217c71c324809412383a479ed5553385974556f8f49fbcd6347d426108b5e",
+      "slot": 2,
+      "status": "RUNTIME_CHECKS_PASS"
+    },
+    {
+      "arm": "a",
+      "block": 2,
+      "exit_code": 0,
+      "path": "0002-3-a/report.json",
+      "sha256": "7185f81fe8d075dc973b0f564f06fc1aad44f1f5ac59d81fb9c679f11e4aa56e",
+      "slot": 3,
+      "status": "RUNTIME_CHECKS_PASS"
+    }
+  ],
+  "schema": "radiance-replay-ab/1",
+  "started_monotonic": 2317.943231134,
+  "status": "AB_MEASURED",
+  "summary": {
+    "block_ratios": [
+      0.9649000139840582,
+      1.1307603686635943,
+      0.9907028635180363
+    ],
+    "bootstrap_interval_95": [
+      0.9649000139840582,
+      1.1307603686635943
+    ],
+    "bootstrap_seed": 0,
+    "bootstrap_unit": "whole ABBA block",
+    "estimator": "median of paired block mean ratios (candidate / baseline)",
+    "individual_dispatch_percentiles": false,
+    "interval_warning": "Exploratory block bootstrap; very few blocks have weak resolution. Not a significance or production guarantee.",
+    "ratio": 0.9907028635180363,
+    "tokens_per_second_estimated": false
+  },
+  "workload_sha256": "cf8359c58945a91a7e682620eb21e01c93a26a65aa17ef1a3057ec045daa74b5"
+}

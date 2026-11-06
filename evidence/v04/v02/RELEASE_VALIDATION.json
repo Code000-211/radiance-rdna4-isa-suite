@@ -1,0 +1,73 @@
+{
+  "date": "2026-10-27",
+  "suite_version": "0.2.0",
+  "unit_test_command": "bash tools/rdna4-isa-suite/check.sh",
+  "unit_tests": {
+    "run": 162,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "subcases": {
+    "vopd_destination_encoding_roundtrips": 32768,
+    "vopd_opcode_pair_roundtrips": 238,
+    "seeded_messagepack_fuzz_inputs": 1000,
+    "capture_sha256_hashlib_crosschecks": 14
+  },
+  "environment": {
+    "python": "3.13.5",
+    "cxx": "g++ 14.2.0 (Debian 14.2.0-19)",
+    "fixture_compiler": "llvmlite LLVM 20.1.8",
+    "fixture_linker": "LLD 17.0.0",
+    "decoder": {
+      "kind": "library",
+      "llvm_version": "19.1.7",
+      "path": "libLLVM.so.19.1"
+    }
+  },
+  "end_to_end_checks": {
+    "positive": {
+      "collection_exit": 0,
+      "audit_exit": 0,
+      "status": "STATIC_CHECKS_PASS",
+      "decoder": {
+        "kind": "library",
+        "llvm_version": "19.1.7",
+        "path": "libLLVM.so.19.1"
+      },
+      "expected_kernels": 1,
+      "fully_decoded_kernels": 1
+    },
+    "negative-vopd": {
+      "collection_exit": 0,
+      "audit_exit": 1,
+      "status": "FAIL",
+      "decoder": {
+        "kind": "library",
+        "llvm_version": "19.1.7",
+        "path": "libLLVM.so.19.1"
+      },
+      "expected_kernels": 1,
+      "fully_decoded_kernels": 1
+    },
+    "empty": {
+      "collection_exit": 2,
+      "audit_exit": 2,
+      "status": "INCOMPLETE",
+      "decoder": {
+        "kind": "library",
+        "path": "libLLVM.so.19.1"
+      },
+      "expected_kernels": 0,
+      "fully_decoded_kernels": 0
+    }
+  },
+  "capture_header_compiled_and_host_tested": true,
+  "aql_patch_apply_check": true,
+  "production_radiance_gpu_objects_tested": false,
+  "radiance_full_hip_build_tested": false,
+  "gpu_execution_performed": false,
+  "invalid_fixtures_executed_on_gpu": false,
+  "full_isa_certification": false,
+  "note": "Subcase counts describe specific round trips/pattern checks, not exhaustive conformance of the entire ISA."
+}

@@ -1,0 +1,51 @@
+{
+  "review_date": "2026-10-27",
+  "inputs": [
+    {
+      "name": "RDNA4_ISA_ENGINEERING_RULES.md",
+      "bytes": 19773,
+      "sha256": "8b3612c8a7a898868951ba40db9031ef960a0a46ea373a53e2200018833dd465"
+    },
+    {
+      "name": "RADIANCE_RDNA4_ISA_PR_REPORT.md",
+      "bytes": 12425,
+      "sha256": "0c6637bb896a12708c1ea3e4d62a614f21653f22bfa47ec8fe053d4adf12021a"
+    },
+    {
+      "name": "RADIANCE_RDNA4_ISA_PR_REPORT_REVIEWED.md",
+      "bytes": 10564,
+      "sha256": "034413fcbdfec28b09c3cc53e95242e161ad0dd3efc2ccb08258f8ea9cdaac24"
+    },
+    {
+      "name": "RADIANCE_RDNA4_ISA_TESTSUITE_v0.1.zip",
+      "bytes": 19396,
+      "sha256": "cf92fd673bce29fd2fce4a8c5251af2672f3dcb273a7abb2655899c19ae3661f"
+    },
+    {
+      "name": "radiance-main(1).zip",
+      "bytes": 19460479,
+      "sha256": "fac881c3b20d3918a632221d67d6e15fa110edab75f9d92476be9c405515baa9"
+    },
+    {
+      "name": "rdna4-instruction-set-architecture(1).pdf",
+      "bytes": 3821925,
+      "sha256": "96dc97df3468a4e63a13095e2540ba13aaa75cf4635a29516b59760695e25e0c"
+    },
+    {
+      "name": "RADIANCE_RDNA4_ISA_TESTSUITE_v0.2.zip",
+      "bytes": 88173,
+      "sha256": "6f12531027bb0e472f5dedbf44f23416796fc25b8a6215181df27d2a4dded492"
+    },
+    {
+      "name": "RADIANCE_RDNA4_ISA_TESTSUITE_v0.3.zip",
+      "bytes": 174547,
+      "sha256": "fdadf5b437ad8cec214710fe77460202279008c643e62ec03bcca48369e46263"
+    },
+    {
+      "name": "RADIANCE_V03_TEST_GAPS_REPRO.zip",
+      "bytes": 15997,
+      "sha256": "b1b200fbb8b4c9a7f8021d74a8049762ae73ecd1e333ccf1eee15809110dc43d"
+    }
+  ],
+  "stage": "v0.4 replay hardening, scoped coverage and diagnostic dispatch observation"
+}

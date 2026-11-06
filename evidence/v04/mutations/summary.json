@@ -1,0 +1,71 @@
+{
+  "schema": "radiance-host-blindspot-regressions/1",
+  "status": "PASS",
+  "gpu_execution": false,
+  "cases": [
+    {
+      "name": "overread-asan",
+      "expected_exit_code": 1,
+      "actual_exit_code": 1,
+      "status": "FAIL",
+      "report": "overread-asan-result/report.json",
+      "error": "Host AddressSanitizer detected an invalid memory access; see worker.stderr"
+    },
+    {
+      "name": "missing-store",
+      "expected_exit_code": 1,
+      "actual_exit_code": 1,
+      "status": "FAIL",
+      "report": "missing-store-result/report.json",
+      "error": "diagnostic output/scratch invariance failed at tested; exact intermediate bytes differ (not a performance or race-freedom claim)"
+    },
+    {
+      "name": "scratch-before-init",
+      "expected_exit_code": 1,
+      "actual_exit_code": 1,
+      "status": "FAIL",
+      "report": "scratch-before-init-result/report.json",
+      "error": "diagnostic output/scratch invariance failed at tested; exact intermediate bytes differ (not a performance or race-freedom claim)"
+    },
+    {
+      "name": "masked-intermediate-write",
+      "expected_exit_code": 1,
+      "actual_exit_code": 1,
+      "status": "FAIL",
+      "report": "masked-intermediate-write-result/report.json",
+      "error": "operation write contract violated: tested changed read-only/undeclared bytes in x"
+    },
+    {
+      "name": "correct-copy",
+      "expected_exit_code": 0,
+      "actual_exit_code": 0,
+      "status": "RUNTIME_CHECKS_PASS",
+      "report": "correct-copy-result/report.json",
+      "error": null
+    },
+    {
+      "name": "overread-without-instrumentation",
+      "expected_exit_code": 0,
+      "actual_exit_code": 0,
+      "status": "RUNTIME_CHECKS_PASS",
+      "report": "overread-without-instrumentation-result/report.json",
+      "error": null
+    },
+    {
+      "name": "explicit-zeroed-scratch",
+      "expected_exit_code": 0,
+      "actual_exit_code": 0,
+      "status": "RUNTIME_CHECKS_PASS",
+      "report": "explicit-zeroed-scratch-result/report.json",
+      "error": null
+    },
+    {
+      "name": "correct-asan-copy",
+      "expected_exit_code": 0,
+      "actual_exit_code": 0,
+      "status": "RUNTIME_CHECKS_PASS",
+      "report": "correct-asan-copy-result/report.json",
+      "error": null
+    }
+  ]
+}

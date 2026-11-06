@@ -1,0 +1,113 @@
+{
+  "schema": "radiance-suite-release-validation/1",
+  "suite_version": "0.6",
+  "date": "2026-10-28",
+  "test_groups": {
+    "static_isa": 162,
+    "replay_python": 142,
+    "native_host": 43,
+    "host_asan": 8,
+    "planner": 245,
+    "planner_retained_v05": 114,
+    "planner_new_v06": 131,
+    "total": 600,
+    "failed": 0,
+    "skipped": 0
+  },
+  "native_builds": {
+    "genuine_source_host": "freshly rebuilt normal worker/libref/fixtures",
+    "host_asan": "fresh clang instrumented host build",
+    "full_engine_built": false,
+    "monolithic_kbench_built": false,
+    "hip_compilation": false,
+    "gpu_execution": false,
+    "tp2_runtime_execution": false
+  },
+  "new_cpu_attention": {
+    "all_checks_passed": true,
+    "checked_cases": 20,
+    "gpu_execution": false,
+    "gpu_model_calibration": false,
+    "hardware_noise_controlled": false,
+    "oracle": "independent Python fsum + stable softmax; chunked recurrence cross-check",
+    "plugin_sha256": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513",
+    "report_provenance": "actual genuine-source Radiance host replay executions, not synthetic timing data",
+    "row": "ref_attn_paged",
+    "schema": "radiance-v06-host-attention/1",
+    "timed_repetitions_per_case": 5,
+    "warmups_per_case": 1,
+    "worker_sha256": "a7a9bb8bec7cefecb3202bbb4e412f3faa62c64fb52f231c28a031f4d1ae8aa0"
+  },
+  "existing_host_pipeline": {
+    "schema": "radiance-host-validation/1",
+    "status": "HOST_PIPELINE_PASS",
+    "fixture_cases": 46,
+    "tested_plugin_rows": 1,
+    "declared_plugin_rows": 210,
+    "gpu_execution": false,
+    "tp2_execution": false,
+    "whole_engine_built": false
+  },
+  "offline_scenarios": {
+    "source_files_pinned": 12,
+    "source_cost_hypotheses": 37,
+    "example_workloads": 7,
+    "graph_candidate_combinations": 96,
+    "graph_assignments_evaluated": 96,
+    "sensitivity_profiles": 3,
+    "partial_model_operator_occurrences": 144,
+    "unbound_dense_shape_requests": 120,
+    "unmodeled_recurrent_layers": 36,
+    "strict_require_calibrated_exit_code": 2,
+    "all_new_gpu_plans_require_measurement": true
+  },
+  "preserved_components": [
+    {
+      "directory": "radisa",
+      "checked": 7,
+      "changed": []
+    },
+    {
+      "directory": "radreplay",
+      "checked": 11,
+      "changed": []
+    },
+    {
+      "directory": "replay",
+      "checked": 8,
+      "changed": []
+    },
+    {
+      "directory": "integration",
+      "checked": 8,
+      "changed": []
+    },
+    {
+      "directory": "tests",
+      "checked": 7,
+      "changed": []
+    },
+    {
+      "directory": "replay_tests",
+      "checked": 13,
+      "changed": []
+    }
+  ],
+  "sources": "V06_INPUTS.json and radplan/source_ops.py::PINNED",
+  "historical_evidence": "v0.5 cpu-comparison and v05 logs/release retained unchanged as historical, not newly measured",
+  "commands_executed": [
+    "check-all-host.sh RADIANCE_SOURCE NEW_WORK_DIRECTORY",
+    "check.sh",
+    "check-planner.sh",
+    "check-planner-flow.sh RADIANCE_SOURCE NEW_OUTPUT_DIRECTORY",
+    "planner.sh attention-cpu-demo --worker REAL_HOST_WORKER --libref REAL_LIBREF --out NEW_OUTPUT --execute-trusted-code"
+  ],
+  "remaining": [
+    "no AMD GPU/TP2 or full HIP build",
+    "no new-operator empirical GPU calibration or native dispatch mappings",
+    "no GPU read sanitizer or raw AQL tape/chain backend",
+    "no GDN/full-model graph/TPS",
+    "no automatic native HIP kernel generation"
+  ],
+  "test_count_is_not_gpu_kernel_count": true
+}

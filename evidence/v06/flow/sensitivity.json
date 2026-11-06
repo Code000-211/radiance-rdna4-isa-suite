@@ -1,0 +1,505 @@
+{
+  "catalog_sha256": "30cd6fc262714f6152d26a2a52bc75ce206659567830b6047dc7a38442e72203",
+  "confidence_interval": false,
+  "deployment_approved": false,
+  "gpu_executed": false,
+  "probability_interpretation": false,
+  "profile_ids": [
+    "nominal-assumptions",
+    "lower-memory-rate",
+    "lower-matrix-rate"
+  ],
+  "profile_sha256": [
+    "8270d05cee44dfb05fe2fb1a9cf1ebf38243abe6b9ee65581d1a2838bc669a0b",
+    "f4c622d71908a8502ab9993fbef05e9c60b7a542dc39a72068b67c3a90420758",
+    "809d28ef12e6dacb9509d027e0a5e7532ab697949b44c1e91944a2470cfc5e32"
+  ],
+  "schema": "radiance-planner-sensitivity/1",
+  "scope": "Finite supplied rate/latency scenarios on one topology, not every feasible machine state.",
+  "status": "ASSUMPTION_STRESS_TEST_ONLY",
+  "workloads": [
+    {
+      "candidates": [
+        {
+          "candidate_id": "qsa.radix.t128",
+          "max_relative_regret_within_profile_set": 0.0,
+          "max_scenario_us": 324.1336401098901,
+          "min_scenario_us": 210.91186607142856,
+          "scenario_times_us": [
+            210.91186607142856,
+            324.1336401098901,
+            210.91186607142856
+          ],
+          "winner_count": 3
+        },
+        {
+          "candidate_id": "qsa.radix.t32",
+          "max_relative_regret_within_profile_set": 0.0,
+          "max_scenario_us": 324.1336401098901,
+          "min_scenario_us": 210.91186607142856,
+          "scenario_times_us": [
+            210.91186607142856,
+            324.1336401098901,
+            210.91186607142856
+          ],
+          "winner_count": 0
+        },
+        {
+          "candidate_id": "qsa.radix.t64",
+          "max_relative_regret_within_profile_set": 0.0,
+          "max_scenario_us": 324.1336401098901,
+          "min_scenario_us": 210.91186607142856,
+          "scenario_times_us": [
+            210.91186607142856,
+            324.1336401098901,
+            210.91186607142856
+          ],
+          "winner_count": 0
+        }
+      ],
+      "measurement_priority": "validate_profile_and_cost_model",
+      "minimax_profile_set_candidate": "qsa.radix.t128",
+      "same_winner_in_all_scenarios": true,
+      "scenario_winners": [
+        "qsa.radix.t128",
+        "qsa.radix.t128",
+        "qsa.radix.t128"
+      ],
+      "status": "NEEDS_MEASUREMENT",
+      "workload_id": "qsa.r0"
+    },
+    {
+      "candidates": [
+        {
+          "candidate_id": "attn.g12.8.prefill.s1",
+          "max_relative_regret_within_profile_set": 0.0,
+          "max_scenario_us": 22.76114010989011,
+          "min_scenario_us": 15.2952,
+          "scenario_times_us": [
+            15.2952,
+            22.76114010989011,
+            15.2952
+          ],
+          "winner_count": 3
+        },
+        {
+          "candidate_id": "attn.g12.8.decode.s1",
+          "max_relative_regret_within_profile_set": 0.20711992859431838,
+          "max_scenario_us": 27.475425824175826,
+          "min_scenario_us": 18.43341428571429,
+          "scenario_times_us": [
+            18.43341428571429,
+            27.475425824175826,
+            18.43341428571429
+          ],
+          "winner_count": 0
+        },
+        {
+          "candidate_id": "attn.g12.8.decode.s4",
+          "max_relative_regret_within_profile_set": 0.2353635552208162,
+          "max_scenario_us": 28.118282967032968,
+          "min_scenario_us": 18.642342857142857,
+          "scenario_times_us": [
+            18.642342857142857,
+            28.118282967032968,
+            18.642342857142857
+          ],
+          "winner_count": 0
+        },
+        {
+          "candidate_id": "attn.g12.8.prefill.s4",
+          "max_relative_regret_within_profile_set": 0.2353635552208162,
+          "max_scenario_us": 28.118282967032968,
+          "min_scenario_us": 18.642342857142857,
+          "scenario_times_us": [
+            18.642342857142857,
+            28.118282967032968,
+            18.642342857142857
+          ],
+          "winner_count": 0
+        },
+        {
+          "candidate_id": "attn.g12.8.decode.s16",
+          "max_relative_regret_within_profile_set": 0.3483380617268079,
+          "max_scenario_us": 30.689711538461538,
+          "min_scenario_us": 20.0983125,
+          "scenario_times_us": [
+            20.0983125,
+            30.689711538461538,
+            20.0983125
+          ],
+          "winner_count": 0
+        },
+        {
+          "candidate_id": "attn.g12.8.prefill.s16",
+          "max_relative_regret_within_profile_set": 0.3483380617268079,
+          "max_scenario_us": 30.689711538461538,
+          "min_scenario_us": 20.0983125,
+          "scenario_times_us": [
+            20.0983125,
+            30.689711538461538,
+            20.0983125
+          ],
+          "winner_count": 0
+        }
+      ],
+      "measurement_priority": "validate_profile_and_cost_model",
+      "minimax_profile_set_candidate": "attn.g12.8.prefill.s1",
+      "same_winner_in_all_scenarios": true,
+      "scenario_winners": [
+        "attn.g12.8.prefill.s1",
+        "attn.g12.8.prefill.s1",
+        "attn.g12.8.prefill.s1"
+      ],
+      "status": "NEEDS_MEASUREMENT",
+      "workload_id": "attn.r0"
+    },
+    {
+      "candidates": [
+        {
+          "candidate_id": "moe.w4a8.m16.n128",
+          "max_relative_regret_within_profile_set": 0.0,
+          "max_scenario_us": 272.90439560439563,
+          "min_scenario_us": 178.54785714285714,
+          "scenario_times_us": [
+            178.54785714285714,
+            272.90439560439563,
+            178.54785714285714
+          ],
+          "winner_count": 3
+        },
+        {
+          "candidate_id": "moe.w4a8.m16.n64",
+          "max_relative_regret_within_profile_set": 0.0,
+          "max_scenario_us": 272.90439560439563,
+          "min_scenario_us": 178.54785714285714,
+          "scenario_times_us": [
+            178.54785714285714,
+            272.90439560439563,
+            178.54785714285714
+          ],
+          "winner_count": 0
+        },
+        {
+          "candidate_id": "moe.w4a8.m32.n128",
+          "max_relative_regret_within_profile_set": 0.0,
+          "max_scenario_us": 272.90439560439563,
+          "min_scenario_us": 178.54785714285714,
+          "scenario_times_us": [
+            178.54785714285714,
+            272.90439560439563,
+            178.54785714285714
+          ],
+          "winner_count": 0
+        },
+        {
+          "candidate_id": "moe.w4a8.m32.n64",
+          "max_relative_regret_within_profile_set": 0.0,
+          "max_scenario_us": 272.90439560439563,
+          "min_scenario_us": 178.54785714285714,
+          "scenario_times_us": [
+            178.54785714285714,
+            272.90439560439563,
+            178.54785714285714
+          ],
+          "winner_count": 0
+        }
+      ],
+      "measurement_priority": "validate_profile_and_cost_model",
+      "minimax_profile_set_candidate": "moe.w4a8.m16.n128",
+      "same_winner_in_all_scenarios": true,
+      "scenario_winners": [
+        "moe.w4a8.m16.n128",
+        "moe.w4a8.m16.n128",
+        "moe.w4a8.m16.n128"
+      ],
+      "status": "NEEDS_MEASUREMENT",
+      "workload_id": "moe.r0"
+    },
+    {
+      "candidates": [
+        {
+          "candidate_id": "qsa.radix.t128",
+          "max_relative_regret_within_profile_set": 0.0,
+          "max_scenario_us": 324.1336401098901,
+          "min_scenario_us": 210.91186607142856,
+          "scenario_times_us": [
+            210.91186607142856,
+            324.1336401098901,
+            210.91186607142856
+          ],
+          "winner_count": 3
+        },
+        {
+          "candidate_id": "qsa.radix.t32",
+          "max_relative_regret_within_profile_set": 0.0,
+          "max_scenario_us": 324.1336401098901,
+          "min_scenario_us": 210.91186607142856,
+          "scenario_times_us": [
+            210.91186607142856,
+            324.1336401098901,
+            210.91186607142856
+          ],
+          "winner_count": 0
+        },
+        {
+          "candidate_id": "qsa.radix.t64",
+          "max_relative_regret_within_profile_set": 0.0,
+          "max_scenario_us": 324.1336401098901,
+          "min_scenario_us": 210.91186607142856,
+          "scenario_times_us": [
+            210.91186607142856,
+            324.1336401098901,
+            210.91186607142856
+          ],
+          "winner_count": 0
+        }
+      ],
+      "measurement_priority": "validate_profile_and_cost_model",
+      "minimax_profile_set_candidate": "qsa.radix.t128",
+      "same_winner_in_all_scenarios": true,
+      "scenario_winners": [
+        "qsa.radix.t128",
+        "qsa.radix.t128",
+        "qsa.radix.t128"
+      ],
+      "status": "NEEDS_MEASUREMENT",
+      "workload_id": "qsa.r1"
+    },
+    {
+      "candidates": [
+        {
+          "candidate_id": "attn.g12.8.prefill.s1",
+          "max_relative_regret_within_profile_set": 0.0,
+          "max_scenario_us": 22.76114010989011,
+          "min_scenario_us": 15.2952,
+          "scenario_times_us": [
+            15.2952,
+            22.76114010989011,
+            15.2952
+          ],
+          "winner_count": 3
+        },
+        {
+          "candidate_id": "attn.g12.8.decode.s1",
+          "max_relative_regret_within_profile_set": 0.20711992859431838,
+          "max_scenario_us": 27.475425824175826,
+          "min_scenario_us": 18.43341428571429,
+          "scenario_times_us": [
+            18.43341428571429,
+            27.475425824175826,
+            18.43341428571429
+          ],
+          "winner_count": 0
+        },
+        {
+          "candidate_id": "attn.g12.8.decode.s4",
+          "max_relative_regret_within_profile_set": 0.2353635552208162,
+          "max_scenario_us": 28.118282967032968,
+          "min_scenario_us": 18.642342857142857,
+          "scenario_times_us": [
+            18.642342857142857,
+            28.118282967032968,
+            18.642342857142857
+          ],
+          "winner_count": 0
+        },
+        {
+          "candidate_id": "attn.g12.8.prefill.s4",
+          "max_relative_regret_within_profile_set": 0.2353635552208162,
+          "max_scenario_us": 28.118282967032968,
+          "min_scenario_us": 18.642342857142857,
+          "scenario_times_us": [
+            18.642342857142857,
+            28.118282967032968,
+            18.642342857142857
+          ],
+          "winner_count": 0
+        },
+        {
+          "candidate_id": "attn.g12.8.decode.s16",
+          "max_relative_regret_within_profile_set": 0.3483380617268079,
+          "max_scenario_us": 30.689711538461538,
+          "min_scenario_us": 20.0983125,
+          "scenario_times_us": [
+            20.0983125,
+            30.689711538461538,
+            20.0983125
+          ],
+          "winner_count": 0
+        },
+        {
+          "candidate_id": "attn.g12.8.prefill.s16",
+          "max_relative_regret_within_profile_set": 0.3483380617268079,
+          "max_scenario_us": 30.689711538461538,
+          "min_scenario_us": 20.0983125,
+          "scenario_times_us": [
+            20.0983125,
+            30.689711538461538,
+            20.0983125
+          ],
+          "winner_count": 0
+        }
+      ],
+      "measurement_priority": "validate_profile_and_cost_model",
+      "minimax_profile_set_candidate": "attn.g12.8.prefill.s1",
+      "same_winner_in_all_scenarios": true,
+      "scenario_winners": [
+        "attn.g12.8.prefill.s1",
+        "attn.g12.8.prefill.s1",
+        "attn.g12.8.prefill.s1"
+      ],
+      "status": "NEEDS_MEASUREMENT",
+      "workload_id": "attn.r1"
+    },
+    {
+      "candidates": [
+        {
+          "candidate_id": "moe.w4a8.m16.n128",
+          "max_relative_regret_within_profile_set": 0.0,
+          "max_scenario_us": 271.1989010989011,
+          "min_scenario_us": 177.4392857142857,
+          "scenario_times_us": [
+            177.4392857142857,
+            271.1989010989011,
+            177.4392857142857
+          ],
+          "winner_count": 3
+        },
+        {
+          "candidate_id": "moe.w4a8.m16.n64",
+          "max_relative_regret_within_profile_set": 0.0,
+          "max_scenario_us": 271.1989010989011,
+          "min_scenario_us": 177.4392857142857,
+          "scenario_times_us": [
+            177.4392857142857,
+            271.1989010989011,
+            177.4392857142857
+          ],
+          "winner_count": 0
+        },
+        {
+          "candidate_id": "moe.w4a8.m32.n128",
+          "max_relative_regret_within_profile_set": 0.0,
+          "max_scenario_us": 271.1989010989011,
+          "min_scenario_us": 177.4392857142857,
+          "scenario_times_us": [
+            177.4392857142857,
+            271.1989010989011,
+            177.4392857142857
+          ],
+          "winner_count": 0
+        },
+        {
+          "candidate_id": "moe.w4a8.m32.n64",
+          "max_relative_regret_within_profile_set": 0.0,
+          "max_scenario_us": 271.1989010989011,
+          "min_scenario_us": 177.4392857142857,
+          "scenario_times_us": [
+            177.4392857142857,
+            271.1989010989011,
+            177.4392857142857
+          ],
+          "winner_count": 0
+        }
+      ],
+      "measurement_priority": "validate_profile_and_cost_model",
+      "minimax_profile_set_candidate": "moe.w4a8.m16.n128",
+      "same_winner_in_all_scenarios": true,
+      "scenario_winners": [
+        "moe.w4a8.m16.n128",
+        "moe.w4a8.m16.n128",
+        "moe.w4a8.m16.n128"
+      ],
+      "status": "NEEDS_MEASUREMENT",
+      "workload_id": "moe.r1"
+    },
+    {
+      "candidates": [
+        {
+          "candidate_id": "tp2.oneshot.push.c65536",
+          "max_relative_regret_within_profile_set": 0.0,
+          "max_scenario_us": 10.592307692307694,
+          "min_scenario_us": 7.451428571428572,
+          "scenario_times_us": [
+            7.451428571428572,
+            10.592307692307694,
+            7.451428571428572
+          ],
+          "winner_count": 3
+        },
+        {
+          "candidate_id": "tp2.ring2.push.c1073741824",
+          "max_relative_regret_within_profile_set": 0.3911042944785277,
+          "max_scenario_us": 14.46043956043956,
+          "min_scenario_us": 10.365714285714287,
+          "scenario_times_us": [
+            10.365714285714287,
+            14.46043956043956,
+            10.365714285714287
+          ],
+          "winner_count": 0
+        },
+        {
+          "candidate_id": "tp2.oneshot.pull.c65536",
+          "max_relative_regret_within_profile_set": 1.208424110384894,
+          "max_scenario_us": 23.39230769230769,
+          "min_scenario_us": 16.411428571428573,
+          "scenario_times_us": [
+            16.411428571428573,
+            23.39230769230769,
+            16.411428571428573
+          ],
+          "winner_count": 0
+        },
+        {
+          "candidate_id": "tp2.ring2.pull.c1073741824",
+          "max_relative_regret_within_profile_set": 1.5935582822085892,
+          "max_scenario_us": 27.260439560439558,
+          "min_scenario_us": 19.325714285714287,
+          "scenario_times_us": [
+            19.325714285714287,
+            27.260439560439558,
+            19.325714285714287
+          ],
+          "winner_count": 0
+        },
+        {
+          "candidate_id": "tp2.oneshot.push.c4096",
+          "max_relative_regret_within_profile_set": 1.6754435107376278,
+          "max_scenario_us": 28.339120879120877,
+          "min_scenario_us": 19.286857142857144,
+          "scenario_times_us": [
+            19.286857142857144,
+            28.339120879120877,
+            19.286857142857144
+          ],
+          "winner_count": 0
+        },
+        {
+          "candidate_id": "tp2.oneshot.pull.c4096",
+          "max_relative_regret_within_profile_set": 2.8838676211225227,
+          "max_scenario_us": 41.13912087912088,
+          "min_scenario_us": 28.24685714285715,
+          "scenario_times_us": [
+            28.24685714285715,
+            41.13912087912088,
+            28.24685714285715
+          ],
+          "winner_count": 0
+        }
+      ],
+      "measurement_priority": "validate_profile_and_cost_model",
+      "minimax_profile_set_candidate": "tp2.oneshot.push.c65536",
+      "same_winner_in_all_scenarios": true,
+      "scenario_winners": [
+        "tp2.oneshot.push.c65536",
+        "tp2.oneshot.push.c65536",
+        "tp2.oneshot.push.c65536"
+      ],
+      "status": "NEEDS_MEASUREMENT",
+      "workload_id": "ar"
+    }
+  ],
+  "workloads_sha256": "649588b88c14ea0b52d39dc30ed4035964fe6be404d2cfd5eab03e8e3ef35943"
+}

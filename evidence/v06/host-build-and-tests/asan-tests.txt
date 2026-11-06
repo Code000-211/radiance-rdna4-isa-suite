@@ -1,0 +1,13 @@
+test_asan_cannot_produce_benchmark (test_asan.ASanTests.test_asan_cannot_produce_benchmark) ... ok
+test_missing_stores_still_detected (test_asan.ASanTests.test_missing_stores_still_detected) ... ok
+test_one_byte_overread_is_detected (test_asan.ASanTests.test_one_byte_overread_is_detected) ... ok
+test_prefix_overread_is_detected (test_asan.ASanTests.test_prefix_overread_is_detected) ... ok
+test_read_past_view_inside_larger_allocation_is_detected (test_asan.ASanTests.test_read_past_view_inside_larger_allocation_is_detected) ... ok
+test_redzone_store_is_detected (test_asan.ASanTests.test_redzone_store_is_detected) ... ok
+test_unrepresentable_shadow_boundary_is_incomplete (test_asan.ASanTests.test_unrepresentable_shadow_boundary_is_incomplete) ... ok
+test_valid_copy (test_asan.ASanTests.test_valid_copy) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 1.099s
+
+OK

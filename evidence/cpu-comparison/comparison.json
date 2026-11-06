@@ -1,0 +1,42 @@
+{
+  "all_correctness_checks_passed": true,
+  "candidate_count": 4,
+  "cpu_to_gpu_conversion": false,
+  "gpu_execution": false,
+  "host_noise_controlled": false,
+  "hybrid_surrogate_held_out": {
+    "max_selection_regret": 0.0,
+    "median_relative_latency_error": 0.0560099420661212,
+    "median_selection_regret": 0.0,
+    "p90_relative_latency_error": 0.2550989217500479,
+    "per_shape_regret": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "separated_correct": 2,
+    "separated_decisions": 2,
+    "simultaneous_envelope_coverage": 0.9,
+    "test_groups": 10,
+    "test_rows": 40,
+    "top1": 1.0,
+    "top3": 1.0
+  },
+  "replay_executions": 160,
+  "schema": "radiance-planner-cpu-comparison/1",
+  "shape_groups": 40,
+  "simple_ops_only_baseline": {
+    "max_selection_regret": 0.8178415470991891,
+    "median_relative_latency_error": 0.0810348712161243,
+    "median_selection_regret": 0.0
+  },
+  "timed_repetitions_per_run": 15,
+  "warmups_per_run": 2
+}

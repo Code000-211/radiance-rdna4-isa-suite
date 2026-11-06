@@ -1,0 +1,127 @@
+{
+  "devices": [
+    {
+      "arch": "gfx1201",
+      "dram_bytes_per_us": 560000.0,
+      "exp_ops_per_us": 38146.97265625,
+      "id": "gpu0",
+      "kernel_slots": 1,
+      "launch_us": 33.75,
+      "matrix_ops_per_us": {
+        "wmma_f16": 32545177.599999998
+      },
+      "memory_bytes": 34359738368,
+      "provenance": "external-measured-profile",
+      "vector_ops_per_us": 6000000.0
+    },
+    {
+      "arch": "gfx1201",
+      "dram_bytes_per_us": 560000.0,
+      "exp_ops_per_us": 38146.97265625,
+      "id": "gpu1",
+      "kernel_slots": 1,
+      "launch_us": 33.75,
+      "matrix_ops_per_us": {
+        "wmma_f16": 32545177.599999998
+      },
+      "memory_bytes": 34359738368,
+      "provenance": "external-measured-profile",
+      "vector_ops_per_us": 6000000.0
+    }
+  ],
+  "environment": {
+    "compiler": "clang 23 (ROCm 7.15)",
+    "power_clock": "UNCONTROLLED",
+    "source": "radiance HEAD 8df3947 + tools/rdna4-isa-suite"
+  },
+  "id": "dual-r9700-measured",
+  "links": [
+    {
+      "access": "push",
+      "bytes_per_us": 25000.0,
+      "id": "gpu0-to-gpu1-push",
+      "latency_us": 2.0,
+      "provenance": "assumed",
+      "shared_resources": [
+        "root-pcie"
+      ],
+      "source": "gpu0",
+      "target": "gpu1"
+    },
+    {
+      "access": "pull",
+      "bytes_per_us": 2500.0,
+      "id": "gpu0-to-gpu1-pull",
+      "latency_us": 2.0,
+      "provenance": "assumed",
+      "shared_resources": [
+        "root-pcie"
+      ],
+      "source": "gpu0",
+      "target": "gpu1"
+    },
+    {
+      "access": "push",
+      "bytes_per_us": 25000.0,
+      "id": "gpu1-to-gpu0-push",
+      "latency_us": 2.0,
+      "provenance": "assumed",
+      "shared_resources": [
+        "root-pcie"
+      ],
+      "source": "gpu1",
+      "target": "gpu0"
+    },
+    {
+      "access": "pull",
+      "bytes_per_us": 2500.0,
+      "id": "gpu1-to-gpu0-pull",
+      "latency_us": 2.0,
+      "provenance": "assumed",
+      "shared_resources": [
+        "root-pcie"
+      ],
+      "source": "gpu1",
+      "target": "gpu0"
+    }
+  ],
+  "notes": "Measured profile: service rates fitted to 40 real gfx1201 attention timings in measured-attention-r9700.json. In-sample median error 18.6%, worst 59.3%; half/half holdout median 21.9%. Clock/power uncontrolled; not a production guarantee. Rate provenance: Fit of the declared demand model to 40 real gfx1201 timings in measured-attention-r9700.json (median of 15 repetitions each). In-sample median error 18.6%, worst 59.3%; half/half holdout median 21.9%. Per-family overrides fitted to the same 40 timings: a kernel family reaches a different fraction of peak, so the device-wide rate cannot describe both. attn_decode in-sample median error 11.5% (max 25.0%), attn_prefill 26.2% (max 35.7%). Extrapolating to an unseen context length is NOT covered: with three measured depths the fit is underdetermined there. Analytic attention model under pinned clocks (sclk 1634 MHz, mclk 1258 MHz, set on the Proxmox host; 60 s warmup, min of 15): T = a + max(F, ctx*(s*(1+k*(b-1)) + sq*q*b)). In-sample error per family is recorded in the task report; this is a formula with measured constants, not a lookup table. Analytic attention model, form T = a + max(F, ctx*(s*(1+k*(b-1)) + sq*q*b)), fitted on the training part of the 168-point grid (ctx 2k-64k, q 1/2/4/8 decode and 16/32/64 prefill, b 1/2/4/8) under pinned clocks. Held-out corners: decode median 8.2%/8.1%, max 24.4%/20.7%; prefill median 1.5%/4.3%, max 5.7%/9.0%. The 5% max target is NOT met for decode; the residual is occupancy/bandwidth-concurrency, not a missing rate. Analytic attention model: T = a + max(F, s*ctx*b^ps, c*q*b*ctx) with a start cost, F scan floor, s KV scan per context token, ps the batch saturation exponent and c the per-query-work cost. Fitted on the training part of the 168-point grid; held-out corners (ctx=32768, b=8) give decode median 7.8/11.7 %, max 18.7/18.9 %; prefill median 1.7/5.6 %, max 5.4/8.9 %.",
+  "schema": "radiance-flow-system/1",
+  "shared_resources": {
+    "root-pcie": 40000.0
+  },
+  "operator_rates": {
+    "attn_decode": {
+      "dram_bytes_per_us": 560000.0,
+      "exp_ops_per_us": 38146.97265625,
+      "launch_us": 33.75000087544322,
+      "matrix_ops_per_us": {
+        "wmma_f16": 40681472.0
+      },
+      "vector_ops_per_us": 211106.232532992,
+      "attention_model": {
+        "a_us": 22.495846224483103,
+        "scan_floor_us": 9.921741666737944,
+        "us_per_token": 0.0035420598981436334,
+        "scan_batch_exponent": 0.7240323722391617,
+        "us_per_query_ctx": 0.0005297436615218891
+      }
+    },
+    "attn_prefill": {
+      "dram_bytes_per_us": 93952.4096,
+      "exp_ops_per_us": 38146.97265625,
+      "launch_us": 31.520001590251923,
+      "matrix_ops_per_us": {
+        "wmma_f16": 124150000.0
+      },
+      "vector_ops_per_us": 6000000.0,
+      "attention_model": {
+        "a_us": 37.07525729667395,
+        "scan_floor_us": 13.0,
+        "us_per_token": 0.01743232892265949,
+        "scan_batch_exponent": 0.9916462570428852,
+        "us_per_query_ctx": 0.0002787016634130854
+      }
+    }
+  }
+}

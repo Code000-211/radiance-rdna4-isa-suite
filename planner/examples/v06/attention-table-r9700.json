@@ -1,0 +1,3372 @@
+{
+ "schema": "radiance-attention-table/1",
+ "device": {
+  "arch": "gfx1201",
+  "name": "AMD Radeon AI PRO R9700",
+  "runtime": "HIP 7.15.26333",
+  "n_cu": 32
+ },
+ "clock_control": {
+  "method": "pinned on the Proxmox host (ssh epyc, root)",
+  "sclk": "1634 MHz",
+  "mclk": "1258 MHz",
+  "restore": "echo auto > /sys/class/drm/card{1,2}/device/power_dpm_force_performance_level"
+ },
+ "method": "suite replay on gfx1201; 45 s warmup, 11 repetitions, min-of-reps",
+ "axes": {
+  "q_decode": [
+   1,
+   4
+  ],
+  "q_prefill": [
+   32,
+   64
+  ],
+  "ctx": [
+   2048,
+   3072,
+   4096,
+   6144,
+   8192,
+   12288,
+   16384,
+   24576,
+   32768,
+   49152,
+   65536
+  ],
+  "b": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   12,
+   16,
+   24,
+   32
+  ]
+ },
+ "records": [
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 2048,
+   "b": 1,
+   "min_us": 30.640000477433205
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 2048,
+   "b": 2,
+   "min_us": 34.561000764369965
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 2048,
+   "b": 3,
+   "min_us": 42.59999841451645
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 2048,
+   "b": 4,
+   "min_us": 41.28099977970123
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 2048,
+   "b": 6,
+   "min_us": 56.07999861240387
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 2048,
+   "b": 8,
+   "min_us": 57.760000228881836
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 2048,
+   "b": 1,
+   "min_us": 32.600000500679016
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 2048,
+   "b": 2,
+   "min_us": 37.11999952793121
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 2048,
+   "b": 3,
+   "min_us": 43.68000105023384
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 2048,
+   "b": 4,
+   "min_us": 45.35999894142151
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 2048,
+   "b": 6,
+   "min_us": 57.00000002980232
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 2048,
+   "b": 8,
+   "min_us": 63.960000872612
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 3072,
+   "b": 1,
+   "min_us": 32.84100070595741
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 3072,
+   "b": 2,
+   "min_us": 39.59999978542328
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 3072,
+   "b": 3,
+   "min_us": 49.96100068092346
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 3072,
+   "b": 4,
+   "min_us": 49.08100143074989
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 3072,
+   "b": 6,
+   "min_us": 72.48000055551529
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 3072,
+   "b": 8,
+   "min_us": 74.79999959468842
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 3072,
+   "b": 1,
+   "min_us": 34.83999893069267
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 3072,
+   "b": 2,
+   "min_us": 41.96000099182129
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 3072,
+   "b": 3,
+   "min_us": 50.599999725818634
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 3072,
+   "b": 4,
+   "min_us": 55.36000058054924
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 3072,
+   "b": 6,
+   "min_us": 73.27999919652939
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 3072,
+   "b": 8,
+   "min_us": 83.52000266313553
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 4096,
+   "b": 1,
+   "min_us": 35.23999825119972
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 4096,
+   "b": 2,
+   "min_us": 44.76099833846092
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 4096,
+   "b": 3,
+   "min_us": 57.68100172281265
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 4096,
+   "b": 4,
+   "min_us": 57.360999286174774
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 4096,
+   "b": 6,
+   "min_us": 87.27999776601791
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 4096,
+   "b": 8,
+   "min_us": 90.68000316619873
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 4096,
+   "b": 1,
+   "min_us": 37.31999918818474
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 4096,
+   "b": 2,
+   "min_us": 46.20100185275078
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 4096,
+   "b": 3,
+   "min_us": 57.999998331069946
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 4096,
+   "b": 4,
+   "min_us": 65.48000127077103
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 4096,
+   "b": 6,
+   "min_us": 87.20099925994873
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 4096,
+   "b": 8,
+   "min_us": 102.44099795818329
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 6144,
+   "b": 1,
+   "min_us": 41.71999916434288
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 6144,
+   "b": 2,
+   "min_us": 54.80000004172325
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 6144,
+   "b": 3,
+   "min_us": 74.0009993314743
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 6144,
+   "b": 4,
+   "min_us": 75.6009966135025
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 6144,
+   "b": 6,
+   "min_us": 119.32100355625153
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 6144,
+   "b": 8,
+   "min_us": 124.88000094890594
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 6144,
+   "b": 1,
+   "min_us": 42.36000031232834
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 6144,
+   "b": 2,
+   "min_us": 55.92000111937523
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 6144,
+   "b": 3,
+   "min_us": 72.55999743938446
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 6144,
+   "b": 4,
+   "min_us": 83.52100104093552
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 6144,
+   "b": 6,
+   "min_us": 117.60099977254868
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 6144,
+   "b": 8,
+   "min_us": 140.68099856376648
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 8192,
+   "b": 1,
+   "min_us": 48.96000027656555
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 8192,
+   "b": 2,
+   "min_us": 68.15999746322632
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 8192,
+   "b": 3,
+   "min_us": 89.04000371694565
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 8192,
+   "b": 4,
+   "min_us": 96.0410013794899
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 8192,
+   "b": 6,
+   "min_us": 152.0020067691803
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 8192,
+   "b": 8,
+   "min_us": 161.72100603580475
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 8192,
+   "b": 1,
+   "min_us": 49.15999993681908
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 8192,
+   "b": 2,
+   "min_us": 65.84099680185318
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 8192,
+   "b": 3,
+   "min_us": 86.99999749660492
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 8192,
+   "b": 4,
+   "min_us": 104.44100201129913
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 8192,
+   "b": 6,
+   "min_us": 148.76100420951843
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 8192,
+   "b": 8,
+   "min_us": 178.5610020160675
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 12288,
+   "b": 1,
+   "min_us": 66.04000180959702
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 12288,
+   "b": 2,
+   "min_us": 90.36000072956085
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 12288,
+   "b": 3,
+   "min_us": 120.92100083827972
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 12288,
+   "b": 4,
+   "min_us": 131.12099468708038
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 12288,
+   "b": 6,
+   "min_us": 216.44200384616852
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 12288,
+   "b": 8,
+   "min_us": 233.2019954919815
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 12288,
+   "b": 1,
+   "min_us": 63.280001282691956
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 12288,
+   "b": 2,
+   "min_us": 85.08100360631943
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 12288,
+   "b": 3,
+   "min_us": 114.6010011434555
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 12288,
+   "b": 4,
+   "min_us": 142.04099774360657
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 12288,
+   "b": 6,
+   "min_us": 207.92099833488464
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 12288,
+   "b": 8,
+   "min_us": 253.72201204299927
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 16384,
+   "b": 1,
+   "min_us": 84.92100238800049
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 16384,
+   "b": 2,
+   "min_us": 112.32099682092667
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 16384,
+   "b": 3,
+   "min_us": 153.52100133895874
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 16384,
+   "b": 4,
+   "min_us": 167.48100519180298
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 16384,
+   "b": 6,
+   "min_us": 284.00200605392456
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 16384,
+   "b": 8,
+   "min_us": 303.2419979572296
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 16384,
+   "b": 1,
+   "min_us": 84.44099873304367
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 16384,
+   "b": 2,
+   "min_us": 106.72099888324738
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 16384,
+   "b": 3,
+   "min_us": 142.96099543571472
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 16384,
+   "b": 4,
+   "min_us": 179.20100688934326
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 16384,
+   "b": 6,
+   "min_us": 270.56199312210083
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 16384,
+   "b": 8,
+   "min_us": 322.72300124168396
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 24576,
+   "b": 1,
+   "min_us": 127.56100296974182
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 24576,
+   "b": 2,
+   "min_us": 160.16100347042084
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 24576,
+   "b": 3,
+   "min_us": 222.00199961662292
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 24576,
+   "b": 4,
+   "min_us": 243.76200139522552
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 24576,
+   "b": 6,
+   "min_us": 417.6029860973358
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 24576,
+   "b": 8,
+   "min_us": 451.68399810791016
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 24576,
+   "b": 1,
+   "min_us": 127.00100243091583
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 24576,
+   "b": 2,
+   "min_us": 148.40100705623627
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 24576,
+   "b": 3,
+   "min_us": 200.44200122356415
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 24576,
+   "b": 4,
+   "min_us": 254.28199768066406
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 24576,
+   "b": 6,
+   "min_us": 395.8030045032501
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 24576,
+   "b": 8,
+   "min_us": 481.7639887332916
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 32768,
+   "b": 1,
+   "min_us": 155.60099482536316
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 32768,
+   "b": 2,
+   "min_us": 201.96199417114258
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 32768,
+   "b": 3,
+   "min_us": 285.92199087142944
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 32768,
+   "b": 4,
+   "min_us": 313.72299790382385
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 32768,
+   "b": 6,
+   "min_us": 547.7250218391418
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 32768,
+   "b": 8,
+   "min_us": 593.2850241661072
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 32768,
+   "b": 1,
+   "min_us": 154.72200512886047
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 32768,
+   "b": 2,
+   "min_us": 185.28099358081818
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 32768,
+   "b": 3,
+   "min_us": 260.12200117111206
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 32768,
+   "b": 4,
+   "min_us": 329.243004322052
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 32768,
+   "b": 6,
+   "min_us": 518.8440084457397
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 32768,
+   "b": 8,
+   "min_us": 633.4459781646729
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 49152,
+   "b": 1,
+   "min_us": 237.80199885368347
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 49152,
+   "b": 2,
+   "min_us": 295.6030070781708
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 49152,
+   "b": 3,
+   "min_us": 418.3639883995056
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 49152,
+   "b": 4,
+   "min_us": 461.72401309013367
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 49152,
+   "b": 6,
+   "min_us": 813.5679960250854
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 49152,
+   "b": 8,
+   "min_us": 884.3280076980591
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 49152,
+   "b": 1,
+   "min_us": 239.16199803352356
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 49152,
+   "b": 2,
+   "min_us": 271.6819941997528
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 49152,
+   "b": 3,
+   "min_us": 369.76298689842224
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 49152,
+   "b": 4,
+   "min_us": 478.76501083374023
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 49152,
+   "b": 6,
+   "min_us": 770.3269720077515
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 49152,
+   "b": 8,
+   "min_us": 934.889018535614
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 65536,
+   "b": 1,
+   "min_us": 294.88301277160645
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 65536,
+   "b": 2,
+   "min_us": 381.0040056705475
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 65536,
+   "b": 3,
+   "min_us": 544.7250008583069
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 65536,
+   "b": 4,
+   "min_us": 605.2460074424744
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 65536,
+   "b": 6,
+   "min_us": 1070.1299905776978
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 65536,
+   "b": 8,
+   "min_us": 1164.2110347747803
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 65536,
+   "b": 1,
+   "min_us": 291.3230061531067
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 65536,
+   "b": 2,
+   "min_us": 343.92398595809937
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 65536,
+   "b": 3,
+   "min_us": 488.9650046825409
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 65536,
+   "b": 4,
+   "min_us": 626.3660192489624
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 65536,
+   "b": 6,
+   "min_us": 1017.1699523925781
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 65536,
+   "b": 8,
+   "min_us": 1241.371989250183
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 2048,
+   "b": 1,
+   "min_us": 72.32099771499634
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 2048,
+   "b": 2,
+   "min_us": 105.3209975361824
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 2048,
+   "b": 3,
+   "min_us": 161.08199954032898
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 2048,
+   "b": 4,
+   "min_us": 180.1619976758957
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 2048,
+   "b": 6,
+   "min_us": 302.05199122428894
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 2048,
+   "b": 8,
+   "min_us": 306.9629967212677
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 2048,
+   "b": 1,
+   "min_us": 82.12099969387054
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 2048,
+   "b": 2,
+   "min_us": 116.16100370883942
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 2048,
+   "b": 3,
+   "min_us": 173.64199459552765
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 2048,
+   "b": 4,
+   "min_us": 189.48200345039368
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 2048,
+   "b": 6,
+   "min_us": 303.92301082611084
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 2048,
+   "b": 8,
+   "min_us": 308.3629906177521
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 3072,
+   "b": 1,
+   "min_us": 84.3610018491745
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 3072,
+   "b": 2,
+   "min_us": 139.0009969472885
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 3072,
+   "b": 3,
+   "min_us": 214.68199789524078
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 3072,
+   "b": 4,
+   "min_us": 261.16201281547546
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 3072,
+   "b": 6,
+   "min_us": 437.2450113296509
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 3072,
+   "b": 8,
+   "min_us": 445.28499245643616
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 3072,
+   "b": 1,
+   "min_us": 96.52099758386612
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 3072,
+   "b": 2,
+   "min_us": 150.4810005426407
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 3072,
+   "b": 3,
+   "min_us": 227.28799283504486
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 3072,
+   "b": 4,
+   "min_us": 258.0829858779907
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 3072,
+   "b": 6,
+   "min_us": 439.44498896598816
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 3072,
+   "b": 8,
+   "min_us": 446.4449882507324
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 4096,
+   "b": 1,
+   "min_us": 104.8009991645813
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 4096,
+   "b": 2,
+   "min_us": 178.60199511051178
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 4096,
+   "b": 3,
+   "min_us": 280.4439961910248
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 4096,
+   "b": 4,
+   "min_us": 334.2829942703247
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 4096,
+   "b": 6,
+   "min_us": 579.2459845542908
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 4096,
+   "b": 8,
+   "min_us": 588.7659788131714
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 4096,
+   "b": 1,
+   "min_us": 116.64099991321564
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 4096,
+   "b": 2,
+   "min_us": 189.9220049381256
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 4096,
+   "b": 3,
+   "min_us": 292.8830087184906
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 4096,
+   "b": 4,
+   "min_us": 332.00401067733765
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 4096,
+   "b": 6,
+   "min_us": 581.7260146141052
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 4096,
+   "b": 8,
+   "min_us": 590.7260179519653
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 6144,
+   "b": 1,
+   "min_us": 138.04100453853607
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 6144,
+   "b": 2,
+   "min_us": 246.12300097942352
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 6144,
+   "b": 3,
+   "min_us": 388.6840045452118
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 6144,
+   "b": 4,
+   "min_us": 462.3650014400482
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 6144,
+   "b": 6,
+   "min_us": 851.9290089607239
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 6144,
+   "b": 8,
+   "min_us": 863.8089895248413
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 6144,
+   "b": 1,
+   "min_us": 150.20200610160828
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 6144,
+   "b": 2,
+   "min_us": 257.9230070114136
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 6144,
+   "b": 3,
+   "min_us": 401.52400732040405
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 6144,
+   "b": 4,
+   "min_us": 473.72499108314514
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 6144,
+   "b": 6,
+   "min_us": 855.2089929580688
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 6144,
+   "b": 8,
+   "min_us": 867.6490187644958
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 8192,
+   "b": 1,
+   "min_us": 179.24199998378754
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 8192,
+   "b": 2,
+   "min_us": 320.36298513412476
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 8192,
+   "b": 3,
+   "min_us": 509.52601432800293
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 8192,
+   "b": 4,
+   "min_us": 622.4470138549805
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 8192,
+   "b": 6,
+   "min_us": 1131.2530040740967
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 8192,
+   "b": 8,
+   "min_us": 1147.5729942321777
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 8192,
+   "b": 1,
+   "min_us": 190.44199585914612
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 8192,
+   "b": 2,
+   "min_us": 331.72398805618286
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 8192,
+   "b": 3,
+   "min_us": 521.7249989509583
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 8192,
+   "b": 4,
+   "min_us": 619.1269755363464
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 8192,
+   "b": 6,
+   "min_us": 1133.8920593261719
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 8192,
+   "b": 8,
+   "min_us": 1149.2929458618164
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 12288,
+   "b": 1,
+   "min_us": 245.44300138950348
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 12288,
+   "b": 2,
+   "min_us": 461.4050090312958
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 12288,
+   "b": 3,
+   "min_us": 736.3680005073547
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 12288,
+   "b": 4,
+   "min_us": 904.8500061035156
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 12288,
+   "b": 6,
+   "min_us": 1680.5380582809448
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 12288,
+   "b": 8,
+   "min_us": 1705.6180238723755
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 12288,
+   "b": 1,
+   "min_us": 258.4030032157898
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 12288,
+   "b": 2,
+   "min_us": 473.3250141143799
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 12288,
+   "b": 3,
+   "min_us": 749.6479749679565
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 12288,
+   "b": 4,
+   "min_us": 903.0900001525879
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 12288,
+   "b": 6,
+   "min_us": 1683.698058128357
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 12288,
+   "b": 8,
+   "min_us": 1707.658052444458
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 16384,
+   "b": 1,
+   "min_us": 319.4830119609833
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 16384,
+   "b": 2,
+   "min_us": 609.0059876441956
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 16384,
+   "b": 3,
+   "min_us": 964.8110270500183
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 16384,
+   "b": 4,
+   "min_us": 1180.9329986572266
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 16384,
+   "b": 6,
+   "min_us": 2237.744092941284
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 16384,
+   "b": 8,
+   "min_us": 2265.744924545288
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 16384,
+   "b": 1,
+   "min_us": 331.4040005207062
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 16384,
+   "b": 2,
+   "min_us": 620.4469799995422
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 16384,
+   "b": 3,
+   "min_us": 979.449987411499
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 16384,
+   "b": 4,
+   "min_us": 1190.9730434417725
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 16384,
+   "b": 6,
+   "min_us": 2243.6649799346924
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 16384,
+   "b": 8,
+   "min_us": 2276.3049602508545
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 24576,
+   "b": 1,
+   "min_us": 461.96499466896057
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 24576,
+   "b": 2,
+   "min_us": 892.05002784729
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 24576,
+   "b": 3,
+   "min_us": 1424.3359565734863
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 24576,
+   "b": 4,
+   "min_us": 1765.099048614502
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 24576,
+   "b": 6,
+   "min_us": 3343.636989593506
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 24576,
+   "b": 8,
+   "min_us": 3389.556884765625
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 24576,
+   "b": 1,
+   "min_us": 477.3649871349335
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 24576,
+   "b": 2,
+   "min_us": 910.0099802017212
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 24576,
+   "b": 3,
+   "min_us": 1453.4159898757935
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 24576,
+   "b": 4,
+   "min_us": 1780.6990146636963
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 24576,
+   "b": 6,
+   "min_us": 3367.316961288452
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 24576,
+   "b": 8,
+   "min_us": 3424.3180751800537
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 32768,
+   "b": 1,
+   "min_us": 616.4069771766663
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 32768,
+   "b": 2,
+   "min_us": 1193.613052368164
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 32768,
+   "b": 3,
+   "min_us": 1910.1810455322266
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 32768,
+   "b": 4,
+   "min_us": 2366.025924682617
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 32768,
+   "b": 6,
+   "min_us": 4457.089900970459
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 32768,
+   "b": 8,
+   "min_us": 4523.849964141846
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 32768,
+   "b": 1,
+   "min_us": 632.1269869804382
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 32768,
+   "b": 2,
+   "min_us": 1215.293049812317
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 32768,
+   "b": 3,
+   "min_us": 1947.821021080017
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 32768,
+   "b": 4,
+   "min_us": 2389.946937561035
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 32768,
+   "b": 6,
+   "min_us": 4486.609935760498
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 32768,
+   "b": 8,
+   "min_us": 4565.091133117676
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 49152,
+   "b": 1,
+   "min_us": 915.2100086212158
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 49152,
+   "b": 2,
+   "min_us": 1794.819951057434
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 49152,
+   "b": 3,
+   "min_us": 2866.0318851470947
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 49152,
+   "b": 4,
+   "min_us": 3551.5201091766357
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 49152,
+   "b": 6,
+   "min_us": 6662.475109100342
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 49152,
+   "b": 8,
+   "min_us": 6782.476902008057
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 49152,
+   "b": 1,
+   "min_us": 927.2509813308716
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 49152,
+   "b": 2,
+   "min_us": 1803.8610219955444
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 49152,
+   "b": 3,
+   "min_us": 2887.5129222869873
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 49152,
+   "b": 4,
+   "min_us": 3558.079957962036
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 49152,
+   "b": 6,
+   "min_us": 6708.076000213623
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 49152,
+   "b": 8,
+   "min_us": 6770.316123962402
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 65536,
+   "b": 1,
+   "min_us": 1215.2940034866333
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 65536,
+   "b": 2,
+   "min_us": 2387.7480030059814
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 65536,
+   "b": 3,
+   "min_us": 3799.884080886841
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 65536,
+   "b": 4,
+   "min_us": 4695.653915405273
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 65536,
+   "b": 6,
+   "min_us": 8819.86141204834
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 65536,
+   "b": 8,
+   "min_us": 8947.301864624023
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 65536,
+   "b": 1,
+   "min_us": 1225.134015083313
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 65536,
+   "b": 2,
+   "min_us": 2396.667957305908
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 65536,
+   "b": 3,
+   "min_us": 3827.523946762085
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 65536,
+   "b": 4,
+   "min_us": 4704.4548988342285
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 65536,
+   "b": 6,
+   "min_us": 8864.622116088867
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 65536,
+   "b": 8,
+   "min_us": 9035.102844238281
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 2048,
+   "b": 5,
+   "min_us": 51.00100114941597
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 2048,
+   "b": 7,
+   "min_us": 63.56000155210495
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 2048,
+   "b": 5,
+   "min_us": 52.400000393390656
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 2048,
+   "b": 7,
+   "min_us": 61.51999905705452
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 3072,
+   "b": 5,
+   "min_us": 63.07999789714813
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 3072,
+   "b": 7,
+   "min_us": 80.51999658346176
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 3072,
+   "b": 5,
+   "min_us": 64.4410029053688
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 3072,
+   "b": 7,
+   "min_us": 78.76099646091461
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 4096,
+   "b": 5,
+   "min_us": 77.64100283384323
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 4096,
+   "b": 7,
+   "min_us": 98.64100068807602
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 4096,
+   "b": 5,
+   "min_us": 77.64100283384323
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 4096,
+   "b": 7,
+   "min_us": 94.92100030183792
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 6144,
+   "b": 5,
+   "min_us": 104.04100269079208
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 6144,
+   "b": 7,
+   "min_us": 133.56199860572815
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 6144,
+   "b": 5,
+   "min_us": 100.84100067615509
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 6144,
+   "b": 7,
+   "min_us": 127.52099335193634
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 8192,
+   "b": 5,
+   "min_us": 131.68099522590637
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 8192,
+   "b": 7,
+   "min_us": 170.80199718475342
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 8192,
+   "b": 5,
+   "min_us": 127.360999584198
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 8192,
+   "b": 7,
+   "min_us": 160.96200048923492
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 12288,
+   "b": 5,
+   "min_us": 186.96199357509613
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 12288,
+   "b": 7,
+   "min_us": 243.16200613975525
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 12288,
+   "b": 5,
+   "min_us": 176.48200690746307
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 12288,
+   "b": 7,
+   "min_us": 229.08300161361694
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 16384,
+   "b": 5,
+   "min_us": 244.0830022096634
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 16384,
+   "b": 7,
+   "min_us": 317.44399666786194
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 16384,
+   "b": 5,
+   "min_us": 228.4020036458969
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 16384,
+   "b": 7,
+   "min_us": 294.4430112838745
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 24576,
+   "b": 5,
+   "min_us": 355.36399483680725
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 24576,
+   "b": 7,
+   "min_us": 463.2450044155121
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 24576,
+   "b": 5,
+   "min_us": 330.0040066242218
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 24576,
+   "b": 7,
+   "min_us": 435.0050091743469
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 32768,
+   "b": 5,
+   "min_us": 465.2850031852722
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 32768,
+   "b": 7,
+   "min_us": 608.00701379776
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 32768,
+   "b": 5,
+   "min_us": 436.9649887084961
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 32768,
+   "b": 7,
+   "min_us": 573.7259984016418
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 49152,
+   "b": 5,
+   "min_us": 685.8879923820496
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 49152,
+   "b": 7,
+   "min_us": 899.6899724006653
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 49152,
+   "b": 5,
+   "min_us": 641.7670249938965
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 49152,
+   "b": 7,
+   "min_us": 850.4890203475952
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 65536,
+   "b": 5,
+   "min_us": 902.9300212860107
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 65536,
+   "b": 7,
+   "min_us": 1189.8130178451538
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 65536,
+   "b": 5,
+   "min_us": 851.2499928474426
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 65536,
+   "b": 7,
+   "min_us": 1121.8130588531494
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 2048,
+   "b": 5,
+   "min_us": 241.72300100326538
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 2048,
+   "b": 7,
+   "min_us": 304.64398860931396
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 2048,
+   "b": 5,
+   "min_us": 253.52299213409424
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 2048,
+   "b": 7,
+   "min_us": 306.443989276886
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 3072,
+   "b": 5,
+   "min_us": 335.72399616241455
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 3072,
+   "b": 7,
+   "min_us": 441.4849877357483
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 3072,
+   "b": 5,
+   "min_us": 347.64501452445984
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 3072,
+   "b": 7,
+   "min_us": 444.20599937438965
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 4096,
+   "b": 5,
+   "min_us": 430.525004863739
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 4096,
+   "b": 7,
+   "min_us": 584.4870209693909
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 4096,
+   "b": 5,
+   "min_us": 441.9650137424469
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 4096,
+   "b": 7,
+   "min_us": 586.8470072746277
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 6144,
+   "b": 5,
+   "min_us": 616.7680025100708
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 6144,
+   "b": 7,
+   "min_us": 859.4099879264832
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 6144,
+   "b": 5,
+   "min_us": 629.406988620758
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 6144,
+   "b": 7,
+   "min_us": 861.611008644104
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 8192,
+   "b": 5,
+   "min_us": 806.4900040626526
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 8192,
+   "b": 7,
+   "min_us": 1140.813946723938
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 8192,
+   "b": 5,
+   "min_us": 822.9699730873108
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 8192,
+   "b": 7,
+   "min_us": 1142.2139406204224
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 12288,
+   "b": 5,
+   "min_us": 1194.8139667510986
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 12288,
+   "b": 7,
+   "min_us": 1694.9000358581543
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 12288,
+   "b": 5,
+   "min_us": 1206.4540386199951
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 12288,
+   "b": 7,
+   "min_us": 1698.5399723052979
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 16384,
+   "b": 5,
+   "min_us": 1568.9400434494019
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 16384,
+   "b": 7,
+   "min_us": 2256.347894668579
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 16384,
+   "b": 5,
+   "min_us": 1589.0189409255981
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 16384,
+   "b": 7,
+   "min_us": 2263.667106628418
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 24576,
+   "b": 5,
+   "min_us": 2335.707902908325
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 24576,
+   "b": 7,
+   "min_us": 3364.2399311065674
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 24576,
+   "b": 5,
+   "min_us": 2377.4290084838867
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 24576,
+   "b": 7,
+   "min_us": 3401.8421173095703
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 32768,
+   "b": 5,
+   "min_us": 3148.2388973236084
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 32768,
+   "b": 7,
+   "min_us": 4514.894962310791
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 32768,
+   "b": 5,
+   "min_us": 3195.3580379486084
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 32768,
+   "b": 7,
+   "min_us": 4524.054050445557
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 49152,
+   "b": 5,
+   "min_us": 4718.337059020996
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 49152,
+   "b": 7,
+   "min_us": 6725.561141967773
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 49152,
+   "b": 5,
+   "min_us": 4758.296966552734
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 49152,
+   "b": 7,
+   "min_us": 6741.0430908203125
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 65536,
+   "b": 5,
+   "min_us": 6239.1557693481445
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 65536,
+   "b": 7,
+   "min_us": 8943.669319152832
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 65536,
+   "b": 5,
+   "min_us": 6248.315811157227
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 65536,
+   "b": 7,
+   "min_us": 8950.030326843262
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 2048,
+   "b": 9,
+   "min_us": 71.44100219011307
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 2048,
+   "b": 12,
+   "min_us": 85.47999709844589
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 2048,
+   "b": 16,
+   "min_us": 89.04100209474564
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 2048,
+   "b": 24,
+   "min_us": 147.92099595069885
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 2048,
+   "b": 32,
+   "min_us": 153.6410003900528
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 2048,
+   "b": 9,
+   "min_us": 71.80000096559525
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 2048,
+   "b": 12,
+   "min_us": 88.04100006818771
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 2048,
+   "b": 16,
+   "min_us": 103.68099808692932
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 2048,
+   "b": 24,
+   "min_us": 152.5609940290451
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 2048,
+   "b": 32,
+   "min_us": 198.08200001716614
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 4096,
+   "b": 9,
+   "min_us": 115.04100263118744
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 4096,
+   "b": 12,
+   "min_us": 147.32199907302856
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 4096,
+   "b": 16,
+   "min_us": 154.04200553894043
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 4096,
+   "b": 24,
+   "min_us": 272.2429931163788
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 4096,
+   "b": 32,
+   "min_us": 283.0429971218109
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 4096,
+   "b": 9,
+   "min_us": 113.36100101470947
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 4096,
+   "b": 12,
+   "min_us": 148.72099459171295
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 4096,
+   "b": 16,
+   "min_us": 179.48199808597565
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 4096,
+   "b": 24,
+   "min_us": 274.3630111217499
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 4096,
+   "b": 32,
+   "min_us": 350.6830036640167
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 8192,
+   "b": 9,
+   "min_us": 204.96200025081635
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 8192,
+   "b": 12,
+   "min_us": 271.48300409317017
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 8192,
+   "b": 16,
+   "min_us": 289.64298963546753
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 8192,
+   "b": 24,
+   "min_us": 529.9260020256042
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 8192,
+   "b": 32,
+   "min_us": 552.4460077285767
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 8192,
+   "b": 9,
+   "min_us": 200.3220021724701
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 8192,
+   "b": 12,
+   "min_us": 267.1630084514618
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 8192,
+   "b": 16,
+   "min_us": 332.8840136528015
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 8192,
+   "b": 24,
+   "min_us": 536.8459820747375
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 8192,
+   "b": 32,
+   "min_us": 645.566999912262
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 16384,
+   "b": 9,
+   "min_us": 392.6840126514435
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 16384,
+   "b": 12,
+   "min_us": 527.8859734535217
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 16384,
+   "b": 16,
+   "min_us": 572.3260045051575
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 16384,
+   "b": 24,
+   "min_us": 1067.3320293426514
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 16384,
+   "b": 32,
+   "min_us": 1113.0119562149048
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 16384,
+   "b": 9,
+   "min_us": 374.24400448799133
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 16384,
+   "b": 12,
+   "min_us": 511.44498586654663
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 16384,
+   "b": 16,
+   "min_us": 614.6060228347778
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 16384,
+   "b": 24,
+   "min_us": 1090.651035308838
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 16384,
+   "b": 32,
+   "min_us": 1269.8129415512085
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 32768,
+   "b": 9,
+   "min_us": 771.2079882621765
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 32768,
+   "b": 12,
+   "min_us": 1048.8909482955933
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 32768,
+   "b": 16,
+   "min_us": 1154.6119451522827
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 32768,
+   "b": 24,
+   "min_us": 2176.3830184936523
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 32768,
+   "b": 32,
+   "min_us": 2264.103889465332
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 32768,
+   "b": 9,
+   "min_us": 725.8080244064331
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 32768,
+   "b": 12,
+   "min_us": 1003.2910108566284
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 32768,
+   "b": 16,
+   "min_us": 1261.212944984436
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 32768,
+   "b": 24,
+   "min_us": 2187.7429485321045
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 32768,
+   "b": 32,
+   "min_us": 2529.305934906006
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 65536,
+   "b": 9,
+   "min_us": 1512.7359628677368
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 65536,
+   "b": 12,
+   "min_us": 2076.662063598633
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 65536,
+   "b": 16,
+   "min_us": 2287.463903427124
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 65536,
+   "b": 24,
+   "min_us": 4344.926834106445
+  },
+  {
+   "family": "attn_decode",
+   "q": 1,
+   "ctx": 65536,
+   "b": 32,
+   "min_us": 4479.248046875
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 65536,
+   "b": 9,
+   "min_us": 1433.7350130081177
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 65536,
+   "b": 12,
+   "min_us": 1992.2610521316528
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 65536,
+   "b": 16,
+   "min_us": 2363.4660243988037
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 65536,
+   "b": 24,
+   "min_us": 4317.886829376221
+  },
+  {
+   "family": "attn_decode",
+   "q": 4,
+   "ctx": 65536,
+   "b": 32,
+   "min_us": 4962.453842163086
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 2048,
+   "b": 9,
+   "min_us": 578.8080096244812
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 2048,
+   "b": 12,
+   "min_us": 583.1279754638672
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 2048,
+   "b": 16,
+   "min_us": 592.0479893684387
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 2048,
+   "b": 24,
+   "min_us": 877.892017364502
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 2048,
+   "b": 32,
+   "min_us": 1163.9750003814697
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 2048,
+   "b": 9,
+   "min_us": 581.8480253219604
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 2048,
+   "b": 12,
+   "min_us": 589.2879962921143
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 2048,
+   "b": 16,
+   "min_us": 601.4080047607422
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 2048,
+   "b": 24,
+   "min_us": 895.251989364624
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 2048,
+   "b": 32,
+   "min_us": 1200.6560564041138
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 4096,
+   "b": 9,
+   "min_us": 1133.1340074539185
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 4096,
+   "b": 12,
+   "min_us": 1141.2949562072754
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 4096,
+   "b": 16,
+   "min_us": 1156.5749645233154
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 4096,
+   "b": 24,
+   "min_us": 1722.741961479187
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 4096,
+   "b": 32,
+   "min_us": 2292.030096054077
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 4096,
+   "b": 9,
+   "min_us": 1134.6540451049805
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 4096,
+   "b": 12,
+   "min_us": 1146.7349529266357
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 4096,
+   "b": 16,
+   "min_us": 1165.6149625778198
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 4096,
+   "b": 24,
+   "min_us": 1744.5030212402344
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 4096,
+   "b": 32,
+   "min_us": 2345.870018005371
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 8192,
+   "b": 9,
+   "min_us": 2229.5479774475098
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 8192,
+   "b": 12,
+   "min_us": 2244.508981704712
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 8192,
+   "b": 16,
+   "min_us": 2273.5490798950195
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 8192,
+   "b": 24,
+   "min_us": 3399.8029232025146
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 8192,
+   "b": 32,
+   "min_us": 4516.296863555908
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 8192,
+   "b": 9,
+   "min_us": 2232.1488857269287
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 8192,
+   "b": 12,
+   "min_us": 2247.148036956787
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 8192,
+   "b": 16,
+   "min_us": 2283.5888862609863
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 8192,
+   "b": 24,
+   "min_us": 3432.8439235687256
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 8192,
+   "b": 32,
+   "min_us": 4584.377765655518
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 16384,
+   "b": 9,
+   "min_us": 4407.454013824463
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 16384,
+   "b": 12,
+   "min_us": 4436.336040496826
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 16384,
+   "b": 16,
+   "min_us": 4515.05708694458
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 16384,
+   "b": 24,
+   "min_us": 6664.56413269043
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 16384,
+   "b": 32,
+   "min_us": 8893.752098083496
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 16384,
+   "b": 9,
+   "min_us": 4431.136131286621
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 16384,
+   "b": 12,
+   "min_us": 4460.015773773193
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 16384,
+   "b": 16,
+   "min_us": 4543.656826019287
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 16384,
+   "b": 24,
+   "min_us": 6753.56388092041
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 16384,
+   "b": 32,
+   "min_us": 8968.591690063477
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 32768,
+   "b": 9,
+   "min_us": 8859.3111038208
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 32768,
+   "b": 12,
+   "min_us": 8839.550971984863
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 32768,
+   "b": 16,
+   "min_us": 8914.669036865234
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 32768,
+   "b": 24,
+   "min_us": 13205.647468566895
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 32768,
+   "b": 32,
+   "min_us": 17626.541137695312
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 32768,
+   "b": 9,
+   "min_us": 8875.470161437988
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 32768,
+   "b": 12,
+   "min_us": 8896.190643310547
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 32768,
+   "b": 16,
+   "min_us": 9019.832611083984
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 32768,
+   "b": 24,
+   "min_us": 13320.368766784668
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 32768,
+   "b": 32,
+   "min_us": 17699.90348815918
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 65536,
+   "b": 9,
+   "min_us": 17561.10191345215
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 65536,
+   "b": 12,
+   "min_us": 17650.224685668945
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 65536,
+   "b": 16,
+   "min_us": 17714.82276916504
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 65536,
+   "b": 24,
+   "min_us": 26335.052490234375
+  },
+  {
+   "family": "attn_prefill",
+   "q": 32,
+   "ctx": 65536,
+   "b": 32,
+   "min_us": 35130.0048828125
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 65536,
+   "b": 9,
+   "min_us": 17639.90020751953
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 65536,
+   "b": 12,
+   "min_us": 17689.34440612793
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 65536,
+   "b": 16,
+   "min_us": 17717.744827270508
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 65536,
+   "b": 24,
+   "min_us": 26407.89222717285
+  },
+  {
+   "family": "attn_prefill",
+   "q": 64,
+   "ctx": 65536,
+   "b": 32,
+   "min_us": 35133.121490478516
+  }
+ ],
+ "notes": "Measured table. Prediction = trilinear interpolation in (q, log2 ctx, b) inside the grid; outside it the envelope check refuses. Dense, validated envelope: ctx 2048-65536, b 1-8 (hold-out per interior axis level: ctx 4.96 %/12.17 % decode, 5.72 %/8.76 % prefill; b 5.12 %/23.34 % decode, 10.40 %/21.84 % prefill). Rows at b = 9,12,16,24,32 are measured too but the steps there are coarse (split law), so they carry a wider bound and are NOT part of the validated interpolation envelope.",
+ "validated_envelope": {
+  "ctx": [
+   2048,
+   65536
+  ],
+  "b": [
+   1,
+   8
+  ],
+  "note": "dense grid; outside this b range the table is data, not a validated predictor"
+ }
+}

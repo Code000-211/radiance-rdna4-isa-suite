@@ -1,0 +1,329 @@
+{
+  "schema": "radiance-boundary-corpus/1",
+  "cases": [
+    {
+      "manifest": "gemm-m1-n3-k5/manifest.json",
+      "M": 1,
+      "N": 3,
+      "K": 5,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m2-n1-k5/manifest.json",
+      "M": 2,
+      "N": 1,
+      "K": 5,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m2-n3-k1/manifest.json",
+      "M": 2,
+      "N": 3,
+      "K": 1,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m2-n3-k15/manifest.json",
+      "M": 2,
+      "N": 3,
+      "K": 15,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m2-n3-k16/manifest.json",
+      "M": 2,
+      "N": 3,
+      "K": 16,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m2-n3-k17/manifest.json",
+      "M": 2,
+      "N": 3,
+      "K": 17,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m2-n3-k31/manifest.json",
+      "M": 2,
+      "N": 3,
+      "K": 31,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m2-n3-k32/manifest.json",
+      "M": 2,
+      "N": 3,
+      "K": 32,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m2-n3-k33/manifest.json",
+      "M": 2,
+      "N": 3,
+      "K": 33,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m2-n3-k63/manifest.json",
+      "M": 2,
+      "N": 3,
+      "K": 63,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m2-n3-k64/manifest.json",
+      "M": 2,
+      "N": 3,
+      "K": 64,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m2-n3-k65/manifest.json",
+      "M": 2,
+      "N": 3,
+      "K": 65,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m2-n15-k5/manifest.json",
+      "M": 2,
+      "N": 15,
+      "K": 5,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m2-n16-k5/manifest.json",
+      "M": 2,
+      "N": 16,
+      "K": 5,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m2-n17-k5/manifest.json",
+      "M": 2,
+      "N": 17,
+      "K": 5,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m2-n31-k5/manifest.json",
+      "M": 2,
+      "N": 31,
+      "K": 5,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m2-n32-k5/manifest.json",
+      "M": 2,
+      "N": 32,
+      "K": 5,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m2-n33-k5/manifest.json",
+      "M": 2,
+      "N": 33,
+      "K": 5,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m2-n63-k5/manifest.json",
+      "M": 2,
+      "N": 63,
+      "K": 5,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m2-n64-k5/manifest.json",
+      "M": 2,
+      "N": 64,
+      "K": 5,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m2-n65-k5/manifest.json",
+      "M": 2,
+      "N": 65,
+      "K": 5,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m15-n3-k5/manifest.json",
+      "M": 15,
+      "N": 3,
+      "K": 5,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m16-n3-k5/manifest.json",
+      "M": 16,
+      "N": 3,
+      "K": 5,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m17-n3-k5/manifest.json",
+      "M": 17,
+      "N": 3,
+      "K": 5,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m31-n3-k5/manifest.json",
+      "M": 31,
+      "N": 3,
+      "K": 5,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m32-n3-k5/manifest.json",
+      "M": 32,
+      "N": 3,
+      "K": 5,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m33-n3-k5/manifest.json",
+      "M": 33,
+      "N": 3,
+      "K": 5,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m63-n3-k5/manifest.json",
+      "M": 63,
+      "N": 3,
+      "K": 5,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m64-n3-k5/manifest.json",
+      "M": 64,
+      "N": 3,
+      "K": 5,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m65-n3-k5/manifest.json",
+      "M": 65,
+      "N": 3,
+      "K": 5,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m95-n3-k5/manifest.json",
+      "M": 95,
+      "N": 3,
+      "K": 5,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m96-n3-k5/manifest.json",
+      "M": 96,
+      "N": 3,
+      "K": 5,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m97-n3-k5/manifest.json",
+      "M": 97,
+      "N": 3,
+      "K": 5,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m127-n3-k5/manifest.json",
+      "M": 127,
+      "N": 3,
+      "K": 5,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m128-n3-k5/manifest.json",
+      "M": 128,
+      "N": 3,
+      "K": 5,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m129-n3-k5/manifest.json",
+      "M": 129,
+      "N": 3,
+      "K": 5,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m191-n3-k5/manifest.json",
+      "M": 191,
+      "N": 3,
+      "K": 5,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m192-n3-k5/manifest.json",
+      "M": 192,
+      "N": 3,
+      "K": 5,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m193-n3-k5/manifest.json",
+      "M": 193,
+      "N": 3,
+      "K": 5,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m255-n3-k5/manifest.json",
+      "M": 255,
+      "N": 3,
+      "K": 5,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m256-n3-k5/manifest.json",
+      "M": 256,
+      "N": 3,
+      "K": 5,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-m257-n3-k5/manifest.json",
+      "M": 257,
+      "N": 3,
+      "K": 5,
+      "distribution": "signed-exact"
+    },
+    {
+      "manifest": "gemm-zeros/manifest.json",
+      "M": 2,
+      "N": 3,
+      "K": 33,
+      "distribution": "zeros"
+    },
+    {
+      "manifest": "gemm-cancellation/manifest.json",
+      "M": 2,
+      "N": 3,
+      "K": 33,
+      "distribution": "cancellation"
+    },
+    {
+      "manifest": "gemm-outlier/manifest.json",
+      "M": 2,
+      "N": 3,
+      "K": 33,
+      "distribution": "outlier"
+    },
+    {
+      "manifest": "gemm-rounding/manifest.json",
+      "M": 2,
+      "N": 3,
+      "K": 33,
+      "distribution": "rounding"
+    }
+  ],
+  "numeric_policy_sha256": "8abe2cbbdd0236953a933baeb9471cd5f492f0e28eda47ef8608a45e59f71bb0",
+  "all_kernel_coverage": false
+}

@@ -1,0 +1,11 @@
+{
+  "schema": "radiance-numeric-policy/1",
+  "version": "dense-f32-1",
+  "scope": "finite dense f32 GEMM; independent Python fsum oracle; not quantization accuracy",
+  "op": "gemm_nt",
+  "dtype": 1,
+  "atol": 2e-05,
+  "rtol": 2e-05,
+  "rel_l2": 2e-05,
+  "nonfinite": "reject"
+}

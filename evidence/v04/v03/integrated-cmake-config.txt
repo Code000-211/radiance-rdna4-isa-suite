@@ -1,0 +1,6 @@
+-- radiance: HIP backend OFF by request -- host backend only
+-- arch: 'hyv3_common' has no CMakeLists.txt -- not an architecture plugin, skipped
+-- spechub: this radiance has no device build -- only the host reference is built
+-- Configuring done (0.1s)
+-- Generating done (0.1s)
+-- Build files have been written to: /mnt/data/v03_work/build-host

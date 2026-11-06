@@ -1,0 +1,34 @@
+{
+  "all_radiance_kernels_covered": false,
+  "fixture": {
+    "all_radiance_kernels_covered": false,
+    "allocation_bytes_including_scratch": 48,
+    "blob_bytes": 64,
+    "id": "libref-add-mul",
+    "kernel_nodes": [
+      "add",
+      "mul"
+    ],
+    "kernel_rows": [
+      "libref:ref_add",
+      "libref:ref_mul"
+    ],
+    "manifest_sha256": "2021d46835a40ad17737fe6d049dd62e0b6277e4a7b358cf1b6fdc4adafe0b90",
+    "node_count": 2,
+    "provenance": {
+      "kind": "synthetic",
+      "note": "Synthetic integers; independently computed exact float32 oracle.",
+      "reference": "independent"
+    },
+    "runtime_executed": false,
+    "schema": "radiance-kernel-replay/1",
+    "status": "FIXTURE_VALID",
+    "stream_count": 1
+  },
+  "isa": {
+    "status": "NOT_APPLICABLE_HOST"
+  },
+  "production_equivalence_proved": false,
+  "runtime_status": "RUNTIME_CHECKS_PASS",
+  "schema": "radiance-replay-coverage/1"
+}

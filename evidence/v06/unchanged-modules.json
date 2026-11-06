@@ -1,0 +1,32 @@
+[
+  {
+    "directory": "radisa",
+    "checked": 7,
+    "changed": []
+  },
+  {
+    "directory": "radreplay",
+    "checked": 11,
+    "changed": []
+  },
+  {
+    "directory": "replay",
+    "checked": 8,
+    "changed": []
+  },
+  {
+    "directory": "integration",
+    "checked": 8,
+    "changed": []
+  },
+  {
+    "directory": "tests",
+    "checked": 7,
+    "changed": []
+  },
+  {
+    "directory": "replay_tests",
+    "checked": 13,
+    "changed": []
+  }
+]

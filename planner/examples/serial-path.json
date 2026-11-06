@@ -1,0 +1,43 @@
+{
+  "schema": "radiance-planner-path/1",
+  "execution": "serial_no_overlap",
+  "stages": [
+    {
+      "workload_id": "dense-M256-N2560-K640",
+      "allowed_candidates": [
+        "w4a8-prefill-tile0",
+        "w4a8-prefill-tile2",
+        "w4a8-prefill-tile27",
+        "w4a8-prefill-tile28",
+        "w4a8-prefill-tile29",
+        "w4a8-prefill-tile3",
+        "w4a8-prefill-tile30",
+        "w4a8-prefill-tile5",
+        "w4a8-prefill-tile6",
+        "w4a8-prefill-tile14",
+        "w4a8-prefill-tile10",
+        "w4a8-prefill-tile13",
+        "w4a8-prefill-tile8"
+      ]
+    },
+    {
+      "workload_id": "dense-M1024-N2560-K640",
+      "allowed_candidates": [
+        "w4a8-prefill-tile0",
+        "w4a8-prefill-tile2",
+        "w4a8-prefill-tile27",
+        "w4a8-prefill-tile28",
+        "w4a8-prefill-tile29",
+        "w4a8-prefill-tile3",
+        "w4a8-prefill-tile30",
+        "w4a8-prefill-tile5",
+        "w4a8-prefill-tile6",
+        "w4a8-prefill-tile13",
+        "w4a8-prefill-tile8",
+        "w4a8-prefill-tile14",
+        "w4a8-prefill-tile10"
+      ]
+    }
+  ],
+  "transitions": []
+}

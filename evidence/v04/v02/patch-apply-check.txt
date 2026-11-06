@@ -1,0 +1,4 @@
+Command: git apply --check tools/rdna4-isa-suite/integration/aql-capture.patch
+Source: uploaded radiance-main(1).zip
+Exit status: 0
+No patch was applied to the original source tree.

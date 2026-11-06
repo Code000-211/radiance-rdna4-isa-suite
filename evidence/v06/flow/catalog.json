@@ -1,0 +1,1481 @@
+{
+  "candidates": [
+    {
+      "contract": "bf16-q-fp8-kv-selected-causal",
+      "id": "attn.g12.8.decode.s1",
+      "identity": {
+        "kind": "hypothesis",
+        "sha256": "ee7986dc1827355c71bf70a72b2090fccff81a4b07727f27709d67900c81da08"
+      },
+      "input_layout": "qkv_paged",
+      "op": "attention",
+      "output_layout": "bf16_heads",
+      "params": {
+        "block_size": 4,
+        "compute_path": "wmma_f16",
+        "force_merge": true,
+        "gqa": 12,
+        "gqa_reuse": true,
+        "head_dim": 256,
+        "kv_bits": 8,
+        "kv_tile": 16,
+        "max_queries_per_sequence": 5,
+        "partial_bits": 16,
+        "query_tile": 1,
+        "split_kv": 1
+      },
+      "source_binding": {
+        "scope": "reviewed family geometry; costs remain hypotheses, not executable code or exact dispatch bindings",
+        "source_files": {
+          "arch/common/rad_block_moe_fp8.h": "f4c0efd0ed272568c82e8402d0b49f4324b4033a3ce3a03959b59827c653f8fa",
+          "arch/common/rad_qsa.h": "ef5e5865c56c1192133e1563d281a90d3e68fe18efceb9534aa58d60f88839b7",
+          "arch/qwen4exp_fp8/qwen4exp_fp8.cpp": "0e63d8f02ac85dde132ca753117d47389dcac423977e864287ac712517ca2908",
+          "docs/QSA.md": "46b63d71470ed8897d246cf14b703fa59e33bfa16a0fe27ca2574d9eba93dc92",
+          "libr4d/r4d_ar_oneshot_2rank_exact.hip": "4f5441e1a9651f8e0e5363073213050e8266c1b027cae4b01671545afdf7ad15",
+          "libr4d/r4d_attn_decode_h256_gqa6.hip": "e29035e20d4e903355bcadd0759f4e36d8c76c146f2d31e6990908132e5e3534",
+          "libr4d/r4d_attn_paged_gqa8.hip": "98b87b555e2187d5362d794a2627a421c50f4013449c01ee80639965539f9dfe",
+          "libr4d/r4d_attn_paged_h256_gqa12.hip": "a0078f0a42c8f6001329c51a6342c6d4365cefe49d97686b45542acd74c82f1c",
+          "libr4d/r4d_attn_paged_h256_gqa6_bs4.hip": "7d9d0084a6c26102d2be4b821bceb92bbe01bbdfb9f08aafa2b0681b0f302ea5",
+          "libr4d/r4d_attn_prefill_h256_gqa6.hip": "a931ec55e7d591bae386203864dc07f60a65d3e90d43b17ebe5f4e4e0b392123",
+          "libr4d/r4d_moe.hip": "914323325ae1f615bd97eebd28e4feb4bcb258b1693b047fa34793c465e85363",
+          "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+        }
+      }
+    },
+    {
+      "contract": "bf16-q-fp8-kv-selected-causal",
+      "id": "attn.g12.8.decode.s4",
+      "identity": {
+        "kind": "hypothesis",
+        "sha256": "657108c4526d93dc653855640ee0310a91413c8be983768f2b90cc7d5efdc110"
+      },
+      "input_layout": "qkv_paged",
+      "op": "attention",
+      "output_layout": "bf16_heads",
+      "params": {
+        "block_size": 4,
+        "compute_path": "wmma_f16",
+        "force_merge": true,
+        "gqa": 12,
+        "gqa_reuse": true,
+        "head_dim": 256,
+        "kv_bits": 8,
+        "kv_tile": 16,
+        "max_queries_per_sequence": 5,
+        "partial_bits": 16,
+        "query_tile": 1,
+        "split_kv": 4
+      },
+      "source_binding": {
+        "scope": "reviewed family geometry; costs remain hypotheses, not executable code or exact dispatch bindings",
+        "source_files": {
+          "arch/common/rad_block_moe_fp8.h": "f4c0efd0ed272568c82e8402d0b49f4324b4033a3ce3a03959b59827c653f8fa",
+          "arch/common/rad_qsa.h": "ef5e5865c56c1192133e1563d281a90d3e68fe18efceb9534aa58d60f88839b7",
+          "arch/qwen4exp_fp8/qwen4exp_fp8.cpp": "0e63d8f02ac85dde132ca753117d47389dcac423977e864287ac712517ca2908",
+          "docs/QSA.md": "46b63d71470ed8897d246cf14b703fa59e33bfa16a0fe27ca2574d9eba93dc92",
+          "libr4d/r4d_ar_oneshot_2rank_exact.hip": "4f5441e1a9651f8e0e5363073213050e8266c1b027cae4b01671545afdf7ad15",
+          "libr4d/r4d_attn_decode_h256_gqa6.hip": "e29035e20d4e903355bcadd0759f4e36d8c76c146f2d31e6990908132e5e3534",
+          "libr4d/r4d_attn_paged_gqa8.hip": "98b87b555e2187d5362d794a2627a421c50f4013449c01ee80639965539f9dfe",
+          "libr4d/r4d_attn_paged_h256_gqa12.hip": "a0078f0a42c8f6001329c51a6342c6d4365cefe49d97686b45542acd74c82f1c",
+          "libr4d/r4d_attn_paged_h256_gqa6_bs4.hip": "7d9d0084a6c26102d2be4b821bceb92bbe01bbdfb9f08aafa2b0681b0f302ea5",
+          "libr4d/r4d_attn_prefill_h256_gqa6.hip": "a931ec55e7d591bae386203864dc07f60a65d3e90d43b17ebe5f4e4e0b392123",
+          "libr4d/r4d_moe.hip": "914323325ae1f615bd97eebd28e4feb4bcb258b1693b047fa34793c465e85363",
+          "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+        }
+      }
+    },
+    {
+      "contract": "bf16-q-fp8-kv-selected-causal",
+      "id": "attn.g12.8.decode.s16",
+      "identity": {
+        "kind": "hypothesis",
+        "sha256": "a4eb302d968f19c921ca9abcb56323cdf8774edb0b880ce2773e6878dddebfc7"
+      },
+      "input_layout": "qkv_paged",
+      "op": "attention",
+      "output_layout": "bf16_heads",
+      "params": {
+        "block_size": 4,
+        "compute_path": "wmma_f16",
+        "force_merge": true,
+        "gqa": 12,
+        "gqa_reuse": true,
+        "head_dim": 256,
+        "kv_bits": 8,
+        "kv_tile": 16,
+        "max_queries_per_sequence": 5,
+        "partial_bits": 16,
+        "query_tile": 1,
+        "split_kv": 16
+      },
+      "source_binding": {
+        "scope": "reviewed family geometry; costs remain hypotheses, not executable code or exact dispatch bindings",
+        "source_files": {
+          "arch/common/rad_block_moe_fp8.h": "f4c0efd0ed272568c82e8402d0b49f4324b4033a3ce3a03959b59827c653f8fa",
+          "arch/common/rad_qsa.h": "ef5e5865c56c1192133e1563d281a90d3e68fe18efceb9534aa58d60f88839b7",
+          "arch/qwen4exp_fp8/qwen4exp_fp8.cpp": "0e63d8f02ac85dde132ca753117d47389dcac423977e864287ac712517ca2908",
+          "docs/QSA.md": "46b63d71470ed8897d246cf14b703fa59e33bfa16a0fe27ca2574d9eba93dc92",
+          "libr4d/r4d_ar_oneshot_2rank_exact.hip": "4f5441e1a9651f8e0e5363073213050e8266c1b027cae4b01671545afdf7ad15",
+          "libr4d/r4d_attn_decode_h256_gqa6.hip": "e29035e20d4e903355bcadd0759f4e36d8c76c146f2d31e6990908132e5e3534",
+          "libr4d/r4d_attn_paged_gqa8.hip": "98b87b555e2187d5362d794a2627a421c50f4013449c01ee80639965539f9dfe",
+          "libr4d/r4d_attn_paged_h256_gqa12.hip": "a0078f0a42c8f6001329c51a6342c6d4365cefe49d97686b45542acd74c82f1c",
+          "libr4d/r4d_attn_paged_h256_gqa6_bs4.hip": "7d9d0084a6c26102d2be4b821bceb92bbe01bbdfb9f08aafa2b0681b0f302ea5",
+          "libr4d/r4d_attn_prefill_h256_gqa6.hip": "a931ec55e7d591bae386203864dc07f60a65d3e90d43b17ebe5f4e4e0b392123",
+          "libr4d/r4d_moe.hip": "914323325ae1f615bd97eebd28e4feb4bcb258b1693b047fa34793c465e85363",
+          "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+        }
+      }
+    },
+    {
+      "contract": "bf16-q-fp8-kv-selected-causal",
+      "id": "attn.g12.8.prefill.s1",
+      "identity": {
+        "kind": "hypothesis",
+        "sha256": "eb4646a2549229aca65da26fcf31d6604a343e61a0fa4ed5152fb9645d4902d2"
+      },
+      "input_layout": "qkv_paged",
+      "op": "attention",
+      "output_layout": "bf16_heads",
+      "params": {
+        "block_size": 4,
+        "compute_path": "wmma_f16",
+        "force_merge": false,
+        "gqa": 12,
+        "gqa_reuse": true,
+        "head_dim": 256,
+        "kv_bits": 8,
+        "kv_tile": 48,
+        "max_queries_per_sequence": 65536,
+        "partial_bits": 16,
+        "query_tile": 32,
+        "split_kv": 1
+      },
+      "source_binding": {
+        "scope": "reviewed family geometry; costs remain hypotheses, not executable code or exact dispatch bindings",
+        "source_files": {
+          "arch/common/rad_block_moe_fp8.h": "f4c0efd0ed272568c82e8402d0b49f4324b4033a3ce3a03959b59827c653f8fa",
+          "arch/common/rad_qsa.h": "ef5e5865c56c1192133e1563d281a90d3e68fe18efceb9534aa58d60f88839b7",
+          "arch/qwen4exp_fp8/qwen4exp_fp8.cpp": "0e63d8f02ac85dde132ca753117d47389dcac423977e864287ac712517ca2908",
+          "docs/QSA.md": "46b63d71470ed8897d246cf14b703fa59e33bfa16a0fe27ca2574d9eba93dc92",
+          "libr4d/r4d_ar_oneshot_2rank_exact.hip": "4f5441e1a9651f8e0e5363073213050e8266c1b027cae4b01671545afdf7ad15",
+          "libr4d/r4d_attn_decode_h256_gqa6.hip": "e29035e20d4e903355bcadd0759f4e36d8c76c146f2d31e6990908132e5e3534",
+          "libr4d/r4d_attn_paged_gqa8.hip": "98b87b555e2187d5362d794a2627a421c50f4013449c01ee80639965539f9dfe",
+          "libr4d/r4d_attn_paged_h256_gqa12.hip": "a0078f0a42c8f6001329c51a6342c6d4365cefe49d97686b45542acd74c82f1c",
+          "libr4d/r4d_attn_paged_h256_gqa6_bs4.hip": "7d9d0084a6c26102d2be4b821bceb92bbe01bbdfb9f08aafa2b0681b0f302ea5",
+          "libr4d/r4d_attn_prefill_h256_gqa6.hip": "a931ec55e7d591bae386203864dc07f60a65d3e90d43b17ebe5f4e4e0b392123",
+          "libr4d/r4d_moe.hip": "914323325ae1f615bd97eebd28e4feb4bcb258b1693b047fa34793c465e85363",
+          "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+        }
+      }
+    },
+    {
+      "contract": "bf16-q-fp8-kv-selected-causal",
+      "id": "attn.g12.8.prefill.s4",
+      "identity": {
+        "kind": "hypothesis",
+        "sha256": "a1de1e3c7a07d2f3db3f1c44ef3a7ecb08ee63bb5cd5cc7afc81b5111cd6fcfb"
+      },
+      "input_layout": "qkv_paged",
+      "op": "attention",
+      "output_layout": "bf16_heads",
+      "params": {
+        "block_size": 4,
+        "compute_path": "wmma_f16",
+        "force_merge": false,
+        "gqa": 12,
+        "gqa_reuse": true,
+        "head_dim": 256,
+        "kv_bits": 8,
+        "kv_tile": 48,
+        "max_queries_per_sequence": 65536,
+        "partial_bits": 16,
+        "query_tile": 32,
+        "split_kv": 4
+      },
+      "source_binding": {
+        "scope": "reviewed family geometry; costs remain hypotheses, not executable code or exact dispatch bindings",
+        "source_files": {
+          "arch/common/rad_block_moe_fp8.h": "f4c0efd0ed272568c82e8402d0b49f4324b4033a3ce3a03959b59827c653f8fa",
+          "arch/common/rad_qsa.h": "ef5e5865c56c1192133e1563d281a90d3e68fe18efceb9534aa58d60f88839b7",
+          "arch/qwen4exp_fp8/qwen4exp_fp8.cpp": "0e63d8f02ac85dde132ca753117d47389dcac423977e864287ac712517ca2908",
+          "docs/QSA.md": "46b63d71470ed8897d246cf14b703fa59e33bfa16a0fe27ca2574d9eba93dc92",
+          "libr4d/r4d_ar_oneshot_2rank_exact.hip": "4f5441e1a9651f8e0e5363073213050e8266c1b027cae4b01671545afdf7ad15",
+          "libr4d/r4d_attn_decode_h256_gqa6.hip": "e29035e20d4e903355bcadd0759f4e36d8c76c146f2d31e6990908132e5e3534",
+          "libr4d/r4d_attn_paged_gqa8.hip": "98b87b555e2187d5362d794a2627a421c50f4013449c01ee80639965539f9dfe",
+          "libr4d/r4d_attn_paged_h256_gqa12.hip": "a0078f0a42c8f6001329c51a6342c6d4365cefe49d97686b45542acd74c82f1c",
+          "libr4d/r4d_attn_paged_h256_gqa6_bs4.hip": "7d9d0084a6c26102d2be4b821bceb92bbe01bbdfb9f08aafa2b0681b0f302ea5",
+          "libr4d/r4d_attn_prefill_h256_gqa6.hip": "a931ec55e7d591bae386203864dc07f60a65d3e90d43b17ebe5f4e4e0b392123",
+          "libr4d/r4d_moe.hip": "914323325ae1f615bd97eebd28e4feb4bcb258b1693b047fa34793c465e85363",
+          "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+        }
+      }
+    },
+    {
+      "contract": "bf16-q-fp8-kv-selected-causal",
+      "id": "attn.g12.8.prefill.s16",
+      "identity": {
+        "kind": "hypothesis",
+        "sha256": "ca9aaf0d74c9aee3cedf3e7bb0b873869511c980c132bccff539ac310930da19"
+      },
+      "input_layout": "qkv_paged",
+      "op": "attention",
+      "output_layout": "bf16_heads",
+      "params": {
+        "block_size": 4,
+        "compute_path": "wmma_f16",
+        "force_merge": false,
+        "gqa": 12,
+        "gqa_reuse": true,
+        "head_dim": 256,
+        "kv_bits": 8,
+        "kv_tile": 48,
+        "max_queries_per_sequence": 65536,
+        "partial_bits": 16,
+        "query_tile": 32,
+        "split_kv": 16
+      },
+      "source_binding": {
+        "scope": "reviewed family geometry; costs remain hypotheses, not executable code or exact dispatch bindings",
+        "source_files": {
+          "arch/common/rad_block_moe_fp8.h": "f4c0efd0ed272568c82e8402d0b49f4324b4033a3ce3a03959b59827c653f8fa",
+          "arch/common/rad_qsa.h": "ef5e5865c56c1192133e1563d281a90d3e68fe18efceb9534aa58d60f88839b7",
+          "arch/qwen4exp_fp8/qwen4exp_fp8.cpp": "0e63d8f02ac85dde132ca753117d47389dcac423977e864287ac712517ca2908",
+          "docs/QSA.md": "46b63d71470ed8897d246cf14b703fa59e33bfa16a0fe27ca2574d9eba93dc92",
+          "libr4d/r4d_ar_oneshot_2rank_exact.hip": "4f5441e1a9651f8e0e5363073213050e8266c1b027cae4b01671545afdf7ad15",
+          "libr4d/r4d_attn_decode_h256_gqa6.hip": "e29035e20d4e903355bcadd0759f4e36d8c76c146f2d31e6990908132e5e3534",
+          "libr4d/r4d_attn_paged_gqa8.hip": "98b87b555e2187d5362d794a2627a421c50f4013449c01ee80639965539f9dfe",
+          "libr4d/r4d_attn_paged_h256_gqa12.hip": "a0078f0a42c8f6001329c51a6342c6d4365cefe49d97686b45542acd74c82f1c",
+          "libr4d/r4d_attn_paged_h256_gqa6_bs4.hip": "7d9d0084a6c26102d2be4b821bceb92bbe01bbdfb9f08aafa2b0681b0f302ea5",
+          "libr4d/r4d_attn_prefill_h256_gqa6.hip": "a931ec55e7d591bae386203864dc07f60a65d3e90d43b17ebe5f4e4e0b392123",
+          "libr4d/r4d_moe.hip": "914323325ae1f615bd97eebd28e4feb4bcb258b1693b047fa34793c465e85363",
+          "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+        }
+      }
+    },
+    {
+      "contract": "bf16-q-fp16-kv-selected-causal",
+      "id": "attn.g12.16.decode.s1",
+      "identity": {
+        "kind": "hypothesis",
+        "sha256": "9aaccd0702884e9d309e22ff77103e70b0b792d10f3a20bfb4b99ece5cafc2fb"
+      },
+      "input_layout": "qkv_paged",
+      "op": "attention",
+      "output_layout": "bf16_heads",
+      "params": {
+        "block_size": 4,
+        "compute_path": "wmma_f16",
+        "force_merge": true,
+        "gqa": 12,
+        "gqa_reuse": true,
+        "head_dim": 256,
+        "kv_bits": 16,
+        "kv_tile": 16,
+        "max_queries_per_sequence": 5,
+        "partial_bits": 16,
+        "query_tile": 1,
+        "split_kv": 1
+      },
+      "source_binding": {
+        "scope": "reviewed family geometry; costs remain hypotheses, not executable code or exact dispatch bindings",
+        "source_files": {
+          "arch/common/rad_block_moe_fp8.h": "f4c0efd0ed272568c82e8402d0b49f4324b4033a3ce3a03959b59827c653f8fa",
+          "arch/common/rad_qsa.h": "ef5e5865c56c1192133e1563d281a90d3e68fe18efceb9534aa58d60f88839b7",
+          "arch/qwen4exp_fp8/qwen4exp_fp8.cpp": "0e63d8f02ac85dde132ca753117d47389dcac423977e864287ac712517ca2908",
+          "docs/QSA.md": "46b63d71470ed8897d246cf14b703fa59e33bfa16a0fe27ca2574d9eba93dc92",
+          "libr4d/r4d_ar_oneshot_2rank_exact.hip": "4f5441e1a9651f8e0e5363073213050e8266c1b027cae4b01671545afdf7ad15",
+          "libr4d/r4d_attn_decode_h256_gqa6.hip": "e29035e20d4e903355bcadd0759f4e36d8c76c146f2d31e6990908132e5e3534",
+          "libr4d/r4d_attn_paged_gqa8.hip": "98b87b555e2187d5362d794a2627a421c50f4013449c01ee80639965539f9dfe",
+          "libr4d/r4d_attn_paged_h256_gqa12.hip": "a0078f0a42c8f6001329c51a6342c6d4365cefe49d97686b45542acd74c82f1c",
+          "libr4d/r4d_attn_paged_h256_gqa6_bs4.hip": "7d9d0084a6c26102d2be4b821bceb92bbe01bbdfb9f08aafa2b0681b0f302ea5",
+          "libr4d/r4d_attn_prefill_h256_gqa6.hip": "a931ec55e7d591bae386203864dc07f60a65d3e90d43b17ebe5f4e4e0b392123",
+          "libr4d/r4d_moe.hip": "914323325ae1f615bd97eebd28e4feb4bcb258b1693b047fa34793c465e85363",
+          "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+        }
+      }
+    },
+    {
+      "contract": "bf16-q-fp16-kv-selected-causal",
+      "id": "attn.g12.16.decode.s4",
+      "identity": {
+        "kind": "hypothesis",
+        "sha256": "301875cd21fbb17928412bcc95e0c649a44e42df5b1cf34b3abe5fd018151e78"
+      },
+      "input_layout": "qkv_paged",
+      "op": "attention",
+      "output_layout": "bf16_heads",
+      "params": {
+        "block_size": 4,
+        "compute_path": "wmma_f16",
+        "force_merge": true,
+        "gqa": 12,
+        "gqa_reuse": true,
+        "head_dim": 256,
+        "kv_bits": 16,
+        "kv_tile": 16,
+        "max_queries_per_sequence": 5,
+        "partial_bits": 16,
+        "query_tile": 1,
+        "split_kv": 4
+      },
+      "source_binding": {
+        "scope": "reviewed family geometry; costs remain hypotheses, not executable code or exact dispatch bindings",
+        "source_files": {
+          "arch/common/rad_block_moe_fp8.h": "f4c0efd0ed272568c82e8402d0b49f4324b4033a3ce3a03959b59827c653f8fa",
+          "arch/common/rad_qsa.h": "ef5e5865c56c1192133e1563d281a90d3e68fe18efceb9534aa58d60f88839b7",
+          "arch/qwen4exp_fp8/qwen4exp_fp8.cpp": "0e63d8f02ac85dde132ca753117d47389dcac423977e864287ac712517ca2908",
+          "docs/QSA.md": "46b63d71470ed8897d246cf14b703fa59e33bfa16a0fe27ca2574d9eba93dc92",
+          "libr4d/r4d_ar_oneshot_2rank_exact.hip": "4f5441e1a9651f8e0e5363073213050e8266c1b027cae4b01671545afdf7ad15",
+          "libr4d/r4d_attn_decode_h256_gqa6.hip": "e29035e20d4e903355bcadd0759f4e36d8c76c146f2d31e6990908132e5e3534",
+          "libr4d/r4d_attn_paged_gqa8.hip": "98b87b555e2187d5362d794a2627a421c50f4013449c01ee80639965539f9dfe",
+          "libr4d/r4d_attn_paged_h256_gqa12.hip": "a0078f0a42c8f6001329c51a6342c6d4365cefe49d97686b45542acd74c82f1c",
+          "libr4d/r4d_attn_paged_h256_gqa6_bs4.hip": "7d9d0084a6c26102d2be4b821bceb92bbe01bbdfb9f08aafa2b0681b0f302ea5",
+          "libr4d/r4d_attn_prefill_h256_gqa6.hip": "a931ec55e7d591bae386203864dc07f60a65d3e90d43b17ebe5f4e4e0b392123",
+          "libr4d/r4d_moe.hip": "914323325ae1f615bd97eebd28e4feb4bcb258b1693b047fa34793c465e85363",
+          "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+        }
+      }
+    },
+    {
+      "contract": "bf16-q-fp16-kv-selected-causal",
+      "id": "attn.g12.16.decode.s16",
+      "identity": {
+        "kind": "hypothesis",
+        "sha256": "f4a72b9471627ea7ab93f239d1b1178bd00a9da758c0044e494302f687ca39ed"
+      },
+      "input_layout": "qkv_paged",
+      "op": "attention",
+      "output_layout": "bf16_heads",
+      "params": {
+        "block_size": 4,
+        "compute_path": "wmma_f16",
+        "force_merge": true,
+        "gqa": 12,
+        "gqa_reuse": true,
+        "head_dim": 256,
+        "kv_bits": 16,
+        "kv_tile": 16,
+        "max_queries_per_sequence": 5,
+        "partial_bits": 16,
+        "query_tile": 1,
+        "split_kv": 16
+      },
+      "source_binding": {
+        "scope": "reviewed family geometry; costs remain hypotheses, not executable code or exact dispatch bindings",
+        "source_files": {
+          "arch/common/rad_block_moe_fp8.h": "f4c0efd0ed272568c82e8402d0b49f4324b4033a3ce3a03959b59827c653f8fa",
+          "arch/common/rad_qsa.h": "ef5e5865c56c1192133e1563d281a90d3e68fe18efceb9534aa58d60f88839b7",
+          "arch/qwen4exp_fp8/qwen4exp_fp8.cpp": "0e63d8f02ac85dde132ca753117d47389dcac423977e864287ac712517ca2908",
+          "docs/QSA.md": "46b63d71470ed8897d246cf14b703fa59e33bfa16a0fe27ca2574d9eba93dc92",
+          "libr4d/r4d_ar_oneshot_2rank_exact.hip": "4f5441e1a9651f8e0e5363073213050e8266c1b027cae4b01671545afdf7ad15",
+          "libr4d/r4d_attn_decode_h256_gqa6.hip": "e29035e20d4e903355bcadd0759f4e36d8c76c146f2d31e6990908132e5e3534",
+          "libr4d/r4d_attn_paged_gqa8.hip": "98b87b555e2187d5362d794a2627a421c50f4013449c01ee80639965539f9dfe",
+          "libr4d/r4d_attn_paged_h256_gqa12.hip": "a0078f0a42c8f6001329c51a6342c6d4365cefe49d97686b45542acd74c82f1c",
+          "libr4d/r4d_attn_paged_h256_gqa6_bs4.hip": "7d9d0084a6c26102d2be4b821bceb92bbe01bbdfb9f08aafa2b0681b0f302ea5",
+          "libr4d/r4d_attn_prefill_h256_gqa6.hip": "a931ec55e7d591bae386203864dc07f60a65d3e90d43b17ebe5f4e4e0b392123",
+          "libr4d/r4d_moe.hip": "914323325ae1f615bd97eebd28e4feb4bcb258b1693b047fa34793c465e85363",
+          "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+        }
+      }
+    },
+    {
+      "contract": "bf16-q-fp16-kv-selected-causal",
+      "id": "attn.g12.16.prefill.s1",
+      "identity": {
+        "kind": "hypothesis",
+        "sha256": "0be26a919f44b9609a18d0b11ac524eae0f5743ce629662f4a46c7c5f4e49384"
+      },
+      "input_layout": "qkv_paged",
+      "op": "attention",
+      "output_layout": "bf16_heads",
+      "params": {
+        "block_size": 4,
+        "compute_path": "wmma_f16",
+        "force_merge": false,
+        "gqa": 12,
+        "gqa_reuse": true,
+        "head_dim": 256,
+        "kv_bits": 16,
+        "kv_tile": 48,
+        "max_queries_per_sequence": 65536,
+        "partial_bits": 16,
+        "query_tile": 32,
+        "split_kv": 1
+      },
+      "source_binding": {
+        "scope": "reviewed family geometry; costs remain hypotheses, not executable code or exact dispatch bindings",
+        "source_files": {
+          "arch/common/rad_block_moe_fp8.h": "f4c0efd0ed272568c82e8402d0b49f4324b4033a3ce3a03959b59827c653f8fa",
+          "arch/common/rad_qsa.h": "ef5e5865c56c1192133e1563d281a90d3e68fe18efceb9534aa58d60f88839b7",
+          "arch/qwen4exp_fp8/qwen4exp_fp8.cpp": "0e63d8f02ac85dde132ca753117d47389dcac423977e864287ac712517ca2908",
+          "docs/QSA.md": "46b63d71470ed8897d246cf14b703fa59e33bfa16a0fe27ca2574d9eba93dc92",
+          "libr4d/r4d_ar_oneshot_2rank_exact.hip": "4f5441e1a9651f8e0e5363073213050e8266c1b027cae4b01671545afdf7ad15",
+          "libr4d/r4d_attn_decode_h256_gqa6.hip": "e29035e20d4e903355bcadd0759f4e36d8c76c146f2d31e6990908132e5e3534",
+          "libr4d/r4d_attn_paged_gqa8.hip": "98b87b555e2187d5362d794a2627a421c50f4013449c01ee80639965539f9dfe",
+          "libr4d/r4d_attn_paged_h256_gqa12.hip": "a0078f0a42c8f6001329c51a6342c6d4365cefe49d97686b45542acd74c82f1c",
+          "libr4d/r4d_attn_paged_h256_gqa6_bs4.hip": "7d9d0084a6c26102d2be4b821bceb92bbe01bbdfb9f08aafa2b0681b0f302ea5",
+          "libr4d/r4d_attn_prefill_h256_gqa6.hip": "a931ec55e7d591bae386203864dc07f60a65d3e90d43b17ebe5f4e4e0b392123",
+          "libr4d/r4d_moe.hip": "914323325ae1f615bd97eebd28e4feb4bcb258b1693b047fa34793c465e85363",
+          "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+        }
+      }
+    },
+    {
+      "contract": "bf16-q-fp16-kv-selected-causal",
+      "id": "attn.g12.16.prefill.s4",
+      "identity": {
+        "kind": "hypothesis",
+        "sha256": "64e93a04ac40d93fb31d7a727f2201b2eaa0b90c21d9e670494d14ca53dbaca3"
+      },
+      "input_layout": "qkv_paged",
+      "op": "attention",
+      "output_layout": "bf16_heads",
+      "params": {
+        "block_size": 4,
+        "compute_path": "wmma_f16",
+        "force_merge": false,
+        "gqa": 12,
+        "gqa_reuse": true,
+        "head_dim": 256,
+        "kv_bits": 16,
+        "kv_tile": 48,
+        "max_queries_per_sequence": 65536,
+        "partial_bits": 16,
+        "query_tile": 32,
+        "split_kv": 4
+      },
+      "source_binding": {
+        "scope": "reviewed family geometry; costs remain hypotheses, not executable code or exact dispatch bindings",
+        "source_files": {
+          "arch/common/rad_block_moe_fp8.h": "f4c0efd0ed272568c82e8402d0b49f4324b4033a3ce3a03959b59827c653f8fa",
+          "arch/common/rad_qsa.h": "ef5e5865c56c1192133e1563d281a90d3e68fe18efceb9534aa58d60f88839b7",
+          "arch/qwen4exp_fp8/qwen4exp_fp8.cpp": "0e63d8f02ac85dde132ca753117d47389dcac423977e864287ac712517ca2908",
+          "docs/QSA.md": "46b63d71470ed8897d246cf14b703fa59e33bfa16a0fe27ca2574d9eba93dc92",
+          "libr4d/r4d_ar_oneshot_2rank_exact.hip": "4f5441e1a9651f8e0e5363073213050e8266c1b027cae4b01671545afdf7ad15",
+          "libr4d/r4d_attn_decode_h256_gqa6.hip": "e29035e20d4e903355bcadd0759f4e36d8c76c146f2d31e6990908132e5e3534",
+          "libr4d/r4d_attn_paged_gqa8.hip": "98b87b555e2187d5362d794a2627a421c50f4013449c01ee80639965539f9dfe",
+          "libr4d/r4d_attn_paged_h256_gqa12.hip": "a0078f0a42c8f6001329c51a6342c6d4365cefe49d97686b45542acd74c82f1c",
+          "libr4d/r4d_attn_paged_h256_gqa6_bs4.hip": "7d9d0084a6c26102d2be4b821bceb92bbe01bbdfb9f08aafa2b0681b0f302ea5",
+          "libr4d/r4d_attn_prefill_h256_gqa6.hip": "a931ec55e7d591bae386203864dc07f60a65d3e90d43b17ebe5f4e4e0b392123",
+          "libr4d/r4d_moe.hip": "914323325ae1f615bd97eebd28e4feb4bcb258b1693b047fa34793c465e85363",
+          "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+        }
+      }
+    },
+    {
+      "contract": "bf16-q-fp16-kv-selected-causal",
+      "id": "attn.g12.16.prefill.s16",
+      "identity": {
+        "kind": "hypothesis",
+        "sha256": "5edafd6f0d5efa317af7a230d3b5fb513a79cbc2ed8f2a288cf41797642e6c64"
+      },
+      "input_layout": "qkv_paged",
+      "op": "attention",
+      "output_layout": "bf16_heads",
+      "params": {
+        "block_size": 4,
+        "compute_path": "wmma_f16",
+        "force_merge": false,
+        "gqa": 12,
+        "gqa_reuse": true,
+        "head_dim": 256,
+        "kv_bits": 16,
+        "kv_tile": 48,
+        "max_queries_per_sequence": 65536,
+        "partial_bits": 16,
+        "query_tile": 32,
+        "split_kv": 16
+      },
+      "source_binding": {
+        "scope": "reviewed family geometry; costs remain hypotheses, not executable code or exact dispatch bindings",
+        "source_files": {
+          "arch/common/rad_block_moe_fp8.h": "f4c0efd0ed272568c82e8402d0b49f4324b4033a3ce3a03959b59827c653f8fa",
+          "arch/common/rad_qsa.h": "ef5e5865c56c1192133e1563d281a90d3e68fe18efceb9534aa58d60f88839b7",
+          "arch/qwen4exp_fp8/qwen4exp_fp8.cpp": "0e63d8f02ac85dde132ca753117d47389dcac423977e864287ac712517ca2908",
+          "docs/QSA.md": "46b63d71470ed8897d246cf14b703fa59e33bfa16a0fe27ca2574d9eba93dc92",
+          "libr4d/r4d_ar_oneshot_2rank_exact.hip": "4f5441e1a9651f8e0e5363073213050e8266c1b027cae4b01671545afdf7ad15",
+          "libr4d/r4d_attn_decode_h256_gqa6.hip": "e29035e20d4e903355bcadd0759f4e36d8c76c146f2d31e6990908132e5e3534",
+          "libr4d/r4d_attn_paged_gqa8.hip": "98b87b555e2187d5362d794a2627a421c50f4013449c01ee80639965539f9dfe",
+          "libr4d/r4d_attn_paged_h256_gqa12.hip": "a0078f0a42c8f6001329c51a6342c6d4365cefe49d97686b45542acd74c82f1c",
+          "libr4d/r4d_attn_paged_h256_gqa6_bs4.hip": "7d9d0084a6c26102d2be4b821bceb92bbe01bbdfb9f08aafa2b0681b0f302ea5",
+          "libr4d/r4d_attn_prefill_h256_gqa6.hip": "a931ec55e7d591bae386203864dc07f60a65d3e90d43b17ebe5f4e4e0b392123",
+          "libr4d/r4d_moe.hip": "914323325ae1f615bd97eebd28e4feb4bcb258b1693b047fa34793c465e85363",
+          "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+        }
+      }
+    },
+    {
+      "contract": "bf16-q-fp8-kv-selected-causal",
+      "id": "attn.g6.8.decode.s1",
+      "identity": {
+        "kind": "hypothesis",
+        "sha256": "6e696bfe3a307380faf4a0315fb8f8daee0d08493f652eb0ddf13b16e1df84e4"
+      },
+      "input_layout": "qkv_paged",
+      "op": "attention",
+      "output_layout": "bf16_heads",
+      "params": {
+        "block_size": 4,
+        "compute_path": "wmma_f16",
+        "force_merge": true,
+        "gqa": 6,
+        "gqa_reuse": true,
+        "head_dim": 256,
+        "kv_bits": 8,
+        "kv_tile": 16,
+        "max_queries_per_sequence": 10,
+        "partial_bits": 16,
+        "query_tile": 1,
+        "split_kv": 1
+      },
+      "source_binding": {
+        "scope": "reviewed family geometry; costs remain hypotheses, not executable code or exact dispatch bindings",
+        "source_files": {
+          "arch/common/rad_block_moe_fp8.h": "f4c0efd0ed272568c82e8402d0b49f4324b4033a3ce3a03959b59827c653f8fa",
+          "arch/common/rad_qsa.h": "ef5e5865c56c1192133e1563d281a90d3e68fe18efceb9534aa58d60f88839b7",
+          "arch/qwen4exp_fp8/qwen4exp_fp8.cpp": "0e63d8f02ac85dde132ca753117d47389dcac423977e864287ac712517ca2908",
+          "docs/QSA.md": "46b63d71470ed8897d246cf14b703fa59e33bfa16a0fe27ca2574d9eba93dc92",
+          "libr4d/r4d_ar_oneshot_2rank_exact.hip": "4f5441e1a9651f8e0e5363073213050e8266c1b027cae4b01671545afdf7ad15",
+          "libr4d/r4d_attn_decode_h256_gqa6.hip": "e29035e20d4e903355bcadd0759f4e36d8c76c146f2d31e6990908132e5e3534",
+          "libr4d/r4d_attn_paged_gqa8.hip": "98b87b555e2187d5362d794a2627a421c50f4013449c01ee80639965539f9dfe",
+          "libr4d/r4d_attn_paged_h256_gqa12.hip": "a0078f0a42c8f6001329c51a6342c6d4365cefe49d97686b45542acd74c82f1c",
+          "libr4d/r4d_attn_paged_h256_gqa6_bs4.hip": "7d9d0084a6c26102d2be4b821bceb92bbe01bbdfb9f08aafa2b0681b0f302ea5",
+          "libr4d/r4d_attn_prefill_h256_gqa6.hip": "a931ec55e7d591bae386203864dc07f60a65d3e90d43b17ebe5f4e4e0b392123",
+          "libr4d/r4d_moe.hip": "914323325ae1f615bd97eebd28e4feb4bcb258b1693b047fa34793c465e85363",
+          "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+        }
+      }
+    },
+    {
+      "contract": "bf16-q-fp8-kv-selected-causal",
+      "id": "attn.g6.8.decode.s4",
+      "identity": {
+        "kind": "hypothesis",
+        "sha256": "63539de7ec91e97b3900379c0ddc4a3d59a6a06437f64a7fdb977e781d516e2b"
+      },
+      "input_layout": "qkv_paged",
+      "op": "attention",
+      "output_layout": "bf16_heads",
+      "params": {
+        "block_size": 4,
+        "compute_path": "wmma_f16",
+        "force_merge": true,
+        "gqa": 6,
+        "gqa_reuse": true,
+        "head_dim": 256,
+        "kv_bits": 8,
+        "kv_tile": 16,
+        "max_queries_per_sequence": 10,
+        "partial_bits": 16,
+        "query_tile": 1,
+        "split_kv": 4
+      },
+      "source_binding": {
+        "scope": "reviewed family geometry; costs remain hypotheses, not executable code or exact dispatch bindings",
+        "source_files": {
+          "arch/common/rad_block_moe_fp8.h": "f4c0efd0ed272568c82e8402d0b49f4324b4033a3ce3a03959b59827c653f8fa",
+          "arch/common/rad_qsa.h": "ef5e5865c56c1192133e1563d281a90d3e68fe18efceb9534aa58d60f88839b7",
+          "arch/qwen4exp_fp8/qwen4exp_fp8.cpp": "0e63d8f02ac85dde132ca753117d47389dcac423977e864287ac712517ca2908",
+          "docs/QSA.md": "46b63d71470ed8897d246cf14b703fa59e33bfa16a0fe27ca2574d9eba93dc92",
+          "libr4d/r4d_ar_oneshot_2rank_exact.hip": "4f5441e1a9651f8e0e5363073213050e8266c1b027cae4b01671545afdf7ad15",
+          "libr4d/r4d_attn_decode_h256_gqa6.hip": "e29035e20d4e903355bcadd0759f4e36d8c76c146f2d31e6990908132e5e3534",
+          "libr4d/r4d_attn_paged_gqa8.hip": "98b87b555e2187d5362d794a2627a421c50f4013449c01ee80639965539f9dfe",
+          "libr4d/r4d_attn_paged_h256_gqa12.hip": "a0078f0a42c8f6001329c51a6342c6d4365cefe49d97686b45542acd74c82f1c",
+          "libr4d/r4d_attn_paged_h256_gqa6_bs4.hip": "7d9d0084a6c26102d2be4b821bceb92bbe01bbdfb9f08aafa2b0681b0f302ea5",
+          "libr4d/r4d_attn_prefill_h256_gqa6.hip": "a931ec55e7d591bae386203864dc07f60a65d3e90d43b17ebe5f4e4e0b392123",
+          "libr4d/r4d_moe.hip": "914323325ae1f615bd97eebd28e4feb4bcb258b1693b047fa34793c465e85363",
+          "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+        }
+      }
+    },
+    {
+      "contract": "bf16-q-fp8-kv-selected-causal",
+      "id": "attn.g6.8.decode.s16",
+      "identity": {
+        "kind": "hypothesis",
+        "sha256": "0d6a1290a58804ce6183ff3a79c09a15e16ddb7beaa10a3c4f1a7c81a4a89789"
+      },
+      "input_layout": "qkv_paged",
+      "op": "attention",
+      "output_layout": "bf16_heads",
+      "params": {
+        "block_size": 4,
+        "compute_path": "wmma_f16",
+        "force_merge": true,
+        "gqa": 6,
+        "gqa_reuse": true,
+        "head_dim": 256,
+        "kv_bits": 8,
+        "kv_tile": 16,
+        "max_queries_per_sequence": 10,
+        "partial_bits": 16,
+        "query_tile": 1,
+        "split_kv": 16
+      },
+      "source_binding": {
+        "scope": "reviewed family geometry; costs remain hypotheses, not executable code or exact dispatch bindings",
+        "source_files": {
+          "arch/common/rad_block_moe_fp8.h": "f4c0efd0ed272568c82e8402d0b49f4324b4033a3ce3a03959b59827c653f8fa",
+          "arch/common/rad_qsa.h": "ef5e5865c56c1192133e1563d281a90d3e68fe18efceb9534aa58d60f88839b7",
+          "arch/qwen4exp_fp8/qwen4exp_fp8.cpp": "0e63d8f02ac85dde132ca753117d47389dcac423977e864287ac712517ca2908",
+          "docs/QSA.md": "46b63d71470ed8897d246cf14b703fa59e33bfa16a0fe27ca2574d9eba93dc92",
+          "libr4d/r4d_ar_oneshot_2rank_exact.hip": "4f5441e1a9651f8e0e5363073213050e8266c1b027cae4b01671545afdf7ad15",
+          "libr4d/r4d_attn_decode_h256_gqa6.hip": "e29035e20d4e903355bcadd0759f4e36d8c76c146f2d31e6990908132e5e3534",
+          "libr4d/r4d_attn_paged_gqa8.hip": "98b87b555e2187d5362d794a2627a421c50f4013449c01ee80639965539f9dfe",
+          "libr4d/r4d_attn_paged_h256_gqa12.hip": "a0078f0a42c8f6001329c51a6342c6d4365cefe49d97686b45542acd74c82f1c",
+          "libr4d/r4d_attn_paged_h256_gqa6_bs4.hip": "7d9d0084a6c26102d2be4b821bceb92bbe01bbdfb9f08aafa2b0681b0f302ea5",
+          "libr4d/r4d_attn_prefill_h256_gqa6.hip": "a931ec55e7d591bae386203864dc07f60a65d3e90d43b17ebe5f4e4e0b392123",
+          "libr4d/r4d_moe.hip": "914323325ae1f615bd97eebd28e4feb4bcb258b1693b047fa34793c465e85363",
+          "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+        }
+      }
+    },
+    {
+      "contract": "bf16-q-fp8-kv-selected-causal",
+      "id": "attn.g6.8.prefill.s1",
+      "identity": {
+        "kind": "hypothesis",
+        "sha256": "71ceb9adf58452565ec983c9a8c723111294ba5ce5e9e6908a7175c3e953c590"
+      },
+      "input_layout": "qkv_paged",
+      "op": "attention",
+      "output_layout": "bf16_heads",
+      "params": {
+        "block_size": 4,
+        "compute_path": "wmma_f16",
+        "force_merge": false,
+        "gqa": 6,
+        "gqa_reuse": true,
+        "head_dim": 256,
+        "kv_bits": 8,
+        "kv_tile": 48,
+        "max_queries_per_sequence": 65536,
+        "partial_bits": 16,
+        "query_tile": 64,
+        "split_kv": 1
+      },
+      "source_binding": {
+        "scope": "reviewed family geometry; costs remain hypotheses, not executable code or exact dispatch bindings",
+        "source_files": {
+          "arch/common/rad_block_moe_fp8.h": "f4c0efd0ed272568c82e8402d0b49f4324b4033a3ce3a03959b59827c653f8fa",
+          "arch/common/rad_qsa.h": "ef5e5865c56c1192133e1563d281a90d3e68fe18efceb9534aa58d60f88839b7",
+          "arch/qwen4exp_fp8/qwen4exp_fp8.cpp": "0e63d8f02ac85dde132ca753117d47389dcac423977e864287ac712517ca2908",
+          "docs/QSA.md": "46b63d71470ed8897d246cf14b703fa59e33bfa16a0fe27ca2574d9eba93dc92",
+          "libr4d/r4d_ar_oneshot_2rank_exact.hip": "4f5441e1a9651f8e0e5363073213050e8266c1b027cae4b01671545afdf7ad15",
+          "libr4d/r4d_attn_decode_h256_gqa6.hip": "e29035e20d4e903355bcadd0759f4e36d8c76c146f2d31e6990908132e5e3534",
+          "libr4d/r4d_attn_paged_gqa8.hip": "98b87b555e2187d5362d794a2627a421c50f4013449c01ee80639965539f9dfe",
+          "libr4d/r4d_attn_paged_h256_gqa12.hip": "a0078f0a42c8f6001329c51a6342c6d4365cefe49d97686b45542acd74c82f1c",
+          "libr4d/r4d_attn_paged_h256_gqa6_bs4.hip": "7d9d0084a6c26102d2be4b821bceb92bbe01bbdfb9f08aafa2b0681b0f302ea5",
+          "libr4d/r4d_attn_prefill_h256_gqa6.hip": "a931ec55e7d591bae386203864dc07f60a65d3e90d43b17ebe5f4e4e0b392123",
+          "libr4d/r4d_moe.hip": "914323325ae1f615bd97eebd28e4feb4bcb258b1693b047fa34793c465e85363",
+          "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+        }
+      }
+    },
+    {
+      "contract": "bf16-q-fp8-kv-selected-causal",
+      "id": "attn.g6.8.prefill.s4",
+      "identity": {
+        "kind": "hypothesis",
+        "sha256": "199ca2301ffbd8802a04e8722fd9ce826743573e715cf8335356cc6b323d36c5"
+      },
+      "input_layout": "qkv_paged",
+      "op": "attention",
+      "output_layout": "bf16_heads",
+      "params": {
+        "block_size": 4,
+        "compute_path": "wmma_f16",
+        "force_merge": false,
+        "gqa": 6,
+        "gqa_reuse": true,
+        "head_dim": 256,
+        "kv_bits": 8,
+        "kv_tile": 48,
+        "max_queries_per_sequence": 65536,
+        "partial_bits": 16,
+        "query_tile": 64,
+        "split_kv": 4
+      },
+      "source_binding": {
+        "scope": "reviewed family geometry; costs remain hypotheses, not executable code or exact dispatch bindings",
+        "source_files": {
+          "arch/common/rad_block_moe_fp8.h": "f4c0efd0ed272568c82e8402d0b49f4324b4033a3ce3a03959b59827c653f8fa",
+          "arch/common/rad_qsa.h": "ef5e5865c56c1192133e1563d281a90d3e68fe18efceb9534aa58d60f88839b7",
+          "arch/qwen4exp_fp8/qwen4exp_fp8.cpp": "0e63d8f02ac85dde132ca753117d47389dcac423977e864287ac712517ca2908",
+          "docs/QSA.md": "46b63d71470ed8897d246cf14b703fa59e33bfa16a0fe27ca2574d9eba93dc92",
+          "libr4d/r4d_ar_oneshot_2rank_exact.hip": "4f5441e1a9651f8e0e5363073213050e8266c1b027cae4b01671545afdf7ad15",
+          "libr4d/r4d_attn_decode_h256_gqa6.hip": "e29035e20d4e903355bcadd0759f4e36d8c76c146f2d31e6990908132e5e3534",
+          "libr4d/r4d_attn_paged_gqa8.hip": "98b87b555e2187d5362d794a2627a421c50f4013449c01ee80639965539f9dfe",
+          "libr4d/r4d_attn_paged_h256_gqa12.hip": "a0078f0a42c8f6001329c51a6342c6d4365cefe49d97686b45542acd74c82f1c",
+          "libr4d/r4d_attn_paged_h256_gqa6_bs4.hip": "7d9d0084a6c26102d2be4b821bceb92bbe01bbdfb9f08aafa2b0681b0f302ea5",
+          "libr4d/r4d_attn_prefill_h256_gqa6.hip": "a931ec55e7d591bae386203864dc07f60a65d3e90d43b17ebe5f4e4e0b392123",
+          "libr4d/r4d_moe.hip": "914323325ae1f615bd97eebd28e4feb4bcb258b1693b047fa34793c465e85363",
+          "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+        }
+      }
+    },
+    {
+      "contract": "bf16-q-fp8-kv-selected-causal",
+      "id": "attn.g6.8.prefill.s16",
+      "identity": {
+        "kind": "hypothesis",
+        "sha256": "6110e938b344fa17794043df9fad5196397df7270d0635b4d41005a12d76a097"
+      },
+      "input_layout": "qkv_paged",
+      "op": "attention",
+      "output_layout": "bf16_heads",
+      "params": {
+        "block_size": 4,
+        "compute_path": "wmma_f16",
+        "force_merge": false,
+        "gqa": 6,
+        "gqa_reuse": true,
+        "head_dim": 256,
+        "kv_bits": 8,
+        "kv_tile": 48,
+        "max_queries_per_sequence": 65536,
+        "partial_bits": 16,
+        "query_tile": 64,
+        "split_kv": 16
+      },
+      "source_binding": {
+        "scope": "reviewed family geometry; costs remain hypotheses, not executable code or exact dispatch bindings",
+        "source_files": {
+          "arch/common/rad_block_moe_fp8.h": "f4c0efd0ed272568c82e8402d0b49f4324b4033a3ce3a03959b59827c653f8fa",
+          "arch/common/rad_qsa.h": "ef5e5865c56c1192133e1563d281a90d3e68fe18efceb9534aa58d60f88839b7",
+          "arch/qwen4exp_fp8/qwen4exp_fp8.cpp": "0e63d8f02ac85dde132ca753117d47389dcac423977e864287ac712517ca2908",
+          "docs/QSA.md": "46b63d71470ed8897d246cf14b703fa59e33bfa16a0fe27ca2574d9eba93dc92",
+          "libr4d/r4d_ar_oneshot_2rank_exact.hip": "4f5441e1a9651f8e0e5363073213050e8266c1b027cae4b01671545afdf7ad15",
+          "libr4d/r4d_attn_decode_h256_gqa6.hip": "e29035e20d4e903355bcadd0759f4e36d8c76c146f2d31e6990908132e5e3534",
+          "libr4d/r4d_attn_paged_gqa8.hip": "98b87b555e2187d5362d794a2627a421c50f4013449c01ee80639965539f9dfe",
+          "libr4d/r4d_attn_paged_h256_gqa12.hip": "a0078f0a42c8f6001329c51a6342c6d4365cefe49d97686b45542acd74c82f1c",
+          "libr4d/r4d_attn_paged_h256_gqa6_bs4.hip": "7d9d0084a6c26102d2be4b821bceb92bbe01bbdfb9f08aafa2b0681b0f302ea5",
+          "libr4d/r4d_attn_prefill_h256_gqa6.hip": "a931ec55e7d591bae386203864dc07f60a65d3e90d43b17ebe5f4e4e0b392123",
+          "libr4d/r4d_moe.hip": "914323325ae1f615bd97eebd28e4feb4bcb258b1693b047fa34793c465e85363",
+          "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+        }
+      }
+    },
+    {
+      "contract": "bf16-q-fp16-kv-selected-causal",
+      "id": "attn.g6.16.decode.s1",
+      "identity": {
+        "kind": "hypothesis",
+        "sha256": "1af16ebec0a2828102d9c72bc984d614e4c4014edc5024a2bbd489b24a057c07"
+      },
+      "input_layout": "qkv_paged",
+      "op": "attention",
+      "output_layout": "bf16_heads",
+      "params": {
+        "block_size": 4,
+        "compute_path": "wmma_f16",
+        "force_merge": true,
+        "gqa": 6,
+        "gqa_reuse": true,
+        "head_dim": 256,
+        "kv_bits": 16,
+        "kv_tile": 16,
+        "max_queries_per_sequence": 10,
+        "partial_bits": 16,
+        "query_tile": 1,
+        "split_kv": 1
+      },
+      "source_binding": {
+        "scope": "reviewed family geometry; costs remain hypotheses, not executable code or exact dispatch bindings",
+        "source_files": {
+          "arch/common/rad_block_moe_fp8.h": "f4c0efd0ed272568c82e8402d0b49f4324b4033a3ce3a03959b59827c653f8fa",
+          "arch/common/rad_qsa.h": "ef5e5865c56c1192133e1563d281a90d3e68fe18efceb9534aa58d60f88839b7",
+          "arch/qwen4exp_fp8/qwen4exp_fp8.cpp": "0e63d8f02ac85dde132ca753117d47389dcac423977e864287ac712517ca2908",
+          "docs/QSA.md": "46b63d71470ed8897d246cf14b703fa59e33bfa16a0fe27ca2574d9eba93dc92",
+          "libr4d/r4d_ar_oneshot_2rank_exact.hip": "4f5441e1a9651f8e0e5363073213050e8266c1b027cae4b01671545afdf7ad15",
+          "libr4d/r4d_attn_decode_h256_gqa6.hip": "e29035e20d4e903355bcadd0759f4e36d8c76c146f2d31e6990908132e5e3534",
+          "libr4d/r4d_attn_paged_gqa8.hip": "98b87b555e2187d5362d794a2627a421c50f4013449c01ee80639965539f9dfe",
+          "libr4d/r4d_attn_paged_h256_gqa12.hip": "a0078f0a42c8f6001329c51a6342c6d4365cefe49d97686b45542acd74c82f1c",
+          "libr4d/r4d_attn_paged_h256_gqa6_bs4.hip": "7d9d0084a6c26102d2be4b821bceb92bbe01bbdfb9f08aafa2b0681b0f302ea5",
+          "libr4d/r4d_attn_prefill_h256_gqa6.hip": "a931ec55e7d591bae386203864dc07f60a65d3e90d43b17ebe5f4e4e0b392123",
+          "libr4d/r4d_moe.hip": "914323325ae1f615bd97eebd28e4feb4bcb258b1693b047fa34793c465e85363",
+          "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+        }
+      }
+    },
+    {
+      "contract": "bf16-q-fp16-kv-selected-causal",
+      "id": "attn.g6.16.decode.s4",
+      "identity": {
+        "kind": "hypothesis",
+        "sha256": "c52206d1a14af705eaac5d0bf895396b231141db412808e2045064c340e29b67"
+      },
+      "input_layout": "qkv_paged",
+      "op": "attention",
+      "output_layout": "bf16_heads",
+      "params": {
+        "block_size": 4,
+        "compute_path": "wmma_f16",
+        "force_merge": true,
+        "gqa": 6,
+        "gqa_reuse": true,
+        "head_dim": 256,
+        "kv_bits": 16,
+        "kv_tile": 16,
+        "max_queries_per_sequence": 10,
+        "partial_bits": 16,
+        "query_tile": 1,
+        "split_kv": 4
+      },
+      "source_binding": {
+        "scope": "reviewed family geometry; costs remain hypotheses, not executable code or exact dispatch bindings",
+        "source_files": {
+          "arch/common/rad_block_moe_fp8.h": "f4c0efd0ed272568c82e8402d0b49f4324b4033a3ce3a03959b59827c653f8fa",
+          "arch/common/rad_qsa.h": "ef5e5865c56c1192133e1563d281a90d3e68fe18efceb9534aa58d60f88839b7",
+          "arch/qwen4exp_fp8/qwen4exp_fp8.cpp": "0e63d8f02ac85dde132ca753117d47389dcac423977e864287ac712517ca2908",
+          "docs/QSA.md": "46b63d71470ed8897d246cf14b703fa59e33bfa16a0fe27ca2574d9eba93dc92",
+          "libr4d/r4d_ar_oneshot_2rank_exact.hip": "4f5441e1a9651f8e0e5363073213050e8266c1b027cae4b01671545afdf7ad15",
+          "libr4d/r4d_attn_decode_h256_gqa6.hip": "e29035e20d4e903355bcadd0759f4e36d8c76c146f2d31e6990908132e5e3534",
+          "libr4d/r4d_attn_paged_gqa8.hip": "98b87b555e2187d5362d794a2627a421c50f4013449c01ee80639965539f9dfe",
+          "libr4d/r4d_attn_paged_h256_gqa12.hip": "a0078f0a42c8f6001329c51a6342c6d4365cefe49d97686b45542acd74c82f1c",
+          "libr4d/r4d_attn_paged_h256_gqa6_bs4.hip": "7d9d0084a6c26102d2be4b821bceb92bbe01bbdfb9f08aafa2b0681b0f302ea5",
+          "libr4d/r4d_attn_prefill_h256_gqa6.hip": "a931ec55e7d591bae386203864dc07f60a65d3e90d43b17ebe5f4e4e0b392123",
+          "libr4d/r4d_moe.hip": "914323325ae1f615bd97eebd28e4feb4bcb258b1693b047fa34793c465e85363",
+          "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+        }
+      }
+    },
+    {
+      "contract": "bf16-q-fp16-kv-selected-causal",
+      "id": "attn.g6.16.decode.s16",
+      "identity": {
+        "kind": "hypothesis",
+        "sha256": "48854177526719a32432c73c77d18aa3903a5fbbc01489446ada71cb33babcb7"
+      },
+      "input_layout": "qkv_paged",
+      "op": "attention",
+      "output_layout": "bf16_heads",
+      "params": {
+        "block_size": 4,
+        "compute_path": "wmma_f16",
+        "force_merge": true,
+        "gqa": 6,
+        "gqa_reuse": true,
+        "head_dim": 256,
+        "kv_bits": 16,
+        "kv_tile": 16,
+        "max_queries_per_sequence": 10,
+        "partial_bits": 16,
+        "query_tile": 1,
+        "split_kv": 16
+      },
+      "source_binding": {
+        "scope": "reviewed family geometry; costs remain hypotheses, not executable code or exact dispatch bindings",
+        "source_files": {
+          "arch/common/rad_block_moe_fp8.h": "f4c0efd0ed272568c82e8402d0b49f4324b4033a3ce3a03959b59827c653f8fa",
+          "arch/common/rad_qsa.h": "ef5e5865c56c1192133e1563d281a90d3e68fe18efceb9534aa58d60f88839b7",
+          "arch/qwen4exp_fp8/qwen4exp_fp8.cpp": "0e63d8f02ac85dde132ca753117d47389dcac423977e864287ac712517ca2908",
+          "docs/QSA.md": "46b63d71470ed8897d246cf14b703fa59e33bfa16a0fe27ca2574d9eba93dc92",
+          "libr4d/r4d_ar_oneshot_2rank_exact.hip": "4f5441e1a9651f8e0e5363073213050e8266c1b027cae4b01671545afdf7ad15",
+          "libr4d/r4d_attn_decode_h256_gqa6.hip": "e29035e20d4e903355bcadd0759f4e36d8c76c146f2d31e6990908132e5e3534",
+          "libr4d/r4d_attn_paged_gqa8.hip": "98b87b555e2187d5362d794a2627a421c50f4013449c01ee80639965539f9dfe",
+          "libr4d/r4d_attn_paged_h256_gqa12.hip": "a0078f0a42c8f6001329c51a6342c6d4365cefe49d97686b45542acd74c82f1c",
+          "libr4d/r4d_attn_paged_h256_gqa6_bs4.hip": "7d9d0084a6c26102d2be4b821bceb92bbe01bbdfb9f08aafa2b0681b0f302ea5",
+          "libr4d/r4d_attn_prefill_h256_gqa6.hip": "a931ec55e7d591bae386203864dc07f60a65d3e90d43b17ebe5f4e4e0b392123",
+          "libr4d/r4d_moe.hip": "914323325ae1f615bd97eebd28e4feb4bcb258b1693b047fa34793c465e85363",
+          "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+        }
+      }
+    },
+    {
+      "contract": "bf16-q-fp16-kv-selected-causal",
+      "id": "attn.g6.16.prefill.s1",
+      "identity": {
+        "kind": "hypothesis",
+        "sha256": "6e41957cf97f0b56a20769de28310cf23c130e2310b8e5abb821f19b205152c4"
+      },
+      "input_layout": "qkv_paged",
+      "op": "attention",
+      "output_layout": "bf16_heads",
+      "params": {
+        "block_size": 4,
+        "compute_path": "wmma_f16",
+        "force_merge": false,
+        "gqa": 6,
+        "gqa_reuse": true,
+        "head_dim": 256,
+        "kv_bits": 16,
+        "kv_tile": 48,
+        "max_queries_per_sequence": 65536,
+        "partial_bits": 16,
+        "query_tile": 64,
+        "split_kv": 1
+      },
+      "source_binding": {
+        "scope": "reviewed family geometry; costs remain hypotheses, not executable code or exact dispatch bindings",
+        "source_files": {
+          "arch/common/rad_block_moe_fp8.h": "f4c0efd0ed272568c82e8402d0b49f4324b4033a3ce3a03959b59827c653f8fa",
+          "arch/common/rad_qsa.h": "ef5e5865c56c1192133e1563d281a90d3e68fe18efceb9534aa58d60f88839b7",
+          "arch/qwen4exp_fp8/qwen4exp_fp8.cpp": "0e63d8f02ac85dde132ca753117d47389dcac423977e864287ac712517ca2908",
+          "docs/QSA.md": "46b63d71470ed8897d246cf14b703fa59e33bfa16a0fe27ca2574d9eba93dc92",
+          "libr4d/r4d_ar_oneshot_2rank_exact.hip": "4f5441e1a9651f8e0e5363073213050e8266c1b027cae4b01671545afdf7ad15",
+          "libr4d/r4d_attn_decode_h256_gqa6.hip": "e29035e20d4e903355bcadd0759f4e36d8c76c146f2d31e6990908132e5e3534",
+          "libr4d/r4d_attn_paged_gqa8.hip": "98b87b555e2187d5362d794a2627a421c50f4013449c01ee80639965539f9dfe",
+          "libr4d/r4d_attn_paged_h256_gqa12.hip": "a0078f0a42c8f6001329c51a6342c6d4365cefe49d97686b45542acd74c82f1c",
+          "libr4d/r4d_attn_paged_h256_gqa6_bs4.hip": "7d9d0084a6c26102d2be4b821bceb92bbe01bbdfb9f08aafa2b0681b0f302ea5",
+          "libr4d/r4d_attn_prefill_h256_gqa6.hip": "a931ec55e7d591bae386203864dc07f60a65d3e90d43b17ebe5f4e4e0b392123",
+          "libr4d/r4d_moe.hip": "914323325ae1f615bd97eebd28e4feb4bcb258b1693b047fa34793c465e85363",
+          "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+        }
+      }
+    },
+    {
+      "contract": "bf16-q-fp16-kv-selected-causal",
+      "id": "attn.g6.16.prefill.s4",
+      "identity": {
+        "kind": "hypothesis",
+        "sha256": "61e49bd142ecb7edaddf9e71d614e4e0ad0acce085b2834f4fe7955177d75cc3"
+      },
+      "input_layout": "qkv_paged",
+      "op": "attention",
+      "output_layout": "bf16_heads",
+      "params": {
+        "block_size": 4,
+        "compute_path": "wmma_f16",
+        "force_merge": false,
+        "gqa": 6,
+        "gqa_reuse": true,
+        "head_dim": 256,
+        "kv_bits": 16,
+        "kv_tile": 48,
+        "max_queries_per_sequence": 65536,
+        "partial_bits": 16,
+        "query_tile": 64,
+        "split_kv": 4
+      },
+      "source_binding": {
+        "scope": "reviewed family geometry; costs remain hypotheses, not executable code or exact dispatch bindings",
+        "source_files": {
+          "arch/common/rad_block_moe_fp8.h": "f4c0efd0ed272568c82e8402d0b49f4324b4033a3ce3a03959b59827c653f8fa",
+          "arch/common/rad_qsa.h": "ef5e5865c56c1192133e1563d281a90d3e68fe18efceb9534aa58d60f88839b7",
+          "arch/qwen4exp_fp8/qwen4exp_fp8.cpp": "0e63d8f02ac85dde132ca753117d47389dcac423977e864287ac712517ca2908",
+          "docs/QSA.md": "46b63d71470ed8897d246cf14b703fa59e33bfa16a0fe27ca2574d9eba93dc92",
+          "libr4d/r4d_ar_oneshot_2rank_exact.hip": "4f5441e1a9651f8e0e5363073213050e8266c1b027cae4b01671545afdf7ad15",
+          "libr4d/r4d_attn_decode_h256_gqa6.hip": "e29035e20d4e903355bcadd0759f4e36d8c76c146f2d31e6990908132e5e3534",
+          "libr4d/r4d_attn_paged_gqa8.hip": "98b87b555e2187d5362d794a2627a421c50f4013449c01ee80639965539f9dfe",
+          "libr4d/r4d_attn_paged_h256_gqa12.hip": "a0078f0a42c8f6001329c51a6342c6d4365cefe49d97686b45542acd74c82f1c",
+          "libr4d/r4d_attn_paged_h256_gqa6_bs4.hip": "7d9d0084a6c26102d2be4b821bceb92bbe01bbdfb9f08aafa2b0681b0f302ea5",
+          "libr4d/r4d_attn_prefill_h256_gqa6.hip": "a931ec55e7d591bae386203864dc07f60a65d3e90d43b17ebe5f4e4e0b392123",
+          "libr4d/r4d_moe.hip": "914323325ae1f615bd97eebd28e4feb4bcb258b1693b047fa34793c465e85363",
+          "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+        }
+      }
+    },
+    {
+      "contract": "bf16-q-fp16-kv-selected-causal",
+      "id": "attn.g6.16.prefill.s16",
+      "identity": {
+        "kind": "hypothesis",
+        "sha256": "af2e34cc7cc7af9406f7bf0414651fb7c4bbb71e1306103671c17577016d70c1"
+      },
+      "input_layout": "qkv_paged",
+      "op": "attention",
+      "output_layout": "bf16_heads",
+      "params": {
+        "block_size": 4,
+        "compute_path": "wmma_f16",
+        "force_merge": false,
+        "gqa": 6,
+        "gqa_reuse": true,
+        "head_dim": 256,
+        "kv_bits": 16,
+        "kv_tile": 48,
+        "max_queries_per_sequence": 65536,
+        "partial_bits": 16,
+        "query_tile": 64,
+        "split_kv": 16
+      },
+      "source_binding": {
+        "scope": "reviewed family geometry; costs remain hypotheses, not executable code or exact dispatch bindings",
+        "source_files": {
+          "arch/common/rad_block_moe_fp8.h": "f4c0efd0ed272568c82e8402d0b49f4324b4033a3ce3a03959b59827c653f8fa",
+          "arch/common/rad_qsa.h": "ef5e5865c56c1192133e1563d281a90d3e68fe18efceb9534aa58d60f88839b7",
+          "arch/qwen4exp_fp8/qwen4exp_fp8.cpp": "0e63d8f02ac85dde132ca753117d47389dcac423977e864287ac712517ca2908",
+          "docs/QSA.md": "46b63d71470ed8897d246cf14b703fa59e33bfa16a0fe27ca2574d9eba93dc92",
+          "libr4d/r4d_ar_oneshot_2rank_exact.hip": "4f5441e1a9651f8e0e5363073213050e8266c1b027cae4b01671545afdf7ad15",
+          "libr4d/r4d_attn_decode_h256_gqa6.hip": "e29035e20d4e903355bcadd0759f4e36d8c76c146f2d31e6990908132e5e3534",
+          "libr4d/r4d_attn_paged_gqa8.hip": "98b87b555e2187d5362d794a2627a421c50f4013449c01ee80639965539f9dfe",
+          "libr4d/r4d_attn_paged_h256_gqa12.hip": "a0078f0a42c8f6001329c51a6342c6d4365cefe49d97686b45542acd74c82f1c",
+          "libr4d/r4d_attn_paged_h256_gqa6_bs4.hip": "7d9d0084a6c26102d2be4b821bceb92bbe01bbdfb9f08aafa2b0681b0f302ea5",
+          "libr4d/r4d_attn_prefill_h256_gqa6.hip": "a931ec55e7d591bae386203864dc07f60a65d3e90d43b17ebe5f4e4e0b392123",
+          "libr4d/r4d_moe.hip": "914323325ae1f615bd97eebd28e4feb4bcb258b1693b047fa34793c465e85363",
+          "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+        }
+      }
+    },
+    {
+      "contract": "qsa-block-score-select",
+      "id": "qsa.radix.t32",
+      "identity": {
+        "kind": "hypothesis",
+        "sha256": "c5c105b05d05578b404cdf812b60d9bac16f700928cd3cc13466a8d343bc8dff"
+      },
+      "input_layout": "index_keys",
+      "op": "qsa_indexer",
+      "output_layout": "selected_blocks",
+      "params": {
+        "compute_path": "wmma_f16",
+        "passes": 4,
+        "score_tile": 32,
+        "selection": "radix_passes"
+      },
+      "source_binding": {
+        "scope": "reviewed family geometry; costs remain hypotheses, not executable code or exact dispatch bindings",
+        "source_files": {
+          "arch/common/rad_block_moe_fp8.h": "f4c0efd0ed272568c82e8402d0b49f4324b4033a3ce3a03959b59827c653f8fa",
+          "arch/common/rad_qsa.h": "ef5e5865c56c1192133e1563d281a90d3e68fe18efceb9534aa58d60f88839b7",
+          "arch/qwen4exp_fp8/qwen4exp_fp8.cpp": "0e63d8f02ac85dde132ca753117d47389dcac423977e864287ac712517ca2908",
+          "docs/QSA.md": "46b63d71470ed8897d246cf14b703fa59e33bfa16a0fe27ca2574d9eba93dc92",
+          "libr4d/r4d_ar_oneshot_2rank_exact.hip": "4f5441e1a9651f8e0e5363073213050e8266c1b027cae4b01671545afdf7ad15",
+          "libr4d/r4d_attn_decode_h256_gqa6.hip": "e29035e20d4e903355bcadd0759f4e36d8c76c146f2d31e6990908132e5e3534",
+          "libr4d/r4d_attn_paged_gqa8.hip": "98b87b555e2187d5362d794a2627a421c50f4013449c01ee80639965539f9dfe",
+          "libr4d/r4d_attn_paged_h256_gqa12.hip": "a0078f0a42c8f6001329c51a6342c6d4365cefe49d97686b45542acd74c82f1c",
+          "libr4d/r4d_attn_paged_h256_gqa6_bs4.hip": "7d9d0084a6c26102d2be4b821bceb92bbe01bbdfb9f08aafa2b0681b0f302ea5",
+          "libr4d/r4d_attn_prefill_h256_gqa6.hip": "a931ec55e7d591bae386203864dc07f60a65d3e90d43b17ebe5f4e4e0b392123",
+          "libr4d/r4d_moe.hip": "914323325ae1f615bd97eebd28e4feb4bcb258b1693b047fa34793c465e85363",
+          "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+        }
+      }
+    },
+    {
+      "contract": "qsa-block-score-select",
+      "id": "qsa.radix.t64",
+      "identity": {
+        "kind": "hypothesis",
+        "sha256": "a6699f55f8daa4ca773464395da5bef69b6f120a7d0c9b2c800d9a5cb6e97832"
+      },
+      "input_layout": "index_keys",
+      "op": "qsa_indexer",
+      "output_layout": "selected_blocks",
+      "params": {
+        "compute_path": "wmma_f16",
+        "passes": 4,
+        "score_tile": 64,
+        "selection": "radix_passes"
+      },
+      "source_binding": {
+        "scope": "reviewed family geometry; costs remain hypotheses, not executable code or exact dispatch bindings",
+        "source_files": {
+          "arch/common/rad_block_moe_fp8.h": "f4c0efd0ed272568c82e8402d0b49f4324b4033a3ce3a03959b59827c653f8fa",
+          "arch/common/rad_qsa.h": "ef5e5865c56c1192133e1563d281a90d3e68fe18efceb9534aa58d60f88839b7",
+          "arch/qwen4exp_fp8/qwen4exp_fp8.cpp": "0e63d8f02ac85dde132ca753117d47389dcac423977e864287ac712517ca2908",
+          "docs/QSA.md": "46b63d71470ed8897d246cf14b703fa59e33bfa16a0fe27ca2574d9eba93dc92",
+          "libr4d/r4d_ar_oneshot_2rank_exact.hip": "4f5441e1a9651f8e0e5363073213050e8266c1b027cae4b01671545afdf7ad15",
+          "libr4d/r4d_attn_decode_h256_gqa6.hip": "e29035e20d4e903355bcadd0759f4e36d8c76c146f2d31e6990908132e5e3534",
+          "libr4d/r4d_attn_paged_gqa8.hip": "98b87b555e2187d5362d794a2627a421c50f4013449c01ee80639965539f9dfe",
+          "libr4d/r4d_attn_paged_h256_gqa12.hip": "a0078f0a42c8f6001329c51a6342c6d4365cefe49d97686b45542acd74c82f1c",
+          "libr4d/r4d_attn_paged_h256_gqa6_bs4.hip": "7d9d0084a6c26102d2be4b821bceb92bbe01bbdfb9f08aafa2b0681b0f302ea5",
+          "libr4d/r4d_attn_prefill_h256_gqa6.hip": "a931ec55e7d591bae386203864dc07f60a65d3e90d43b17ebe5f4e4e0b392123",
+          "libr4d/r4d_moe.hip": "914323325ae1f615bd97eebd28e4feb4bcb258b1693b047fa34793c465e85363",
+          "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+        }
+      }
+    },
+    {
+      "contract": "qsa-block-score-select",
+      "id": "qsa.radix.t128",
+      "identity": {
+        "kind": "hypothesis",
+        "sha256": "9b4a66ab82b3cb5945b5ff1d39c8bf189735d94aced4dda9a277699698f15bf3"
+      },
+      "input_layout": "index_keys",
+      "op": "qsa_indexer",
+      "output_layout": "selected_blocks",
+      "params": {
+        "compute_path": "wmma_f16",
+        "passes": 4,
+        "score_tile": 128,
+        "selection": "radix_passes"
+      },
+      "source_binding": {
+        "scope": "reviewed family geometry; costs remain hypotheses, not executable code or exact dispatch bindings",
+        "source_files": {
+          "arch/common/rad_block_moe_fp8.h": "f4c0efd0ed272568c82e8402d0b49f4324b4033a3ce3a03959b59827c653f8fa",
+          "arch/common/rad_qsa.h": "ef5e5865c56c1192133e1563d281a90d3e68fe18efceb9534aa58d60f88839b7",
+          "arch/qwen4exp_fp8/qwen4exp_fp8.cpp": "0e63d8f02ac85dde132ca753117d47389dcac423977e864287ac712517ca2908",
+          "docs/QSA.md": "46b63d71470ed8897d246cf14b703fa59e33bfa16a0fe27ca2574d9eba93dc92",
+          "libr4d/r4d_ar_oneshot_2rank_exact.hip": "4f5441e1a9651f8e0e5363073213050e8266c1b027cae4b01671545afdf7ad15",
+          "libr4d/r4d_attn_decode_h256_gqa6.hip": "e29035e20d4e903355bcadd0759f4e36d8c76c146f2d31e6990908132e5e3534",
+          "libr4d/r4d_attn_paged_gqa8.hip": "98b87b555e2187d5362d794a2627a421c50f4013449c01ee80639965539f9dfe",
+          "libr4d/r4d_attn_paged_h256_gqa12.hip": "a0078f0a42c8f6001329c51a6342c6d4365cefe49d97686b45542acd74c82f1c",
+          "libr4d/r4d_attn_paged_h256_gqa6_bs4.hip": "7d9d0084a6c26102d2be4b821bceb92bbe01bbdfb9f08aafa2b0681b0f302ea5",
+          "libr4d/r4d_attn_prefill_h256_gqa6.hip": "a931ec55e7d591bae386203864dc07f60a65d3e90d43b17ebe5f4e4e0b392123",
+          "libr4d/r4d_moe.hip": "914323325ae1f615bd97eebd28e4feb4bcb258b1693b047fa34793c465e85363",
+          "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+        }
+      }
+    },
+    {
+      "contract": "routed-w4a8-gated-ffn",
+      "id": "moe.w4a8.m16.n64",
+      "identity": {
+        "kind": "hypothesis",
+        "sha256": "22b968516b3519d3a6df7d3e72ed9039bb77da5a2cb9f0f1b5068bfce1f0da25"
+      },
+      "input_layout": "bf16_hidden",
+      "op": "moe",
+      "output_layout": "bf16_hidden",
+      "params": {
+        "bk": 128,
+        "bm": 16,
+        "bn": 64,
+        "compute_path": "wmma_fp8",
+        "include_empty_experts": false,
+        "router_selection_passes": 10
+      },
+      "source_binding": {
+        "scope": "reviewed family geometry; costs remain hypotheses, not executable code or exact dispatch bindings",
+        "source_files": {
+          "arch/common/rad_block_moe_fp8.h": "f4c0efd0ed272568c82e8402d0b49f4324b4033a3ce3a03959b59827c653f8fa",
+          "arch/common/rad_qsa.h": "ef5e5865c56c1192133e1563d281a90d3e68fe18efceb9534aa58d60f88839b7",
+          "arch/qwen4exp_fp8/qwen4exp_fp8.cpp": "0e63d8f02ac85dde132ca753117d47389dcac423977e864287ac712517ca2908",
+          "docs/QSA.md": "46b63d71470ed8897d246cf14b703fa59e33bfa16a0fe27ca2574d9eba93dc92",
+          "libr4d/r4d_ar_oneshot_2rank_exact.hip": "4f5441e1a9651f8e0e5363073213050e8266c1b027cae4b01671545afdf7ad15",
+          "libr4d/r4d_attn_decode_h256_gqa6.hip": "e29035e20d4e903355bcadd0759f4e36d8c76c146f2d31e6990908132e5e3534",
+          "libr4d/r4d_attn_paged_gqa8.hip": "98b87b555e2187d5362d794a2627a421c50f4013449c01ee80639965539f9dfe",
+          "libr4d/r4d_attn_paged_h256_gqa12.hip": "a0078f0a42c8f6001329c51a6342c6d4365cefe49d97686b45542acd74c82f1c",
+          "libr4d/r4d_attn_paged_h256_gqa6_bs4.hip": "7d9d0084a6c26102d2be4b821bceb92bbe01bbdfb9f08aafa2b0681b0f302ea5",
+          "libr4d/r4d_attn_prefill_h256_gqa6.hip": "a931ec55e7d591bae386203864dc07f60a65d3e90d43b17ebe5f4e4e0b392123",
+          "libr4d/r4d_moe.hip": "914323325ae1f615bd97eebd28e4feb4bcb258b1693b047fa34793c465e85363",
+          "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+        }
+      }
+    },
+    {
+      "contract": "routed-w4a8-gated-ffn",
+      "id": "moe.w4a8.m16.n128",
+      "identity": {
+        "kind": "hypothesis",
+        "sha256": "620016c3da84cbecc1026b19fc5e0e185b6c44a400f734869e0db41a0dcbfd4f"
+      },
+      "input_layout": "bf16_hidden",
+      "op": "moe",
+      "output_layout": "bf16_hidden",
+      "params": {
+        "bk": 128,
+        "bm": 16,
+        "bn": 128,
+        "compute_path": "wmma_fp8",
+        "include_empty_experts": false,
+        "router_selection_passes": 10
+      },
+      "source_binding": {
+        "scope": "reviewed family geometry; costs remain hypotheses, not executable code or exact dispatch bindings",
+        "source_files": {
+          "arch/common/rad_block_moe_fp8.h": "f4c0efd0ed272568c82e8402d0b49f4324b4033a3ce3a03959b59827c653f8fa",
+          "arch/common/rad_qsa.h": "ef5e5865c56c1192133e1563d281a90d3e68fe18efceb9534aa58d60f88839b7",
+          "arch/qwen4exp_fp8/qwen4exp_fp8.cpp": "0e63d8f02ac85dde132ca753117d47389dcac423977e864287ac712517ca2908",
+          "docs/QSA.md": "46b63d71470ed8897d246cf14b703fa59e33bfa16a0fe27ca2574d9eba93dc92",
+          "libr4d/r4d_ar_oneshot_2rank_exact.hip": "4f5441e1a9651f8e0e5363073213050e8266c1b027cae4b01671545afdf7ad15",
+          "libr4d/r4d_attn_decode_h256_gqa6.hip": "e29035e20d4e903355bcadd0759f4e36d8c76c146f2d31e6990908132e5e3534",
+          "libr4d/r4d_attn_paged_gqa8.hip": "98b87b555e2187d5362d794a2627a421c50f4013449c01ee80639965539f9dfe",
+          "libr4d/r4d_attn_paged_h256_gqa12.hip": "a0078f0a42c8f6001329c51a6342c6d4365cefe49d97686b45542acd74c82f1c",
+          "libr4d/r4d_attn_paged_h256_gqa6_bs4.hip": "7d9d0084a6c26102d2be4b821bceb92bbe01bbdfb9f08aafa2b0681b0f302ea5",
+          "libr4d/r4d_attn_prefill_h256_gqa6.hip": "a931ec55e7d591bae386203864dc07f60a65d3e90d43b17ebe5f4e4e0b392123",
+          "libr4d/r4d_moe.hip": "914323325ae1f615bd97eebd28e4feb4bcb258b1693b047fa34793c465e85363",
+          "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+        }
+      }
+    },
+    {
+      "contract": "routed-w4a8-gated-ffn",
+      "id": "moe.w4a8.m32.n64",
+      "identity": {
+        "kind": "hypothesis",
+        "sha256": "33cca8931f61e4952d0fbbe87adfd5011ab1f4da80abd9be62b7d012f267bc5e"
+      },
+      "input_layout": "bf16_hidden",
+      "op": "moe",
+      "output_layout": "bf16_hidden",
+      "params": {
+        "bk": 128,
+        "bm": 32,
+        "bn": 64,
+        "compute_path": "wmma_fp8",
+        "include_empty_experts": false,
+        "router_selection_passes": 10
+      },
+      "source_binding": {
+        "scope": "reviewed family geometry; costs remain hypotheses, not executable code or exact dispatch bindings",
+        "source_files": {
+          "arch/common/rad_block_moe_fp8.h": "f4c0efd0ed272568c82e8402d0b49f4324b4033a3ce3a03959b59827c653f8fa",
+          "arch/common/rad_qsa.h": "ef5e5865c56c1192133e1563d281a90d3e68fe18efceb9534aa58d60f88839b7",
+          "arch/qwen4exp_fp8/qwen4exp_fp8.cpp": "0e63d8f02ac85dde132ca753117d47389dcac423977e864287ac712517ca2908",
+          "docs/QSA.md": "46b63d71470ed8897d246cf14b703fa59e33bfa16a0fe27ca2574d9eba93dc92",
+          "libr4d/r4d_ar_oneshot_2rank_exact.hip": "4f5441e1a9651f8e0e5363073213050e8266c1b027cae4b01671545afdf7ad15",
+          "libr4d/r4d_attn_decode_h256_gqa6.hip": "e29035e20d4e903355bcadd0759f4e36d8c76c146f2d31e6990908132e5e3534",
+          "libr4d/r4d_attn_paged_gqa8.hip": "98b87b555e2187d5362d794a2627a421c50f4013449c01ee80639965539f9dfe",
+          "libr4d/r4d_attn_paged_h256_gqa12.hip": "a0078f0a42c8f6001329c51a6342c6d4365cefe49d97686b45542acd74c82f1c",
+          "libr4d/r4d_attn_paged_h256_gqa6_bs4.hip": "7d9d0084a6c26102d2be4b821bceb92bbe01bbdfb9f08aafa2b0681b0f302ea5",
+          "libr4d/r4d_attn_prefill_h256_gqa6.hip": "a931ec55e7d591bae386203864dc07f60a65d3e90d43b17ebe5f4e4e0b392123",
+          "libr4d/r4d_moe.hip": "914323325ae1f615bd97eebd28e4feb4bcb258b1693b047fa34793c465e85363",
+          "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+        }
+      }
+    },
+    {
+      "contract": "routed-w4a8-gated-ffn",
+      "id": "moe.w4a8.m32.n128",
+      "identity": {
+        "kind": "hypothesis",
+        "sha256": "72465dec5bb7256cd1af0af782efa394374b59ff23a1c304f163d16aa958db06"
+      },
+      "input_layout": "bf16_hidden",
+      "op": "moe",
+      "output_layout": "bf16_hidden",
+      "params": {
+        "bk": 128,
+        "bm": 32,
+        "bn": 128,
+        "compute_path": "wmma_fp8",
+        "include_empty_experts": false,
+        "router_selection_passes": 10
+      },
+      "source_binding": {
+        "scope": "reviewed family geometry; costs remain hypotheses, not executable code or exact dispatch bindings",
+        "source_files": {
+          "arch/common/rad_block_moe_fp8.h": "f4c0efd0ed272568c82e8402d0b49f4324b4033a3ce3a03959b59827c653f8fa",
+          "arch/common/rad_qsa.h": "ef5e5865c56c1192133e1563d281a90d3e68fe18efceb9534aa58d60f88839b7",
+          "arch/qwen4exp_fp8/qwen4exp_fp8.cpp": "0e63d8f02ac85dde132ca753117d47389dcac423977e864287ac712517ca2908",
+          "docs/QSA.md": "46b63d71470ed8897d246cf14b703fa59e33bfa16a0fe27ca2574d9eba93dc92",
+          "libr4d/r4d_ar_oneshot_2rank_exact.hip": "4f5441e1a9651f8e0e5363073213050e8266c1b027cae4b01671545afdf7ad15",
+          "libr4d/r4d_attn_decode_h256_gqa6.hip": "e29035e20d4e903355bcadd0759f4e36d8c76c146f2d31e6990908132e5e3534",
+          "libr4d/r4d_attn_paged_gqa8.hip": "98b87b555e2187d5362d794a2627a421c50f4013449c01ee80639965539f9dfe",
+          "libr4d/r4d_attn_paged_h256_gqa12.hip": "a0078f0a42c8f6001329c51a6342c6d4365cefe49d97686b45542acd74c82f1c",
+          "libr4d/r4d_attn_paged_h256_gqa6_bs4.hip": "7d9d0084a6c26102d2be4b821bceb92bbe01bbdfb9f08aafa2b0681b0f302ea5",
+          "libr4d/r4d_attn_prefill_h256_gqa6.hip": "a931ec55e7d591bae386203864dc07f60a65d3e90d43b17ebe5f4e4e0b392123",
+          "libr4d/r4d_moe.hip": "914323325ae1f615bd97eebd28e4feb4bcb258b1693b047fa34793c465e85363",
+          "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+        }
+      }
+    },
+    {
+      "contract": "tp2-bf16-sum",
+      "id": "tp2.oneshot.push.c4096",
+      "identity": {
+        "kind": "hypothesis",
+        "sha256": "09c66ee0d9340d09723b08273c617640a748707a21eece9f721b9ee8be6ff249"
+      },
+      "input_layout": "bf16_hidden",
+      "op": "collective",
+      "output_layout": "bf16_hidden",
+      "params": {
+        "access": "push",
+        "algorithm": "oneshot",
+        "chunk_bytes": 4096,
+        "handshake_us": 1.0
+      },
+      "source_binding": {
+        "scope": "reviewed family geometry; costs remain hypotheses, not executable code or exact dispatch bindings",
+        "source_files": {
+          "arch/common/rad_block_moe_fp8.h": "f4c0efd0ed272568c82e8402d0b49f4324b4033a3ce3a03959b59827c653f8fa",
+          "arch/common/rad_qsa.h": "ef5e5865c56c1192133e1563d281a90d3e68fe18efceb9534aa58d60f88839b7",
+          "arch/qwen4exp_fp8/qwen4exp_fp8.cpp": "0e63d8f02ac85dde132ca753117d47389dcac423977e864287ac712517ca2908",
+          "docs/QSA.md": "46b63d71470ed8897d246cf14b703fa59e33bfa16a0fe27ca2574d9eba93dc92",
+          "libr4d/r4d_ar_oneshot_2rank_exact.hip": "4f5441e1a9651f8e0e5363073213050e8266c1b027cae4b01671545afdf7ad15",
+          "libr4d/r4d_attn_decode_h256_gqa6.hip": "e29035e20d4e903355bcadd0759f4e36d8c76c146f2d31e6990908132e5e3534",
+          "libr4d/r4d_attn_paged_gqa8.hip": "98b87b555e2187d5362d794a2627a421c50f4013449c01ee80639965539f9dfe",
+          "libr4d/r4d_attn_paged_h256_gqa12.hip": "a0078f0a42c8f6001329c51a6342c6d4365cefe49d97686b45542acd74c82f1c",
+          "libr4d/r4d_attn_paged_h256_gqa6_bs4.hip": "7d9d0084a6c26102d2be4b821bceb92bbe01bbdfb9f08aafa2b0681b0f302ea5",
+          "libr4d/r4d_attn_prefill_h256_gqa6.hip": "a931ec55e7d591bae386203864dc07f60a65d3e90d43b17ebe5f4e4e0b392123",
+          "libr4d/r4d_moe.hip": "914323325ae1f615bd97eebd28e4feb4bcb258b1693b047fa34793c465e85363",
+          "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+        }
+      }
+    },
+    {
+      "contract": "tp2-bf16-sum",
+      "id": "tp2.oneshot.push.c65536",
+      "identity": {
+        "kind": "hypothesis",
+        "sha256": "88da301702cc9059d8bce64d13c5862ef9c543afe5bf8d47723b061f2e86b358"
+      },
+      "input_layout": "bf16_hidden",
+      "op": "collective",
+      "output_layout": "bf16_hidden",
+      "params": {
+        "access": "push",
+        "algorithm": "oneshot",
+        "chunk_bytes": 65536,
+        "handshake_us": 1.0
+      },
+      "source_binding": {
+        "scope": "reviewed family geometry; costs remain hypotheses, not executable code or exact dispatch bindings",
+        "source_files": {
+          "arch/common/rad_block_moe_fp8.h": "f4c0efd0ed272568c82e8402d0b49f4324b4033a3ce3a03959b59827c653f8fa",
+          "arch/common/rad_qsa.h": "ef5e5865c56c1192133e1563d281a90d3e68fe18efceb9534aa58d60f88839b7",
+          "arch/qwen4exp_fp8/qwen4exp_fp8.cpp": "0e63d8f02ac85dde132ca753117d47389dcac423977e864287ac712517ca2908",
+          "docs/QSA.md": "46b63d71470ed8897d246cf14b703fa59e33bfa16a0fe27ca2574d9eba93dc92",
+          "libr4d/r4d_ar_oneshot_2rank_exact.hip": "4f5441e1a9651f8e0e5363073213050e8266c1b027cae4b01671545afdf7ad15",
+          "libr4d/r4d_attn_decode_h256_gqa6.hip": "e29035e20d4e903355bcadd0759f4e36d8c76c146f2d31e6990908132e5e3534",
+          "libr4d/r4d_attn_paged_gqa8.hip": "98b87b555e2187d5362d794a2627a421c50f4013449c01ee80639965539f9dfe",
+          "libr4d/r4d_attn_paged_h256_gqa12.hip": "a0078f0a42c8f6001329c51a6342c6d4365cefe49d97686b45542acd74c82f1c",
+          "libr4d/r4d_attn_paged_h256_gqa6_bs4.hip": "7d9d0084a6c26102d2be4b821bceb92bbe01bbdfb9f08aafa2b0681b0f302ea5",
+          "libr4d/r4d_attn_prefill_h256_gqa6.hip": "a931ec55e7d591bae386203864dc07f60a65d3e90d43b17ebe5f4e4e0b392123",
+          "libr4d/r4d_moe.hip": "914323325ae1f615bd97eebd28e4feb4bcb258b1693b047fa34793c465e85363",
+          "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+        }
+      }
+    },
+    {
+      "contract": "tp2-bf16-sum",
+      "id": "tp2.ring2.push.c1073741824",
+      "identity": {
+        "kind": "hypothesis",
+        "sha256": "74eb28dbe3501e5d3653af76b42b4360f998a8f4c1e64a9388007964e0d18e66"
+      },
+      "input_layout": "bf16_hidden",
+      "op": "collective",
+      "output_layout": "bf16_hidden",
+      "params": {
+        "access": "push",
+        "algorithm": "ring2",
+        "chunk_bytes": 1073741824,
+        "handshake_us": 1.0
+      },
+      "source_binding": {
+        "scope": "reviewed family geometry; costs remain hypotheses, not executable code or exact dispatch bindings",
+        "source_files": {
+          "arch/common/rad_block_moe_fp8.h": "f4c0efd0ed272568c82e8402d0b49f4324b4033a3ce3a03959b59827c653f8fa",
+          "arch/common/rad_qsa.h": "ef5e5865c56c1192133e1563d281a90d3e68fe18efceb9534aa58d60f88839b7",
+          "arch/qwen4exp_fp8/qwen4exp_fp8.cpp": "0e63d8f02ac85dde132ca753117d47389dcac423977e864287ac712517ca2908",
+          "docs/QSA.md": "46b63d71470ed8897d246cf14b703fa59e33bfa16a0fe27ca2574d9eba93dc92",
+          "libr4d/r4d_ar_oneshot_2rank_exact.hip": "4f5441e1a9651f8e0e5363073213050e8266c1b027cae4b01671545afdf7ad15",
+          "libr4d/r4d_attn_decode_h256_gqa6.hip": "e29035e20d4e903355bcadd0759f4e36d8c76c146f2d31e6990908132e5e3534",
+          "libr4d/r4d_attn_paged_gqa8.hip": "98b87b555e2187d5362d794a2627a421c50f4013449c01ee80639965539f9dfe",
+          "libr4d/r4d_attn_paged_h256_gqa12.hip": "a0078f0a42c8f6001329c51a6342c6d4365cefe49d97686b45542acd74c82f1c",
+          "libr4d/r4d_attn_paged_h256_gqa6_bs4.hip": "7d9d0084a6c26102d2be4b821bceb92bbe01bbdfb9f08aafa2b0681b0f302ea5",
+          "libr4d/r4d_attn_prefill_h256_gqa6.hip": "a931ec55e7d591bae386203864dc07f60a65d3e90d43b17ebe5f4e4e0b392123",
+          "libr4d/r4d_moe.hip": "914323325ae1f615bd97eebd28e4feb4bcb258b1693b047fa34793c465e85363",
+          "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+        }
+      }
+    },
+    {
+      "contract": "tp2-bf16-sum",
+      "id": "tp2.oneshot.pull.c4096",
+      "identity": {
+        "kind": "hypothesis",
+        "sha256": "19e1bf9e47f6c15c42d7ef8bab4a71ef46e7caf83231664e42f2f630e5b933de"
+      },
+      "input_layout": "bf16_hidden",
+      "op": "collective",
+      "output_layout": "bf16_hidden",
+      "params": {
+        "access": "pull",
+        "algorithm": "oneshot",
+        "chunk_bytes": 4096,
+        "handshake_us": 1.0
+      },
+      "source_binding": {
+        "scope": "reviewed family geometry; costs remain hypotheses, not executable code or exact dispatch bindings",
+        "source_files": {
+          "arch/common/rad_block_moe_fp8.h": "f4c0efd0ed272568c82e8402d0b49f4324b4033a3ce3a03959b59827c653f8fa",
+          "arch/common/rad_qsa.h": "ef5e5865c56c1192133e1563d281a90d3e68fe18efceb9534aa58d60f88839b7",
+          "arch/qwen4exp_fp8/qwen4exp_fp8.cpp": "0e63d8f02ac85dde132ca753117d47389dcac423977e864287ac712517ca2908",
+          "docs/QSA.md": "46b63d71470ed8897d246cf14b703fa59e33bfa16a0fe27ca2574d9eba93dc92",
+          "libr4d/r4d_ar_oneshot_2rank_exact.hip": "4f5441e1a9651f8e0e5363073213050e8266c1b027cae4b01671545afdf7ad15",
+          "libr4d/r4d_attn_decode_h256_gqa6.hip": "e29035e20d4e903355bcadd0759f4e36d8c76c146f2d31e6990908132e5e3534",
+          "libr4d/r4d_attn_paged_gqa8.hip": "98b87b555e2187d5362d794a2627a421c50f4013449c01ee80639965539f9dfe",
+          "libr4d/r4d_attn_paged_h256_gqa12.hip": "a0078f0a42c8f6001329c51a6342c6d4365cefe49d97686b45542acd74c82f1c",
+          "libr4d/r4d_attn_paged_h256_gqa6_bs4.hip": "7d9d0084a6c26102d2be4b821bceb92bbe01bbdfb9f08aafa2b0681b0f302ea5",
+          "libr4d/r4d_attn_prefill_h256_gqa6.hip": "a931ec55e7d591bae386203864dc07f60a65d3e90d43b17ebe5f4e4e0b392123",
+          "libr4d/r4d_moe.hip": "914323325ae1f615bd97eebd28e4feb4bcb258b1693b047fa34793c465e85363",
+          "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+        }
+      }
+    },
+    {
+      "contract": "tp2-bf16-sum",
+      "id": "tp2.oneshot.pull.c65536",
+      "identity": {
+        "kind": "hypothesis",
+        "sha256": "28b0ca475caa563ca143d8ccc55565945d0bb3bba450fe9434fe8c9235bfe3bf"
+      },
+      "input_layout": "bf16_hidden",
+      "op": "collective",
+      "output_layout": "bf16_hidden",
+      "params": {
+        "access": "pull",
+        "algorithm": "oneshot",
+        "chunk_bytes": 65536,
+        "handshake_us": 1.0
+      },
+      "source_binding": {
+        "scope": "reviewed family geometry; costs remain hypotheses, not executable code or exact dispatch bindings",
+        "source_files": {
+          "arch/common/rad_block_moe_fp8.h": "f4c0efd0ed272568c82e8402d0b49f4324b4033a3ce3a03959b59827c653f8fa",
+          "arch/common/rad_qsa.h": "ef5e5865c56c1192133e1563d281a90d3e68fe18efceb9534aa58d60f88839b7",
+          "arch/qwen4exp_fp8/qwen4exp_fp8.cpp": "0e63d8f02ac85dde132ca753117d47389dcac423977e864287ac712517ca2908",
+          "docs/QSA.md": "46b63d71470ed8897d246cf14b703fa59e33bfa16a0fe27ca2574d9eba93dc92",
+          "libr4d/r4d_ar_oneshot_2rank_exact.hip": "4f5441e1a9651f8e0e5363073213050e8266c1b027cae4b01671545afdf7ad15",
+          "libr4d/r4d_attn_decode_h256_gqa6.hip": "e29035e20d4e903355bcadd0759f4e36d8c76c146f2d31e6990908132e5e3534",
+          "libr4d/r4d_attn_paged_gqa8.hip": "98b87b555e2187d5362d794a2627a421c50f4013449c01ee80639965539f9dfe",
+          "libr4d/r4d_attn_paged_h256_gqa12.hip": "a0078f0a42c8f6001329c51a6342c6d4365cefe49d97686b45542acd74c82f1c",
+          "libr4d/r4d_attn_paged_h256_gqa6_bs4.hip": "7d9d0084a6c26102d2be4b821bceb92bbe01bbdfb9f08aafa2b0681b0f302ea5",
+          "libr4d/r4d_attn_prefill_h256_gqa6.hip": "a931ec55e7d591bae386203864dc07f60a65d3e90d43b17ebe5f4e4e0b392123",
+          "libr4d/r4d_moe.hip": "914323325ae1f615bd97eebd28e4feb4bcb258b1693b047fa34793c465e85363",
+          "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+        }
+      }
+    },
+    {
+      "contract": "tp2-bf16-sum",
+      "id": "tp2.ring2.pull.c1073741824",
+      "identity": {
+        "kind": "hypothesis",
+        "sha256": "a28e58b6d9f73d1643d6926e9bb0ab3af1057a110da96857c44991312cd0e17d"
+      },
+      "input_layout": "bf16_hidden",
+      "op": "collective",
+      "output_layout": "bf16_hidden",
+      "params": {
+        "access": "pull",
+        "algorithm": "ring2",
+        "chunk_bytes": 1073741824,
+        "handshake_us": 1.0
+      },
+      "source_binding": {
+        "scope": "reviewed family geometry; costs remain hypotheses, not executable code or exact dispatch bindings",
+        "source_files": {
+          "arch/common/rad_block_moe_fp8.h": "f4c0efd0ed272568c82e8402d0b49f4324b4033a3ce3a03959b59827c653f8fa",
+          "arch/common/rad_qsa.h": "ef5e5865c56c1192133e1563d281a90d3e68fe18efceb9534aa58d60f88839b7",
+          "arch/qwen4exp_fp8/qwen4exp_fp8.cpp": "0e63d8f02ac85dde132ca753117d47389dcac423977e864287ac712517ca2908",
+          "docs/QSA.md": "46b63d71470ed8897d246cf14b703fa59e33bfa16a0fe27ca2574d9eba93dc92",
+          "libr4d/r4d_ar_oneshot_2rank_exact.hip": "4f5441e1a9651f8e0e5363073213050e8266c1b027cae4b01671545afdf7ad15",
+          "libr4d/r4d_attn_decode_h256_gqa6.hip": "e29035e20d4e903355bcadd0759f4e36d8c76c146f2d31e6990908132e5e3534",
+          "libr4d/r4d_attn_paged_gqa8.hip": "98b87b555e2187d5362d794a2627a421c50f4013449c01ee80639965539f9dfe",
+          "libr4d/r4d_attn_paged_h256_gqa12.hip": "a0078f0a42c8f6001329c51a6342c6d4365cefe49d97686b45542acd74c82f1c",
+          "libr4d/r4d_attn_paged_h256_gqa6_bs4.hip": "7d9d0084a6c26102d2be4b821bceb92bbe01bbdfb9f08aafa2b0681b0f302ea5",
+          "libr4d/r4d_attn_prefill_h256_gqa6.hip": "a931ec55e7d591bae386203864dc07f60a65d3e90d43b17ebe5f4e4e0b392123",
+          "libr4d/r4d_moe.hip": "914323325ae1f615bd97eebd28e4feb4bcb258b1693b047fa34793c465e85363",
+          "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+        }
+      }
+    }
+  ],
+  "notes": "Finite algorithm/template search. Source macros justify geometry only. No native kernel code generated or dispatched.",
+  "schema": "radiance-operator-catalog/1",
+  "source": {
+    "scope": "reviewed family geometry; costs remain hypotheses, not executable code or exact dispatch bindings",
+    "source_files": {
+      "arch/common/rad_block_moe_fp8.h": "f4c0efd0ed272568c82e8402d0b49f4324b4033a3ce3a03959b59827c653f8fa",
+      "arch/common/rad_qsa.h": "ef5e5865c56c1192133e1563d281a90d3e68fe18efceb9534aa58d60f88839b7",
+      "arch/qwen4exp_fp8/qwen4exp_fp8.cpp": "0e63d8f02ac85dde132ca753117d47389dcac423977e864287ac712517ca2908",
+      "docs/QSA.md": "46b63d71470ed8897d246cf14b703fa59e33bfa16a0fe27ca2574d9eba93dc92",
+      "libr4d/r4d_ar_oneshot_2rank_exact.hip": "4f5441e1a9651f8e0e5363073213050e8266c1b027cae4b01671545afdf7ad15",
+      "libr4d/r4d_attn_decode_h256_gqa6.hip": "e29035e20d4e903355bcadd0759f4e36d8c76c146f2d31e6990908132e5e3534",
+      "libr4d/r4d_attn_paged_gqa8.hip": "98b87b555e2187d5362d794a2627a421c50f4013449c01ee80639965539f9dfe",
+      "libr4d/r4d_attn_paged_h256_gqa12.hip": "a0078f0a42c8f6001329c51a6342c6d4365cefe49d97686b45542acd74c82f1c",
+      "libr4d/r4d_attn_paged_h256_gqa6_bs4.hip": "7d9d0084a6c26102d2be4b821bceb92bbe01bbdfb9f08aafa2b0681b0f302ea5",
+      "libr4d/r4d_attn_prefill_h256_gqa6.hip": "a931ec55e7d591bae386203864dc07f60a65d3e90d43b17ebe5f4e4e0b392123",
+      "libr4d/r4d_moe.hip": "914323325ae1f615bd97eebd28e4feb4bcb258b1693b047fa34793c465e85363",
+      "libr4d/r4d_rows.cpp": "002478f4cafe4eac504c6df8b4cda00c6a35e402b1eeef32f6429afdcbf984c3"
+    }
+  }
+}

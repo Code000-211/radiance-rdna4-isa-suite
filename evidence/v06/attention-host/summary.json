@@ -1,0 +1,15 @@
+{
+  "all_checks_passed": true,
+  "checked_cases": 20,
+  "gpu_execution": false,
+  "gpu_model_calibration": false,
+  "hardware_noise_controlled": false,
+  "oracle": "independent Python fsum + stable softmax; chunked recurrence cross-check",
+  "plugin_sha256": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513",
+  "report_provenance": "actual genuine-source Radiance host replay executions, not synthetic timing data",
+  "row": "ref_attn_paged",
+  "schema": "radiance-v06-host-attention/1",
+  "timed_repetitions_per_case": 5,
+  "warmups_per_case": 1,
+  "worker_sha256": "a7a9bb8bec7cefecb3202bbb4e412f3faa62c64fb52f231c28a031f4d1ae8aa0"
+}

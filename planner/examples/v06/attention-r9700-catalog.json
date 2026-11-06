@@ -1,0 +1,189 @@
+{
+ "schema": "radiance-operator-catalog/1",
+ "source": {
+  "scope": "Cost hypotheses for the attention family measured in measured-attention-r9700.json. Geometry only; no rate is bound here."
+ },
+ "candidates": [
+  {
+   "id": "attn.g6.8.decode.s1",
+   "op": "attention",
+   "contract": "bf16-q-fp8-kv-selected-causal",
+   "params": {
+    "query_tile": 1,
+    "kv_tile": 16,
+    "split_kv": 1,
+    "gqa_reuse": true,
+    "compute_path": "wmma_f16",
+    "head_dim": 256,
+    "gqa": 6,
+    "block_size": 16,
+    "max_queries_per_sequence": 65536,
+    "force_merge": true,
+    "kv_bits": 8,
+    "partial_bits": 16,
+    "kv_fetch": "sequence"
+   },
+   "identity": {
+    "kind": "hypothesis",
+    "sha256": "06261da3185d997ddf2cf2e471ab4bcc74f77f4a9f6a8e06fe608e158736f622"
+   },
+   "source_binding": {
+    "source_files": {},
+    "scope": "hypothesis family; geometry matched to the measured gfx1201 attn_decode row"
+   },
+   "input_layout": "qkv_paged",
+   "output_layout": "bf16_heads"
+  },
+  {
+   "id": "attn.g6.8.decode.s4",
+   "op": "attention",
+   "contract": "bf16-q-fp8-kv-selected-causal",
+   "params": {
+    "query_tile": 1,
+    "kv_tile": 16,
+    "split_kv": 4,
+    "gqa_reuse": true,
+    "compute_path": "wmma_f16",
+    "head_dim": 256,
+    "gqa": 6,
+    "block_size": 16,
+    "max_queries_per_sequence": 65536,
+    "force_merge": true,
+    "kv_bits": 8,
+    "partial_bits": 16,
+    "kv_fetch": "sequence"
+   },
+   "identity": {
+    "kind": "hypothesis",
+    "sha256": "cbf972037e9fb4892078cd22c5e3da775ab0ab4bc8020c2ec0ce1b744b931a20"
+   },
+   "source_binding": {
+    "source_files": {},
+    "scope": "hypothesis family; geometry matched to the measured gfx1201 attn_decode row"
+   },
+   "input_layout": "qkv_paged",
+   "output_layout": "bf16_heads"
+  },
+  {
+   "id": "attn.g6.8.decode.s16",
+   "op": "attention",
+   "contract": "bf16-q-fp8-kv-selected-causal",
+   "params": {
+    "query_tile": 1,
+    "kv_tile": 16,
+    "split_kv": 16,
+    "gqa_reuse": true,
+    "compute_path": "wmma_f16",
+    "head_dim": 256,
+    "gqa": 6,
+    "block_size": 16,
+    "max_queries_per_sequence": 65536,
+    "force_merge": true,
+    "kv_bits": 8,
+    "partial_bits": 16,
+    "kv_fetch": "sequence"
+   },
+   "identity": {
+    "kind": "hypothesis",
+    "sha256": "ed10c26d13605ec2faaf8c947b17173a95acabd82d6ed32930d44f810fdda8e2"
+   },
+   "source_binding": {
+    "source_files": {},
+    "scope": "hypothesis family; geometry matched to the measured gfx1201 attn_decode row"
+   },
+   "input_layout": "qkv_paged",
+   "output_layout": "bf16_heads"
+  },
+  {
+   "id": "attn.g6.8.prefill.s1",
+   "op": "attention",
+   "contract": "bf16-q-fp8-kv-selected-causal",
+   "params": {
+    "query_tile": 64,
+    "kv_tile": 48,
+    "split_kv": 1,
+    "gqa_reuse": true,
+    "compute_path": "wmma_f16",
+    "head_dim": 256,
+    "gqa": 6,
+    "block_size": 16,
+    "max_queries_per_sequence": 65536,
+    "force_merge": false,
+    "kv_bits": 8,
+    "partial_bits": 16,
+    "kv_fetch": "sequence"
+   },
+   "identity": {
+    "kind": "hypothesis",
+    "sha256": "f9de45fd7e799533e6e7ef0ae61fc24ecd9d1c2e98882476328847ebbb45738d"
+   },
+   "source_binding": {
+    "source_files": {},
+    "scope": "hypothesis family; geometry matched to the measured gfx1201 attn_prefill row"
+   },
+   "input_layout": "qkv_paged",
+   "output_layout": "bf16_heads"
+  },
+  {
+   "id": "attn.g6.8.prefill.s4",
+   "op": "attention",
+   "contract": "bf16-q-fp8-kv-selected-causal",
+   "params": {
+    "query_tile": 64,
+    "kv_tile": 48,
+    "split_kv": 4,
+    "gqa_reuse": true,
+    "compute_path": "wmma_f16",
+    "head_dim": 256,
+    "gqa": 6,
+    "block_size": 16,
+    "max_queries_per_sequence": 65536,
+    "force_merge": false,
+    "kv_bits": 8,
+    "partial_bits": 16,
+    "kv_fetch": "sequence"
+   },
+   "identity": {
+    "kind": "hypothesis",
+    "sha256": "9635f4d012103e17f867d7d9270569f447e1406aa9029e61b258582f580c2159"
+   },
+   "source_binding": {
+    "source_files": {},
+    "scope": "hypothesis family; geometry matched to the measured gfx1201 attn_prefill row"
+   },
+   "input_layout": "qkv_paged",
+   "output_layout": "bf16_heads"
+  },
+  {
+   "id": "attn.g6.8.prefill.s16",
+   "op": "attention",
+   "contract": "bf16-q-fp8-kv-selected-causal",
+   "params": {
+    "query_tile": 64,
+    "kv_tile": 48,
+    "split_kv": 16,
+    "gqa_reuse": true,
+    "compute_path": "wmma_f16",
+    "head_dim": 256,
+    "gqa": 6,
+    "block_size": 16,
+    "max_queries_per_sequence": 65536,
+    "force_merge": false,
+    "kv_bits": 8,
+    "partial_bits": 16,
+    "kv_fetch": "sequence"
+   },
+   "identity": {
+    "kind": "hypothesis",
+    "sha256": "885fd7009ddcd28f80b1f555d1fcaae4ae96ce6e9cedc4c51eec718435325a72"
+   },
+   "source_binding": {
+    "source_files": {},
+    "scope": "hypothesis family; geometry matched to the measured gfx1201 attn_prefill row"
+   },
+   "input_layout": "qkv_paged",
+   "output_layout": "bf16_heads"
+  }
+ ],
+ "notes": "kv_fetch=sequence: the tile reads its visible KV once, later queries of the same sequence hit cache."
+}

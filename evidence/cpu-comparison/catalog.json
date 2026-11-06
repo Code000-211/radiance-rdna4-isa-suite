@@ -1,0 +1,218 @@
+{
+  "candidates": [
+    {
+      "arch": "host",
+      "backend": "host",
+      "compute_path": "cpu_f32",
+      "contract": "finite-f32-contiguous-nt-independent-oracle",
+      "family": "libref",
+      "format": {
+        "a_bits": 32,
+        "activation_scale_bytes": 0,
+        "b_bits": 32,
+        "out_bits": 32,
+        "weight_group": 1,
+        "weight_scale_bytes": 0
+      },
+      "id": "libref",
+      "identity": {
+        "kind": "plugin",
+        "provenance": "compiled CPU code, not GPU emulation",
+        "sha256": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513"
+      },
+      "input_layout": "f32-contiguous",
+      "launch": {
+        "op": "gemm_nt",
+        "params": {
+          "dtype": "f32"
+        },
+        "row": "ref_gemm_nt"
+      },
+      "lds_bytes": 0,
+      "matrix_alu_overlap": true,
+      "multiples": {
+        "K": 1,
+        "M": 1,
+        "N": 1
+      },
+      "notes": "CPU panel tile is explicit. libref tile=[1,1,1] is a feature proxy, not its actual internal tiling.",
+      "output_layout": "f32-contiguous",
+      "stages": 1,
+      "tail": {
+        "K": true,
+        "M": true,
+        "N": true
+      },
+      "tile": [
+        1,
+        1,
+        1
+      ],
+      "unpack_ops_per_weight": 0.0,
+      "wave_size": 32,
+      "waves_per_group": 1,
+      "work_policy": "exact"
+    },
+    {
+      "arch": "host",
+      "backend": "host",
+      "compute_path": "cpu_f32",
+      "contract": "finite-f32-contiguous-nt-independent-oracle",
+      "family": "panel1",
+      "format": {
+        "a_bits": 32,
+        "activation_scale_bytes": 0,
+        "b_bits": 32,
+        "out_bits": 32,
+        "weight_group": 1,
+        "weight_scale_bytes": 0
+      },
+      "id": "panel1",
+      "identity": {
+        "kind": "plugin",
+        "provenance": "compiled CPU code, not GPU emulation",
+        "sha256": "03b59a75fcaf67ae320e0287c2e348d4d9f073400c8a67e39b2530053892313e"
+      },
+      "input_layout": "f32-contiguous",
+      "launch": {
+        "op": "gemm_nt",
+        "params": {
+          "dtype": "f32"
+        },
+        "row": "cpu_panel1"
+      },
+      "lds_bytes": 0,
+      "matrix_alu_overlap": true,
+      "multiples": {
+        "K": 1,
+        "M": 1,
+        "N": 1
+      },
+      "notes": "CPU panel tile is explicit. libref tile=[1,1,1] is a feature proxy, not its actual internal tiling.",
+      "output_layout": "f32-contiguous",
+      "stages": 1,
+      "tail": {
+        "K": true,
+        "M": true,
+        "N": true
+      },
+      "tile": [
+        1,
+        1,
+        1
+      ],
+      "unpack_ops_per_weight": 0.0,
+      "wave_size": 32,
+      "waves_per_group": 1,
+      "work_policy": "exact"
+    },
+    {
+      "arch": "host",
+      "backend": "host",
+      "compute_path": "cpu_f32",
+      "contract": "finite-f32-contiguous-nt-independent-oracle",
+      "family": "panel4",
+      "format": {
+        "a_bits": 32,
+        "activation_scale_bytes": 0,
+        "b_bits": 32,
+        "out_bits": 32,
+        "weight_group": 1,
+        "weight_scale_bytes": 0
+      },
+      "id": "panel4",
+      "identity": {
+        "kind": "plugin",
+        "provenance": "compiled CPU code, not GPU emulation",
+        "sha256": "03b59a75fcaf67ae320e0287c2e348d4d9f073400c8a67e39b2530053892313e"
+      },
+      "input_layout": "f32-contiguous",
+      "launch": {
+        "op": "gemm_nt",
+        "params": {
+          "dtype": "f32"
+        },
+        "row": "cpu_panel4"
+      },
+      "lds_bytes": 0,
+      "matrix_alu_overlap": true,
+      "multiples": {
+        "K": 1,
+        "M": 1,
+        "N": 1
+      },
+      "notes": "CPU panel tile is explicit. libref tile=[1,1,1] is a feature proxy, not its actual internal tiling.",
+      "output_layout": "f32-contiguous",
+      "stages": 1,
+      "tail": {
+        "K": true,
+        "M": true,
+        "N": true
+      },
+      "tile": [
+        1,
+        4,
+        1
+      ],
+      "unpack_ops_per_weight": 0.0,
+      "wave_size": 32,
+      "waves_per_group": 1,
+      "work_policy": "exact"
+    },
+    {
+      "arch": "host",
+      "backend": "host",
+      "compute_path": "cpu_f32",
+      "contract": "finite-f32-contiguous-nt-independent-oracle",
+      "family": "panel16",
+      "format": {
+        "a_bits": 32,
+        "activation_scale_bytes": 0,
+        "b_bits": 32,
+        "out_bits": 32,
+        "weight_group": 1,
+        "weight_scale_bytes": 0
+      },
+      "id": "panel16",
+      "identity": {
+        "kind": "plugin",
+        "provenance": "compiled CPU code, not GPU emulation",
+        "sha256": "03b59a75fcaf67ae320e0287c2e348d4d9f073400c8a67e39b2530053892313e"
+      },
+      "input_layout": "f32-contiguous",
+      "launch": {
+        "op": "gemm_nt",
+        "params": {
+          "dtype": "f32"
+        },
+        "row": "cpu_panel16"
+      },
+      "lds_bytes": 0,
+      "matrix_alu_overlap": true,
+      "multiples": {
+        "K": 1,
+        "M": 1,
+        "N": 1
+      },
+      "notes": "CPU panel tile is explicit. libref tile=[1,1,1] is a feature proxy, not its actual internal tiling.",
+      "output_layout": "f32-contiguous",
+      "stages": 1,
+      "tail": {
+        "K": true,
+        "M": true,
+        "N": true
+      },
+      "tile": [
+        1,
+        16,
+        1
+      ],
+      "unpack_ops_per_weight": 0.0,
+      "wave_size": 32,
+      "waves_per_group": 1,
+      "work_policy": "exact"
+    }
+  ],
+  "notes": "CPU experiment only; libref is genuine source, panel candidates are new diagnostic implementations",
+  "schema": "radiance-planner-catalog/1"
+}

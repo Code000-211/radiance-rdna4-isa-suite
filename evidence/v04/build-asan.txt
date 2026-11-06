@@ -1,0 +1,16 @@
+[ 18%] Building CXX object CMakeFiles/replay-host-common.dir/mnt/data/work_v04/source/radiance/core/util/rad_util.cpp.o
+[ 18%] Building CXX object CMakeFiles/replay-host-common.dir/mnt/data/work_v04/source/radiance/core/device/dispatch.cpp.o
+[ 36%] Building CXX object CMakeFiles/replay-host-common.dir/mnt/data/work_v04/source/radiance/core/plugin/loader.cpp.o
+[ 36%] Building CXX object CMakeFiles/replay-host-common.dir/mnt/data/work_v04/source/radiance/core/device/host.cpp.o
+[ 45%] Building CXX object CMakeFiles/replay-host-common.dir/mnt/data/work_v04/source/radiance/core/plugin/schema.cpp.o
+[ 54%] Building CXX object CMakeFiles/replay-host-common.dir/mnt/data/work_v04/source/radiance/core/plugin/select.cpp.o
+[ 63%] Building CXX object CMakeFiles/replay-host-common.dir/mnt/data/work_v04/source/radiance/tools/kbench_core.cpp.o
+[ 72%] Building CXX object CMakeFiles/replay-host-common.dir/mnt/data/work_v04/source/radiance/core/format/encoding.cpp.o
+[ 81%] Linking CXX static library libreplay-host-common.a
+[ 81%] Built target replay-host-common
+[ 90%] Building CXX object CMakeFiles/rad-kbench-replay.dir/mnt/data/RADIANCE_RDNA4_ISA_TESTSUITE_v0.4/tools/rdna4-isa-suite/replay/worker.cpp.o
+[100%] Linking CXX executable rad-kbench-replay
+[100%] Built target rad-kbench-replay
+[ 50%] Building CXX object CMakeFiles/replay-test-plugin.dir/mnt/data/RADIANCE_RDNA4_ISA_TESTSUITE_v0.4/tools/rdna4-isa-suite/replay_tests/probe_plugin.cpp.o
+[100%] Linking CXX shared module replay_test.so
+[100%] Built target replay-test-plugin

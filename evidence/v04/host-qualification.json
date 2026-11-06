@@ -1,0 +1,938 @@
+{
+  "all_kernel_coverage": false,
+  "corpus_sha256": "903ceafa88024b8443bd8e27365dbd86f0d938b8cb304cd1f748787c1bb0c499",
+  "exit_code": 0,
+  "full_memory_safety_proved": false,
+  "numeric_policy_sha256": "8abe2cbbdd0236953a933baeb9471cd5f492f0e28eda47ef8608a45e59f71bb0",
+  "production_equivalence_proved": false,
+  "profile": "host-contracts",
+  "requirements": [
+    {
+      "detail": "All predeclared cases, no missing/duplicate/stale reports.",
+      "name": "explicit-corpus",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m1-n3-k5:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m1-n3-k5:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m1-n3-k5:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m1-n3-k5:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m2-n1-k5:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m2-n1-k5:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m2-n1-k5:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m2-n1-k5:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m2-n3-k1:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m2-n3-k1:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m2-n3-k1:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m2-n3-k1:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m2-n3-k15:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m2-n3-k15:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m2-n3-k15:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m2-n3-k15:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m2-n3-k16:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m2-n3-k16:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m2-n3-k16:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m2-n3-k16:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m2-n3-k17:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m2-n3-k17:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m2-n3-k17:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m2-n3-k17:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m2-n3-k31:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m2-n3-k31:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m2-n3-k31:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m2-n3-k31:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m2-n3-k32:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m2-n3-k32:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m2-n3-k32:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m2-n3-k32:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m2-n3-k33:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m2-n3-k33:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m2-n3-k33:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m2-n3-k33:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m2-n3-k63:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m2-n3-k63:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m2-n3-k63:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m2-n3-k63:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m2-n3-k64:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m2-n3-k64:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m2-n3-k64:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m2-n3-k64:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m2-n3-k65:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m2-n3-k65:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m2-n3-k65:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m2-n3-k65:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m2-n15-k5:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m2-n15-k5:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m2-n15-k5:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m2-n15-k5:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m2-n16-k5:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m2-n16-k5:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m2-n16-k5:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m2-n16-k5:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m2-n17-k5:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m2-n17-k5:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m2-n17-k5:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m2-n17-k5:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m2-n31-k5:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m2-n31-k5:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m2-n31-k5:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m2-n31-k5:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m2-n32-k5:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m2-n32-k5:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m2-n32-k5:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m2-n32-k5:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m2-n33-k5:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m2-n33-k5:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m2-n33-k5:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m2-n33-k5:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m2-n63-k5:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m2-n63-k5:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m2-n63-k5:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m2-n63-k5:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m2-n64-k5:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m2-n64-k5:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m2-n64-k5:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m2-n64-k5:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m2-n65-k5:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m2-n65-k5:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m2-n65-k5:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m2-n65-k5:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m15-n3-k5:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m15-n3-k5:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m15-n3-k5:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m15-n3-k5:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m16-n3-k5:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m16-n3-k5:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m16-n3-k5:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m16-n3-k5:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m17-n3-k5:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m17-n3-k5:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m17-n3-k5:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m17-n3-k5:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m31-n3-k5:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m31-n3-k5:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m31-n3-k5:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m31-n3-k5:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m32-n3-k5:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m32-n3-k5:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m32-n3-k5:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m32-n3-k5:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m33-n3-k5:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m33-n3-k5:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m33-n3-k5:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m33-n3-k5:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m63-n3-k5:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m63-n3-k5:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m63-n3-k5:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m63-n3-k5:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m64-n3-k5:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m64-n3-k5:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m64-n3-k5:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m64-n3-k5:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m65-n3-k5:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m65-n3-k5:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m65-n3-k5:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m65-n3-k5:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m95-n3-k5:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m95-n3-k5:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m95-n3-k5:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m95-n3-k5:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m96-n3-k5:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m96-n3-k5:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m96-n3-k5:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m96-n3-k5:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m97-n3-k5:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m97-n3-k5:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m97-n3-k5:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m97-n3-k5:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m127-n3-k5:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m127-n3-k5:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m127-n3-k5:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m127-n3-k5:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m128-n3-k5:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m128-n3-k5:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m128-n3-k5:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m128-n3-k5:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m129-n3-k5:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m129-n3-k5:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m129-n3-k5:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m129-n3-k5:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m191-n3-k5:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m191-n3-k5:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m191-n3-k5:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m191-n3-k5:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m192-n3-k5:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m192-n3-k5:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m192-n3-k5:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m192-n3-k5:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m193-n3-k5:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m193-n3-k5:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m193-n3-k5:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m193-n3-k5:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m255-n3-k5:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m255-n3-k5:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m255-n3-k5:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m255-n3-k5:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m256-n3-k5:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m256-n3-k5:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m256-n3-k5:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m256-n3-k5:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-m257-n3-k5:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-m257-n3-k5:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-m257-n3-k5:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-m257-n3-k5:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-zeros:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-zeros:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-zeros:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-zeros:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-cancellation:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-cancellation:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-cancellation:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-cancellation:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-outlier:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-outlier:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-outlier:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-outlier:backend",
+      "status": "PASS"
+    },
+    {
+      "detail": "Serial contract diagnostics, not race-freedom evidence.",
+      "name": "gemm-rounding:contracts",
+      "status": "PASS"
+    },
+    {
+      "detail": "Captured baselines are regression oracles only.",
+      "name": "gemm-rounding:independent-reference",
+      "status": "PASS"
+    },
+    {
+      "detail": "Exact bytes, or thresholds within pinned explicit policy.",
+      "name": "gemm-rounding:numeric-policy",
+      "status": "PASS"
+    },
+    {
+      "detail": "Actual worker backend must match the requested profile.",
+      "name": "gemm-rounding:backend",
+      "status": "PASS"
+    }
+  ],
+  "schema": "radiance-qualification/1",
+  "status": "SCOPED_QUALIFICATION_PASS"
+}

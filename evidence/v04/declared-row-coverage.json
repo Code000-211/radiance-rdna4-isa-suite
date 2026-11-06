@@ -1,0 +1,2888 @@
+{
+  "all_templates_tested": false,
+  "declared_rows": 210,
+  "errors": [],
+  "inventory_sha256": "2d5e8664646fe29060b545c0bc819bd4861e981979fc3416a0991a964a87512f",
+  "rows": [
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_rmsnorm",
+      "name": "ref_rmsnorm",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_rmsnorm_p",
+      "name": "ref_rmsnorm_p",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_rmsnorm_add",
+      "name": "ref_rmsnorm_add",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_hc_enter",
+      "name": "ref_hc_enter",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_mhc_pre",
+      "name": "ref_mhc_pre",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_mhc_pre_partial",
+      "name": "ref_mhc_pre_partial",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_mhc_pre_finish",
+      "name": "ref_mhc_pre_finish",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_mhc_post",
+      "name": "ref_mhc_post",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_mhc_contract",
+      "name": "ref_mhc_contract",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_kda_update",
+      "name": "ref_kda_update",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_hc_read",
+      "name": "ref_hc_read",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_mtp_enter",
+      "name": "ref_mtp_enter",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_hc_write",
+      "name": "ref_hc_write",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_hc_project",
+      "name": "ref_hc_project",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_layernorm",
+      "name": "ref_layernorm",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_grid_embed",
+      "name": "ref_grid_embed",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_grid_embed_aa",
+      "name": "ref_grid_embed_aa",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_add",
+      "name": "ref_add",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_mul",
+      "name": "ref_mul",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_mla_attn",
+      "name": "ref_mla_attn",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_dsa_score",
+      "name": "ref_dsa_score",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_dsa_pool",
+      "name": "ref_dsa_pool",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_dsa_query",
+      "name": "ref_dsa_query",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_gemm_nt_f32",
+      "name": "ref_gemm_nt_f32",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_mla_project",
+      "name": "ref_mla_project",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_swiglu_clamped",
+      "name": "ref_swiglu_clamped",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_silu_mul",
+      "name": "ref_silu_mul",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_act_mul",
+      "name": "ref_act_mul",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_mul_weight",
+      "name": "ref_mul_weight",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_table_add",
+      "name": "ref_table_add",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_mix_rows",
+      "name": "ref_mix_rows",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_chan_stats",
+      "name": "ref_chan_stats",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_seg_mean",
+      "name": "ref_seg_mean",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_pool_rows",
+      "name": "ref_pool_rows",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_relu",
+      "name": "ref_relu",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_clamp",
+      "name": "ref_clamp",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_conv2d",
+      "name": "ref_conv2d",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_conv2d_unfold",
+      "name": "ref_conv2d_unfold",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_conv1d_dw",
+      "name": "ref_conv1d_dw",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_rel_sinusoid",
+      "name": "ref_rel_sinusoid",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_seg_sinusoid",
+      "name": "ref_seg_sinusoid",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_attn_local_rel",
+      "name": "ref_attn_local_rel",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_gelu",
+      "name": "ref_gelu",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_silu",
+      "name": "ref_silu",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_sigmoid",
+      "name": "ref_sigmoid",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_fill",
+      "name": "ref_fill",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_gelu_mul",
+      "name": "ref_gelu_mul",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_logit_softcap",
+      "name": "ref_logit_softcap",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_scale",
+      "name": "ref_scale",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_ngram_ids",
+      "name": "ref_ngram_ids",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_ple_gate",
+      "name": "ref_ple_gate",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_ple_conv",
+      "name": "ref_ple_conv",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_causal_conv1d",
+      "name": "ref_causal_conv1d",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_gather_rows",
+      "name": "ref_gather_rows",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_scatter_rows",
+      "name": "ref_scatter_rows",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_cast",
+      "name": "ref_cast",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_softmax",
+      "name": "ref_softmax",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_quant_act_i8",
+      "name": "ref_quant_act_i8",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_quant_act_i8g",
+      "name": "ref_quant_act_i8g",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_quant_act_fp8",
+      "name": "ref_quant_act_fp8",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_quant_cols_fp8",
+      "name": "ref_quant_cols_fp8",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_rmsnorm_quant_fp8",
+      "name": "ref_rmsnorm_quant_fp8",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_gated_quant_fp8",
+      "name": "ref_gated_quant_fp8",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_gemm_nt_q_gated",
+      "name": "ref_gemm_nt_q_gated",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_dflash_select",
+      "name": "ref_dflash_select",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_givens_rotate",
+      "name": "ref_givens_rotate",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_givens_dense_quant",
+      "name": "ref_givens_dense_quant",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_had_quant_act_fp8",
+      "name": "ref_had_quant_act_fp8",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_had_quant_act_i8g",
+      "name": "ref_had_quant_act_i8g",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_gram_accum",
+      "name": "ref_gram_accum",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_had_quant_act_i8",
+      "name": "ref_had_quant_act_i8",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_rmsnorm_had_quant_i8",
+      "name": "ref_rmsnorm_had_quant_i8",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_gated_had_quant_i8",
+      "name": "ref_gated_had_quant_i8",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_dequant",
+      "name": "ref_dequant",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_gemm_nt",
+      "name": "ref_gemm_nt",
+      "observations": [
+        {
+          "manifest_sha256": "1e7e52ceb644a9908c9f34f9c5b2837cf3d366da6d6af03f0fa40da0ebf18607",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 1
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 3
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 5
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "1bd1fb4584b3936530258a1d6a3af313f416da87f583e3d88cc8077ef73af035",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 2
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 1
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 5
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "d1b94f3c7a37b2eab7a53cb2cafdee962e90adb8d4cfc605152fb0c8282079df",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 2
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 3
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 1
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "1a6ce76c77b18f482a0aeb9909d6b7bd7487b5e80346a44432c4aca0d4e01883",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 2
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 3
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 15
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "4d7cc98f449e0927ddbcfc94cd1b672396990fcb58e3e5ad9c978b82e523b3db",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 2
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 3
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 16
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "5f343394276fe10d7539af34f4354e968a8fd9b9a6f5fa551351924919f6fd98",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 2
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 3
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 17
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "36ccb40c63f43a52156521137bee063f3e44db83a5a38a2827fdc496cade6f8f",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 2
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 3
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 31
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "84b56abdb23cde5012e6c72e97823735046b52e01e50fbcb19409313a51c9dcc",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 2
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 3
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 32
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "7dac3bd20a9c6acfc7001d590819baeec8b3b08ec5e95370c70a2093083f6ee7",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 2
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 3
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 33
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "708d5a8fbe64257027cf5e91b611b587311cc2226f688b9b18386d20e1cc18d0",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 2
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 3
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 63
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "2d2f37d32a63de10b9b1e61ab5d62b7d6f989a8eef1f1f863d00f0a2b95a35d3",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 2
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 3
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 64
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "24ccf233d5432e373f34fbd2cf22b39ee91418da1c0779fdd8e993a510f1b324",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 2
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 3
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 65
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "7f3d810e023e86e6499cd15d4d42ce273cf78d468c713ab03ce7767ab90da356",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 2
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 15
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 5
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "2636c4db49c2718134825fcb061dcf14af35fbe2e4dbed3159d03f2b5ba65cac",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 2
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 16
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 5
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "6b44052f34376d3285244e39a76200f0708d33f81640cf31f43a0a7f6a96c41d",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 2
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 17
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 5
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "f190a2f88e32a5fe481c8033a5b376fd6f7713f03658af7d9e71ba0db3bb2a61",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 2
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 31
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 5
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "66729c82d628dda0f959cb32ee7ca33810bae0ae81e389e6bff9c6e4c188b5e8",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 2
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 32
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 5
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "c12bae039e8db973ea7df636715d88677051ca56611194cccfa272d439eec3ce",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 2
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 33
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 5
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "f19e226b2186d1f693942aeb284a5787f1520ef0601837be6b2e47739af88b42",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 2
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 63
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 5
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "6a9388bd2d5fa60fe6bc14251a50069b675faef4593333ea0869f4f4d6d9f510",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 2
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 64
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 5
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "9d2314d8c7d6a8afca384af0e0fa031f80f582519f3b5ba840b4ca59f9b8be35",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 2
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 65
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 5
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "850fa454f6a72301e7fed635799cc13ca7bdacb52c56d9071cfa7b5775af5e1b",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 15
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 3
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 5
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "99d76404c1a620cbf403f8c46d8fc90253418641c6ad1dde29e37faf04974571",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 16
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 3
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 5
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "2c461244dd0b4eb02f9bc4fd69715639842f9508d6e916b556547a71ce0a1db2",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 17
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 3
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 5
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "491761d2b18b98fcb5977c7299a21c58bd875e12b92657e3c727c67bab868c74",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 31
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 3
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 5
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "9957beb2961e8f8e806b706a227b9cd4b7f21c4936b0c21b7d20697508a071c4",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 32
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 3
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 5
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "5354256983ae85c98cf3efa0c1c8e18990d07672cac28c82659075126091e35c",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 33
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 3
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 5
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "3052f605c82d3494015c9d2956218a9cdb8503e0a91004c5e8a13f546ab4cf3b",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 63
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 3
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 5
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "032d34ae2bca9a4fe6b7a6bfef8671dfbef422a65782254fb8fc1b55296676e0",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 64
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 3
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 5
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "e68853c3f5d384d48e27a061b74f7920d08edb85fe0dc8926fa8333f2528eb1a",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 65
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 3
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 5
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "5b322eba1975b8800bb637b796dfa385cd11f29d69c070ecaa6a5ddc65904195",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 95
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 3
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 5
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "eacacc848594931251ddecc779a1343cc295b1ed33397c0d97453754d36ff3a4",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 96
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 3
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 5
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "b3e5c0615c7aa45c8282e6968508b7666a94b1e7268b801b05380e03f4034c35",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 97
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 3
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 5
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "3fc05eb53cbdba03bd2f8ec8389608fc0e17179dee80f1ca4279365e21533788",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 127
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 3
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 5
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "1521d4890be50913c63903627188b298052ea3bafd62cce6bb51c4e10211913c",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 128
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 3
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 5
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "d5a2c005bd523c344b77daa3bcfc57d3ac5651d3f68f3132433b98974e7d8a69",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 129
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 3
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 5
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "362d248e00209ea5d674545a58bbbfcd071890131cd7a85949cb86fe5930b532",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 191
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 3
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 5
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "02073044674e563d65b2d18f05f058b656c95343cb1cf5a00087046b480a66ce",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 192
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 3
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 5
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "b5eb7c3732e5ca9612fc965581e1adbf1d8ba52007721c82a5fa2762f45a5dd2",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 193
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 3
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 5
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "20c0148c9a83f8da1fa7d85b1f109372cf643a2e3f4ee022ee544195a97995f2",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 255
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 3
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 5
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "a3a309b579051213f5842414a55ecd0cfb0ed139001850f0ea9fe997af9e5580",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 256
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 3
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 5
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "105d2dfb1ceed6efb8388230f294099e85305239910c5141a35ecdf55a9aff1a",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 257
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 3
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 5
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "48baad83caebdfe1c6e06785465758bb7eb199afa0ec51566563c9d5ee51ac72",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 2
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 3
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 33
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "7df416311f1ef5735a5893551d12e0d0970906d290cac1b1c47d5e75ad011434",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 2
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 3
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 33
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "1972da9d064d54b02d705ff8d0fa10771456a4b2248f0741914ff47f36f7ae77",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 2
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 3
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 33
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        },
+        {
+          "manifest_sha256": "e439c0b4b49bc60f2ea5068242b0849090ae1053fad9f5671cc15065dbcc9b82",
+          "node": "gemm",
+          "params": [
+            {
+              "key": "M",
+              "kind": "int",
+              "value": 2
+            },
+            {
+              "key": "N",
+              "kind": "int",
+              "value": 3
+            },
+            {
+              "key": "K",
+              "kind": "int",
+              "value": 33
+            },
+            {
+              "key": "dtype",
+              "kind": "str",
+              "value": "f32"
+            }
+          ]
+        }
+      ],
+      "status": "TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_gemm_nt_bias",
+      "name": "ref_gemm_nt_bias",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_gemm_nt_q",
+      "name": "ref_gemm_nt_q",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_gemm_nt_q_bias",
+      "name": "ref_gemm_nt_q_bias",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_lora_shrink",
+      "name": "ref_lora_shrink",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_lora_expand",
+      "name": "ref_lora_expand",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_lora_expand_mm",
+      "name": "ref_lora_expand_mm",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_attn_paged",
+      "name": "ref_attn_paged",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_attn_dense",
+      "name": "ref_attn_dense",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_attn_cross",
+      "name": "ref_attn_cross",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_attn_na3d",
+      "name": "ref_attn_na3d",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_sam_attn",
+      "name": "ref_sam_attn",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_kv_store",
+      "name": "ref_kv_store",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_kv_store_streamed",
+      "name": "ref_kv_store_streamed",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_rope",
+      "name": "ref_rope",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_qk_norm_rope",
+      "name": "ref_qk_norm_rope",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_scale_rows",
+      "name": "ref_scale_rows",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_router_sigmoid_topk",
+      "name": "ref_router_sigmoid_topk",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_router_topk",
+      "name": "ref_router_topk",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_moe_scatter",
+      "name": "ref_moe_scatter",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_router_topk_scatter",
+      "name": "ref_router_topk_scatter",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_router_gemm_topk_scatter",
+      "name": "ref_router_gemm_topk_scatter",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_moe_gemm",
+      "name": "ref_moe_gemm",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_moe_gemm_q",
+      "name": "ref_moe_gemm_q",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_moe_gemm_q_mod4",
+      "name": "ref_moe_gemm_q_mod4",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_moe_gather",
+      "name": "ref_moe_gather",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_rope_table",
+      "name": "ref_rope_table",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_qsa_block_key",
+      "name": "ref_qsa_block_key",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_qsa_score",
+      "name": "ref_qsa_score",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_qsa_select",
+      "name": "ref_qsa_select",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_qsa_tail_store",
+      "name": "ref_qsa_tail_store",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_qsa_work",
+      "name": "ref_qsa_work",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_kv_resolve",
+      "name": "ref_kv_resolve",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_dflash_conv",
+      "name": "ref_dflash_conv",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_row_topk",
+      "name": "ref_row_topk",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_row_topk_merge",
+      "name": "ref_row_topk_merge",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_pair_argmax",
+      "name": "ref_pair_argmax",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_logit_rerank",
+      "name": "ref_logit_rerank",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_gdn_conv_prep",
+      "name": "ref_gdn_conv_prep",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_gdn_conv_update",
+      "name": "ref_gdn_conv_update",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_gdn_kkt_solve",
+      "name": "ref_gdn_kkt_solve",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_gdn_chunk_scan",
+      "name": "ref_gdn_chunk_scan",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_gdn_recurrent_update",
+      "name": "ref_gdn_recurrent_update",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_gdn_conv_recurrent_update",
+      "name": "ref_gdn_conv_recurrent_update",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_gdn_gated_rmsnorm",
+      "name": "ref_gdn_gated_rmsnorm",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_all_reduce",
+      "name": "ref_all_reduce",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_all_gather",
+      "name": "ref_all_gather",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_embed_lookup",
+      "name": "ref_embed_lookup",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_embed_lookup_q",
+      "name": "ref_embed_lookup_q",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_logits_gemm",
+      "name": "ref_logits_gemm",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_sample_penalties",
+      "name": "ref_sample_penalties",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_sample_temp",
+      "name": "ref_sample_temp",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_sample_topk",
+      "name": "ref_sample_topk",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_sample_topp",
+      "name": "ref_sample_topp",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_sample_minp",
+      "name": "ref_sample_minp",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_sample_mask",
+      "name": "ref_sample_mask",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_sample_pick",
+      "name": "ref_sample_pick",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_sample_argmax",
+      "name": "ref_sample_argmax",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_sample_logprobs",
+      "name": "ref_sample_logprobs",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_sample_dry",
+      "name": "ref_sample_dry",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_sample_ngram_ban",
+      "name": "ref_sample_ngram_ban",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_sample_typical",
+      "name": "ref_sample_typical",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_sample_xtc",
+      "name": "ref_sample_xtc",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_sample_merge_topk",
+      "name": "ref_sample_merge_topk",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_ln_mod",
+      "name": "ref_ln_mod",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_gate_add",
+      "name": "ref_gate_add",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_ln_mod_quant_fp8",
+      "name": "ref_ln_mod_quant_fp8",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_timestep_embed",
+      "name": "ref_timestep_embed",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_gather_rows2",
+      "name": "ref_gather_rows2",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_lane_gather",
+      "name": "ref_lane_gather",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_lane_store",
+      "name": "ref_lane_store",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_randn_lanes",
+      "name": "ref_randn_lanes",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_flow_euler",
+      "name": "ref_flow_euler",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_kd_input",
+      "name": "ref_kd_input",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_kd_step",
+      "name": "ref_kd_step",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_chan_affine",
+      "name": "ref_chan_affine",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_conv2d_nhwc",
+      "name": "ref_conv2d_nhwc",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_im2col_nhwc",
+      "name": "ref_im2col_nhwc",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_l2norm_chan",
+      "name": "ref_l2norm_chan",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_d2s_add",
+      "name": "ref_d2s_add",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_s2d_avg_add",
+      "name": "ref_s2d_avg_add",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_to_rgba8",
+      "name": "ref_to_rgba8",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_gelu_tanh",
+      "name": "ref_gelu_tanh",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_gelu_quick",
+      "name": "ref_gelu_quick",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_scatter_add_rows",
+      "name": "ref_scatter_add_rows",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_attn_prefix_self",
+      "name": "ref_attn_prefix_self",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_rms_mod",
+      "name": "ref_rms_mod",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_rms_mod_quant_fp8",
+      "name": "ref_rms_mod_quant_fp8",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_flow_x0_step",
+      "name": "ref_flow_x0_step",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_patch_unfold",
+      "name": "ref_patch_unfold",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_vtile_gather",
+      "name": "ref_vtile_gather",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_vtile_stitch",
+      "name": "ref_vtile_stitch",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_grid_pos3",
+      "name": "ref_grid_pos3",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_vsa_select",
+      "name": "ref_vsa_select",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_attn_vsa",
+      "name": "ref_attn_vsa",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_conv3d_ndhwc",
+      "name": "ref_conv3d_ndhwc",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_group_norm",
+      "name": "ref_group_norm",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_tconv_dw",
+      "name": "ref_tconv_dw",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_resize_bilinear",
+      "name": "ref_resize_bilinear",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_patch_fold",
+      "name": "ref_patch_fold",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_flow_renoise",
+      "name": "ref_flow_renoise",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_rope_split",
+      "name": "ref_rope_split",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_head_gate",
+      "name": "ref_head_gate",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_ltx_guide",
+      "name": "ref_ltx_guide",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_pixel_norm",
+      "name": "ref_pixel_norm",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_d2s3d",
+      "name": "ref_d2s3d",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_s2d3d",
+      "name": "ref_s2d3d",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_pix_patch",
+      "name": "ref_pix_patch",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_vol_index",
+      "name": "ref_vol_index",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_tile_grid",
+      "name": "ref_tile_grid",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_tile_crop",
+      "name": "ref_tile_crop",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_tile_stitch",
+      "name": "ref_tile_stitch",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_stft_logmel",
+      "name": "ref_stft_logmel",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_bwe_up",
+      "name": "ref_bwe_up",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_conv1d",
+      "name": "ref_conv1d",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_conv_t1d",
+      "name": "ref_conv_t1d",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_snake",
+      "name": "ref_snake",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_snake_aa",
+      "name": "ref_snake_aa",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_cfg_topk_sample",
+      "name": "ref_cfg_topk_sample",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_rvq_embed",
+      "name": "ref_rvq_embed",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_vq_encode",
+      "name": "ref_vq_encode",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_frame_mix_store",
+      "name": "ref_frame_mix_store",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_end_status",
+      "name": "ref_end_status",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_ras_pick",
+      "name": "ref_ras_pick",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_frame_store",
+      "name": "ref_frame_store",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_resample_nearest",
+      "name": "ref_resample_nearest",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_fourier_embed",
+      "name": "ref_fourier_embed",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_win_input",
+      "name": "ref_win_input",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_win_prep",
+      "name": "ref_win_prep",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_win_finish",
+      "name": "ref_win_finish",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_chan_split",
+      "name": "ref_chan_split",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_interleave2",
+      "name": "ref_interleave2",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_iota",
+      "name": "ref_iota",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_cu_repeat",
+      "name": "ref_cu_repeat",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_int_affine",
+      "name": "ref_int_affine",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    },
+    {
+      "all_tuning_combinations_tested": false,
+      "identity": "d49fc0374d39045197bd0d1256a2ec4f3c6f7a6f0fc0882b8d743217af290513:ref_sub_i32",
+      "name": "ref_sub_i32",
+      "observations": [],
+      "status": "NOT_TESTED",
+      "tuning_axes": []
+    }
+  ],
+  "schema": "radiance-row-coverage/1",
+  "status": "INCOMPLETE",
+  "tested_rows": 1
+}

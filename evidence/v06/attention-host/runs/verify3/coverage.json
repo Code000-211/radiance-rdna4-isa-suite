@@ -1,0 +1,32 @@
+{
+  "all_radiance_kernels_covered": false,
+  "fixture": {
+    "all_radiance_kernels_covered": false,
+    "allocation_bytes_including_scratch": 11560,
+    "blob_bytes": 12712,
+    "id": "verify3",
+    "kernel_nodes": [
+      "attention"
+    ],
+    "kernel_rows": [
+      "libref:ref_attn_paged"
+    ],
+    "manifest_sha256": "fbf66528156f767b9b7989f0f9337290a0f2029885fb248f8014db4e7d926e2f",
+    "node_count": 1,
+    "provenance": {
+      "kind": "synthetic",
+      "note": "Synthetic finite f32 paged-attention host fixture; permuted pages; independent Python fsum/stable-softmax oracle. Not production activations.",
+      "reference": "independent"
+    },
+    "runtime_executed": false,
+    "schema": "radiance-kernel-replay/1",
+    "status": "FIXTURE_VALID",
+    "stream_count": 1
+  },
+  "isa": {
+    "status": "NOT_APPLICABLE_HOST"
+  },
+  "production_equivalence_proved": false,
+  "runtime_status": "RUNTIME_CHECKS_PASS",
+  "schema": "radiance-replay-coverage/1"
+}

@@ -1,0 +1,32 @@
+{
+  "all_radiance_kernels_covered": false,
+  "fixture": {
+    "all_radiance_kernels_covered": false,
+    "allocation_bytes_including_scratch": 336,
+    "blob_bytes": 352,
+    "id": "case-00000001",
+    "kernel_nodes": [
+      "kernel0"
+    ],
+    "kernel_rows": [
+      "libref:ref_add"
+    ],
+    "manifest_sha256": "ef2ee42df925f436576f4280e42416d28d1d26877900ba2e94f7153a64789985",
+    "node_count": 1,
+    "provenance": {
+      "kind": "kbench-seeded",
+      "note": "Exact kBench invocation bytes; output is a regression baseline, not an independent oracle. Original kBench verdict is separate.",
+      "reference": "captured-baseline"
+    },
+    "runtime_executed": false,
+    "schema": "radiance-kernel-replay/1",
+    "status": "FIXTURE_VALID",
+    "stream_count": 1
+  },
+  "isa": {
+    "status": "NOT_APPLICABLE_HOST"
+  },
+  "production_equivalence_proved": false,
+  "runtime_status": "RUNTIME_CHECKS_PASS",
+  "schema": "radiance-replay-coverage/1"
+}

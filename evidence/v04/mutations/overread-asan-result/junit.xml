@@ -1,0 +1,2 @@
+<?xml version='1.0' encoding='utf-8'?>
+<testsuite name="radiance-snapshot-replay" tests="1" failures="1" errors="0"><testcase name="overread-asan"><failure message="FAIL">Host AddressSanitizer detected an invalid memory access; see worker.stderr</failure></testcase></testsuite>

@@ -1,0 +1,55 @@
+I device: host backend, 1 device(s) [0:host]
+=================================================================
+==4798==ERROR: AddressSanitizer: use-after-poison on address 0x51a000000e04 at pc 0x7f056201608b bp 0x7ffd07a52540 sp 0x7ffd07a52538
+READ of size 1 at 0x51a000000e04 thread T0
+    #0 0x7f056201608a in audit_oob_read_(RadArgs const*, void*) /mnt/data/RADIANCE_RDNA4_ISA_TESTSUITE_v0.4/tools/rdna4-isa-suite/replay_tests/probe_plugin.cpp:22:18
+    #1 0x55a68f9dc319 in (anonymous namespace)::Worker::issue((anonymous namespace)::Operation&) /mnt/data/RADIANCE_RDNA4_ISA_TESTSUITE_v0.4/tools/rdna4-isa-suite/replay/worker.cpp:285:20
+    #2 0x55a68f9e024a in (anonymous namespace)::Worker::diagnostic_pass(unsigned int) /mnt/data/RADIANCE_RDNA4_ISA_TESTSUITE_v0.4/tools/rdna4-isa-suite/replay/worker.cpp:489:17
+    #3 0x55a68f9882b6 in (anonymous namespace)::Worker::diagnostics() /mnt/data/RADIANCE_RDNA4_ISA_TESTSUITE_v0.4/tools/rdna4-isa-suite/replay/worker.cpp:511:13
+    #4 0x55a68f9882b6 in (anonymous namespace)::Worker::run() /mnt/data/RADIANCE_RDNA4_ISA_TESTSUITE_v0.4/tools/rdna4-isa-suite/replay/worker.cpp:540:9
+    #5 0x55a68f9715e5 in main /mnt/data/RADIANCE_RDNA4_ISA_TESTSUITE_v0.4/tools/rdna4-isa-suite/replay/worker.cpp:620:94
+    #6 0x7f056252aca7  (/lib/x86_64-linux-gnu/libc.so.6+0x29ca7) (BuildId: c495b62edadd6c356265942ec1282d98058a7b41)
+    #7 0x7f056252ad64 in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29d64) (BuildId: c495b62edadd6c356265942ec1282d98058a7b41)
+    #8 0x55a68f8b0220 in _start (/mnt/data/work_v04/build-asan/rad-kbench-replay+0x6c220)
+
+0x51a000000e04 is located 260 bytes inside of 772-byte region [0x51a000000d00,0x51a000001004)
+allocated by thread T0 here:
+    #0 0x55a68f9352b7 in posix_memalign /home/build-user/llvm-project/compiler-rt/lib/asan/asan_malloc_linux.cpp:142:3
+    #1 0x55a68f9c2d46 in (anonymous namespace)::Worker::allocate(unsigned long, unsigned long, int, bool) /mnt/data/RADIANCE_RDNA4_ISA_TESTSUITE_v0.4/tools/rdna4-isa-suite/replay/worker.cpp:93:55
+    #2 0x55a68f978e78 in (anonymous namespace)::Worker::load() /mnt/data/RADIANCE_RDNA4_ISA_TESTSUITE_v0.4/tools/rdna4-isa-suite/replay/worker.cpp:174:24
+    #3 0x55a68f9715d9 in main /mnt/data/RADIANCE_RDNA4_ISA_TESTSUITE_v0.4/tools/rdna4-isa-suite/replay/worker.cpp:620:84
+    #4 0x7f056252aca7  (/lib/x86_64-linux-gnu/libc.so.6+0x29ca7) (BuildId: c495b62edadd6c356265942ec1282d98058a7b41)
+
+SUMMARY: AddressSanitizer: use-after-poison /mnt/data/RADIANCE_RDNA4_ISA_TESTSUITE_v0.4/tools/rdna4-isa-suite/replay_tests/probe_plugin.cpp:22:18 in audit_oob_read_(RadArgs const*, void*)
+Shadow bytes around the buggy address:
+  0x51a000000b80: 05 fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x51a000000c00: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x51a000000c80: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x51a000000d00: f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7
+  0x51a000000d80: f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7
+=>0x51a000000e00:[04]f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7
+  0x51a000000e80: f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7
+  0x51a000000f00: f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7
+  0x51a000000f80: f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7
+  0x51a000001000: f7 fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x51a000001080: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==4798==ABORTING

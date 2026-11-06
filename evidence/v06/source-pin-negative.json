@@ -1,0 +1,6 @@
+{
+  "status": "EXPECTED_REJECTION",
+  "file": "arch/qwen4exp_fp8/qwen4exp_fp8.cpp",
+  "reason": "source changed; adapter review required: arch/qwen4exp_fp8/qwen4exp_fp8.cpp",
+  "actual_source_mutated": false
+}

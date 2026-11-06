@@ -1,0 +1,25 @@
+{
+  "basis": "analytic scenarios",
+  "best_path": {
+    "candidates": [
+      "w4a8-prefill-tile0",
+      "w4a8-prefill-tile0"
+    ],
+    "cost_us": 34.151428571428575,
+    "layout": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+    "transitions": [
+      {
+        "cost_us": 0,
+        "from": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C",
+        "provenance": "assumed",
+        "to": "radiance-w4a8-symmetric-int8A-signed4W-f16scale128-bf16C"
+      }
+    ]
+  },
+  "overlap_modeled": false,
+  "plan_sha256": "15a6b4f62f453c8c2692356d6bf3862f543dc056437c4c9a4f344379669f8113",
+  "production_latency_proved": false,
+  "schema": "radiance-planner-path-result/1",
+  "spec_sha256": "6d0f43bc5268e5cfedd9e094913a4f636aa8420e5b9f6daaf1e766cfcc668ce7",
+  "status": "SERIAL_PATH_SCENARIO"
+}

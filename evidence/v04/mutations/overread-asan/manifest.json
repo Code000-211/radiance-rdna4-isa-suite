@@ -1,0 +1,131 @@
+{
+  "schema": "radiance-kernel-replay/1",
+  "id": "overread-asan",
+  "provenance": {
+    "kind": "synthetic",
+    "reference": "independent",
+    "note": "Deliberately faulty HOST mutation/control; never GPU code."
+  },
+  "target": {
+    "backend": "host",
+    "arch": "host",
+    "world_size": 1
+  },
+  "plugins": [
+    {
+      "id": "p0",
+      "name": "replay_test",
+      "sha256": "8bf730fe2b76753b6358bd174e5056a0aba192e86328cd7faffae49463f4d40f",
+      "abi": 30
+    }
+  ],
+  "allocations": [
+    {
+      "id": "x",
+      "kind": "host",
+      "bytes": 4,
+      "alignment": 256,
+      "initial": {
+        "path": "blobs/88d4266fd4e6338d13b845fcf289579d209c897823b9217da3e161936f031589",
+        "sha256": "88d4266fd4e6338d13b845fcf289579d209c897823b9217da3e161936f031589",
+        "bytes": 4
+      },
+      "mutable": false,
+      "relocations": []
+    },
+    {
+      "id": "y",
+      "kind": "host",
+      "bytes": 4,
+      "alignment": 256,
+      "initial": {
+        "path": "blobs/88d4266fd4e6338d13b845fcf289579d209c897823b9217da3e161936f031589",
+        "sha256": "88d4266fd4e6338d13b845fcf289579d209c897823b9217da3e161936f031589",
+        "bytes": 4
+      },
+      "mutable": true,
+      "relocations": []
+    }
+  ],
+  "views": [
+    {
+      "id": "x",
+      "allocation": "x",
+      "offset": 0,
+      "bytes": 4,
+      "dtype": 9,
+      "shape": [
+        4
+      ],
+      "stride": [
+        1
+      ]
+    },
+    {
+      "id": "y",
+      "allocation": "y",
+      "offset": 0,
+      "bytes": 4,
+      "dtype": 9,
+      "shape": [
+        4
+      ],
+      "stride": [
+        1
+      ]
+    }
+  ],
+  "streams": [
+    {
+      "id": "q0",
+      "priority": 0
+    }
+  ],
+  "nodes": [
+    {
+      "id": "tested",
+      "kind": "kernel",
+      "stream": "q0",
+      "phase": "measure",
+      "plugin": "p0",
+      "row": "audit_oob_read",
+      "op": "replay_probe",
+      "tensors": [
+        "x",
+        "y"
+      ],
+      "accesses": [
+        {
+          "view": "x",
+          "mode": "r"
+        },
+        {
+          "view": "y",
+          "mode": "w"
+        }
+      ],
+      "params": [],
+      "scratch_bytes": 0
+    }
+  ],
+  "checks": [
+    {
+      "view": "y",
+      "expected": {
+        "path": "blobs/88d4266fd4e6338d13b845fcf289579d209c897823b9217da3e161936f031589",
+        "sha256": "88d4266fd4e6338d13b845fcf289579d209c897823b9217da3e161936f031589",
+        "bytes": 4
+      },
+      "mode": "bytes",
+      "atol": 0,
+      "rtol": 0,
+      "rel_l2": 0,
+      "nonfinite": "reject"
+    }
+  ],
+  "contract": {
+    "pointer_fields_complete": true,
+    "hidden_state": "none",
+    "execution": "ordered-launchers"
+  }
+}

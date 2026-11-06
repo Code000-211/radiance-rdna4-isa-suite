@@ -1,0 +1,212 @@
+{
+  "blob_paths": {
+    "7ecf87311cf842772ca660bac9bca8a33a35127093c47d83c54b61771bef9ba4": "/mnt/data/planner_work/cpu-comparison/runs/cpu-M8-N96-K96-panel1/staged/7ecf87311cf842772ca660bac9bca8a33a35127093c47d83c54b61771bef9ba4",
+    "9cbd240421f981d5f7f5eae23e56c6c4d1582623d12466228100fe8984e5d38b": "/mnt/data/planner_work/cpu-comparison/runs/cpu-M8-N96-K96-panel1/staged/9cbd240421f981d5f7f5eae23e56c6c4d1582623d12466228100fe8984e5d38b",
+    "e59a283813da5b734fcab6ebd4ab9dba55ecf6a6f0e14720c0582d36eb2e2913": "/mnt/data/planner_work/cpu-comparison/runs/cpu-M8-N96-K96-panel1/staged/e59a283813da5b734fcab6ebd4ab9dba55ecf6a6f0e14720c0582d36eb2e2913",
+    "e80232b4d18d0bb7e794be263ba937626f383f9917d4b8a737ba893a8f752293": "/mnt/data/planner_work/cpu-comparison/runs/cpu-M8-N96-K96-panel1/staged/e80232b4d18d0bb7e794be263ba937626f383f9917d4b8a737ba893a8f752293"
+  },
+  "device": 0,
+  "diagnostic_only": false,
+  "diagnostics": "contracts",
+  "fixture": {
+    "allocations": [
+      {
+        "alignment": 256,
+        "bytes": 3072,
+        "id": "a",
+        "initial": {
+          "bytes": 3072,
+          "path": "blobs/9cbd240421f981d5f7f5eae23e56c6c4d1582623d12466228100fe8984e5d38b",
+          "sha256": "9cbd240421f981d5f7f5eae23e56c6c4d1582623d12466228100fe8984e5d38b"
+        },
+        "kind": "host",
+        "mutable": false,
+        "relocations": []
+      },
+      {
+        "alignment": 256,
+        "bytes": 36864,
+        "id": "b",
+        "initial": {
+          "bytes": 36864,
+          "path": "blobs/7ecf87311cf842772ca660bac9bca8a33a35127093c47d83c54b61771bef9ba4",
+          "sha256": "7ecf87311cf842772ca660bac9bca8a33a35127093c47d83c54b61771bef9ba4"
+        },
+        "kind": "host",
+        "mutable": false,
+        "relocations": []
+      },
+      {
+        "alignment": 256,
+        "bytes": 3072,
+        "id": "y",
+        "initial": {
+          "bytes": 3072,
+          "path": "blobs/e80232b4d18d0bb7e794be263ba937626f383f9917d4b8a737ba893a8f752293",
+          "sha256": "e80232b4d18d0bb7e794be263ba937626f383f9917d4b8a737ba893a8f752293"
+        },
+        "kind": "host",
+        "mutable": true,
+        "relocations": []
+      }
+    ],
+    "checks": [
+      {
+        "atol": 2e-05,
+        "expected": {
+          "bytes": 3072,
+          "path": "blobs/e59a283813da5b734fcab6ebd4ab9dba55ecf6a6f0e14720c0582d36eb2e2913",
+          "sha256": "e59a283813da5b734fcab6ebd4ab9dba55ecf6a6f0e14720c0582d36eb2e2913"
+        },
+        "mode": "float",
+        "nonfinite": "reject",
+        "rel_l2": 2e-05,
+        "rtol": 2e-05,
+        "view": "y"
+      }
+    ],
+    "contract": {
+      "execution": "ordered-launchers",
+      "hidden_state": "none",
+      "pointer_fields_complete": true
+    },
+    "id": "cpu-M8-N96-K96-panel1",
+    "nodes": [
+      {
+        "accesses": [
+          {
+            "mode": "r",
+            "view": "a"
+          },
+          {
+            "mode": "r",
+            "view": "b"
+          },
+          {
+            "mode": "w",
+            "view": "y"
+          }
+        ],
+        "id": "gemm",
+        "kind": "kernel",
+        "op": "gemm_nt",
+        "params": [
+          {
+            "key": "M",
+            "kind": "int",
+            "value": 8
+          },
+          {
+            "key": "N",
+            "kind": "int",
+            "value": 96
+          },
+          {
+            "key": "K",
+            "kind": "int",
+            "value": 96
+          },
+          {
+            "key": "dtype",
+            "kind": "str",
+            "value": "f32"
+          }
+        ],
+        "phase": "measure",
+        "plugin": "p0",
+        "row": "cpu_panel1",
+        "scratch_bytes": 0,
+        "stream": "q0",
+        "tensors": [
+          "a",
+          "b",
+          "y"
+        ]
+      }
+    ],
+    "plugins": [
+      {
+        "abi": 30,
+        "id": "p0",
+        "name": "planner_cpu",
+        "sha256": "03b59a75fcaf67ae320e0287c2e348d4d9f073400c8a67e39b2530053892313e"
+      }
+    ],
+    "provenance": {
+      "kind": "synthetic",
+      "note": "CPU-only planner comparison; independent fsum oracle; not production activation snapshot.",
+      "reference": "independent"
+    },
+    "schema": "radiance-kernel-replay/1",
+    "streams": [
+      {
+        "id": "q0",
+        "priority": 0
+      }
+    ],
+    "target": {
+      "arch": "host",
+      "backend": "host",
+      "world_size": 1
+    },
+    "views": [
+      {
+        "allocation": "a",
+        "bytes": 3072,
+        "dtype": 1,
+        "id": "a",
+        "offset": 0,
+        "shape": [
+          8,
+          96
+        ],
+        "stride": [
+          96,
+          1
+        ]
+      },
+      {
+        "allocation": "b",
+        "bytes": 36864,
+        "dtype": 1,
+        "id": "b",
+        "offset": 0,
+        "shape": [
+          96,
+          96
+        ],
+        "stride": [
+          96,
+          1
+        ]
+      },
+      {
+        "allocation": "y",
+        "bytes": 3072,
+        "dtype": 1,
+        "id": "y",
+        "offset": 0,
+        "shape": [
+          8,
+          96
+        ],
+        "stride": [
+          96,
+          1
+        ]
+      }
+    ]
+  },
+  "fixture_sha256": "ccb874d2a2655ddd61beb5427cff2cd107196f906ae61ec28c197c64fd2de90f",
+  "gate": false,
+  "max_bytes": 2147483648,
+  "memory_check": "none",
+  "out": "/mnt/data/planner_work/cpu-comparison/runs/cpu-M8-N96-K96-panel1",
+  "plugin_paths": {
+    "p0": "/mnt/data/planner_work/cpu-plugin/planner_cpu.so"
+  },
+  "repetitions": 15,
+  "schema": "radiance-replay-worker/1",
+  "trace_dispatches": false,
+  "warmups": 2
+}

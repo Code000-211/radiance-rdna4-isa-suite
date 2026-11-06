@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='utf-8'?>
+<testsuite name="gfx1201-binary-isa" tests="1" failures="0" errors="1"><testcase name="collection-and-coverage"><error message="INCOMPLETE">[
+  {
+    "rule": "COLLECTION",
+    "severity": "incomplete",
+    "message": "no binary input candidates discovered",
+    "pc": null,
+    "source": "AMD RDNA4 ISA \u00a7\u00a73.2.1,5.5, printed pp.14,47\u201348"
+  },
+  {
+    "rule": "COLLECTION",
+    "severity": "incomplete",
+    "message": "zero enumerated target kernels",
+    "pc": null,
+    "source": "AMD RDNA4 ISA \u00a7\u00a73.2.1,5.5, printed pp.14,47\u201348"
+  },
+  {
+    "rule": "EMPTY_COVERAGE",
+    "severity": "incomplete",
+    "message": "zero expected target kernels",
+    "pc": null,
+    "source": "AMD RDNA4 ISA \u00a7\u00a73.2.1,5.5, printed pp.14,47\u201348"
+  },
+  {
+    "rule": "RUNTIME_NOT_CAPTURED",
+    "severity": "info",
+    "message": "runtime-resolved kernels not reconciled; scope is supplied build artifacts only",
+    "pc": null,
+    "source": "AMD RDNA4 ISA \u00a7\u00a73.2.1,5.5, printed pp.14,47\u201348"
+  }
+]</error></testcase></testsuite>

@@ -1,0 +1,244 @@
+{
+  "attempted_cases": 46,
+  "attempts": [
+    {
+      "exit_code": 0,
+      "id": "gemm-m1-n3-k5",
+      "report": "0000-gemm-m1-n3-k5/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m2-n1-k5",
+      "report": "0001-gemm-m2-n1-k5/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m2-n3-k1",
+      "report": "0002-gemm-m2-n3-k1/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m2-n3-k15",
+      "report": "0003-gemm-m2-n3-k15/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m2-n3-k16",
+      "report": "0004-gemm-m2-n3-k16/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m2-n3-k17",
+      "report": "0005-gemm-m2-n3-k17/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m2-n3-k31",
+      "report": "0006-gemm-m2-n3-k31/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m2-n3-k32",
+      "report": "0007-gemm-m2-n3-k32/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m2-n3-k33",
+      "report": "0008-gemm-m2-n3-k33/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m2-n3-k63",
+      "report": "0009-gemm-m2-n3-k63/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m2-n3-k64",
+      "report": "0010-gemm-m2-n3-k64/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m2-n3-k65",
+      "report": "0011-gemm-m2-n3-k65/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m2-n15-k5",
+      "report": "0012-gemm-m2-n15-k5/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m2-n16-k5",
+      "report": "0013-gemm-m2-n16-k5/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m2-n17-k5",
+      "report": "0014-gemm-m2-n17-k5/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m2-n31-k5",
+      "report": "0015-gemm-m2-n31-k5/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m2-n32-k5",
+      "report": "0016-gemm-m2-n32-k5/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m2-n33-k5",
+      "report": "0017-gemm-m2-n33-k5/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m2-n63-k5",
+      "report": "0018-gemm-m2-n63-k5/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m2-n64-k5",
+      "report": "0019-gemm-m2-n64-k5/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m2-n65-k5",
+      "report": "0020-gemm-m2-n65-k5/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m15-n3-k5",
+      "report": "0021-gemm-m15-n3-k5/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m16-n3-k5",
+      "report": "0022-gemm-m16-n3-k5/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m17-n3-k5",
+      "report": "0023-gemm-m17-n3-k5/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m31-n3-k5",
+      "report": "0024-gemm-m31-n3-k5/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m32-n3-k5",
+      "report": "0025-gemm-m32-n3-k5/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m33-n3-k5",
+      "report": "0026-gemm-m33-n3-k5/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m63-n3-k5",
+      "report": "0027-gemm-m63-n3-k5/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m64-n3-k5",
+      "report": "0028-gemm-m64-n3-k5/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m65-n3-k5",
+      "report": "0029-gemm-m65-n3-k5/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m95-n3-k5",
+      "report": "0030-gemm-m95-n3-k5/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m96-n3-k5",
+      "report": "0031-gemm-m96-n3-k5/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m97-n3-k5",
+      "report": "0032-gemm-m97-n3-k5/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m127-n3-k5",
+      "report": "0033-gemm-m127-n3-k5/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m128-n3-k5",
+      "report": "0034-gemm-m128-n3-k5/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m129-n3-k5",
+      "report": "0035-gemm-m129-n3-k5/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m191-n3-k5",
+      "report": "0036-gemm-m191-n3-k5/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m192-n3-k5",
+      "report": "0037-gemm-m192-n3-k5/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m193-n3-k5",
+      "report": "0038-gemm-m193-n3-k5/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m255-n3-k5",
+      "report": "0039-gemm-m255-n3-k5/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m256-n3-k5",
+      "report": "0040-gemm-m256-n3-k5/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-m257-n3-k5",
+      "report": "0041-gemm-m257-n3-k5/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-zeros",
+      "report": "0042-gemm-zeros/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-cancellation",
+      "report": "0043-gemm-cancellation/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-outlier",
+      "report": "0044-gemm-outlier/report.json"
+    },
+    {
+      "exit_code": 0,
+      "id": "gemm-rounding",
+      "report": "0045-gemm-rounding/report.json"
+    }
+  ],
+  "corpus_sha256": "903ceafa88024b8443bd8e27365dbd86f0d938b8cb304cd1f748787c1bb0c499",
+  "exit_code": 0,
+  "no_automatic_gpu_reset": true,
+  "no_automatic_retries": true,
+  "requested_cases": 46,
+  "schema": "radiance-replay-batch/1",
+  "status": "CORPUS_CHECKS_PASS",
+  "stopped_at": null,
+  "unattempted_cases": []
+}

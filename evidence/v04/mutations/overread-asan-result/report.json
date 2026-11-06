@@ -1,0 +1,76 @@
+{
+  "command": [
+    "/mnt/data/work_v04/build-asan/rad-kbench-replay",
+    "/mnt/data/work_v04/mutations-final/overread-asan-result/worker-plan.json"
+  ],
+  "error": "Host AddressSanitizer detected an invalid memory access; see worker.stderr",
+  "exit_code": 1,
+  "fixture": {
+    "all_radiance_kernels_covered": false,
+    "allocation_bytes_including_scratch": 8,
+    "blob_bytes": 12,
+    "id": "overread-asan",
+    "kernel_nodes": [
+      "tested"
+    ],
+    "kernel_rows": [
+      "replay_test:audit_oob_read"
+    ],
+    "manifest_sha256": "09126e11ac2aa67c019e087615b8524380b0682d2db07a906055d407215bea70",
+    "node_count": 1,
+    "provenance": {
+      "kind": "synthetic",
+      "note": "Deliberately faulty HOST mutation/control; never GPU code.",
+      "reference": "independent"
+    },
+    "runtime_executed": false,
+    "schema": "radiance-kernel-replay/1",
+    "status": "FIXTURE_VALID",
+    "stream_count": 1
+  },
+  "host": {
+    "platform": "Linux-6.18.55-x86_64-with-glibc2.41",
+    "python": "3.13.5"
+  },
+  "host_asan": {
+    "binary_evidence": [
+      {
+        "path": "/mnt/data/work_v04/build-asan/rad-kbench-replay",
+        "sha256": "3fcc8bb68f45b8d7b319cbc7e815993586db2e712663673c223ac5f782ec7a10"
+      },
+      {
+        "path": "/mnt/data/work_v04/build-asan/replay_test.so",
+        "sha256": "8bf730fe2b76753b6358bd174e5056a0aba192e86328cd7faffae49463f4d40f"
+      }
+    ],
+    "scope": "symbol presence is a necessary check, not proof that every load or inline-assembly path is instrumented"
+  },
+  "isa": {
+    "status": "NOT_APPLICABLE_HOST"
+  },
+  "options": {
+    "diagnostic_only": true,
+    "diagnostics": "contracts",
+    "gate": false,
+    "memory_check": "host-asan",
+    "repetitions": 3,
+    "timeout_seconds": 120,
+    "trace_dispatches": false,
+    "warmups": 1
+  },
+  "production_equivalence_proved": false,
+  "runtime": {
+    "backend": "host",
+    "fixture_sha256": "09126e11ac2aa67c019e087615b8524380b0682d2db07a906055d407215bea70",
+    "memory_check": "HOST_ASAN_DETECTED_ERROR",
+    "status": "FAIL"
+  },
+  "runtime_executed": true,
+  "schema": "radiance-replay-result/1",
+  "status": "FAIL",
+  "telemetry_after": [],
+  "telemetry_before": [],
+  "version": "0.4.0",
+  "wall_seconds": 0.21620715200015184,
+  "worker_sha256": "3fcc8bb68f45b8d7b319cbc7e815993586db2e712663673c223ac5f782ec7a10"
+}

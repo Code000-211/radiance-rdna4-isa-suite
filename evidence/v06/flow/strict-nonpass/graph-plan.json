@@ -1,0 +1,903 @@
+{
+  "alternatives": [
+    {
+      "chosen": {
+        "rank0": "moe.w4a8.m16.n128",
+        "rank1": "moe.w4a8.m16.n128",
+        "reduce": "tp2.oneshot.push.c65536"
+      },
+      "scenario_us": 185.9992857142857
+    },
+    {
+      "chosen": {
+        "rank0": "moe.w4a8.m16.n64",
+        "rank1": "moe.w4a8.m32.n64",
+        "reduce": "tp2.oneshot.push.c65536"
+      },
+      "scenario_us": 185.9992857142857
+    },
+    {
+      "chosen": {
+        "rank0": "moe.w4a8.m32.n128",
+        "rank1": "moe.w4a8.m32.n128",
+        "reduce": "tp2.oneshot.push.c65536"
+      },
+      "scenario_us": 185.9992857142857
+    },
+    {
+      "chosen": {
+        "rank0": "moe.w4a8.m16.n64",
+        "rank1": "moe.w4a8.m32.n128",
+        "reduce": "tp2.oneshot.push.c65536"
+      },
+      "scenario_us": 185.9992857142857
+    },
+    {
+      "chosen": {
+        "rank0": "moe.w4a8.m32.n64",
+        "rank1": "moe.w4a8.m16.n128",
+        "reduce": "tp2.oneshot.push.c65536"
+      },
+      "scenario_us": 185.9992857142857
+    },
+    {
+      "chosen": {
+        "rank0": "moe.w4a8.m16.n128",
+        "rank1": "moe.w4a8.m32.n64",
+        "reduce": "tp2.oneshot.push.c65536"
+      },
+      "scenario_us": 185.9992857142857
+    },
+    {
+      "chosen": {
+        "rank0": "moe.w4a8.m16.n128",
+        "rank1": "moe.w4a8.m32.n128",
+        "reduce": "tp2.oneshot.push.c65536"
+      },
+      "scenario_us": 185.9992857142857
+    },
+    {
+      "chosen": {
+        "rank0": "moe.w4a8.m16.n64",
+        "rank1": "moe.w4a8.m16.n64",
+        "reduce": "tp2.oneshot.push.c65536"
+      },
+      "scenario_us": 185.9992857142857
+    },
+    {
+      "chosen": {
+        "rank0": "moe.w4a8.m16.n128",
+        "rank1": "moe.w4a8.m16.n64",
+        "reduce": "tp2.oneshot.push.c65536"
+      },
+      "scenario_us": 185.9992857142857
+    },
+    {
+      "chosen": {
+        "rank0": "moe.w4a8.m16.n64",
+        "rank1": "moe.w4a8.m16.n128",
+        "reduce": "tp2.oneshot.push.c65536"
+      },
+      "scenario_us": 185.9992857142857
+    },
+    {
+      "chosen": {
+        "rank0": "moe.w4a8.m32.n64",
+        "rank1": "moe.w4a8.m16.n64",
+        "reduce": "tp2.oneshot.push.c65536"
+      },
+      "scenario_us": 185.9992857142857
+    },
+    {
+      "chosen": {
+        "rank0": "moe.w4a8.m32.n64",
+        "rank1": "moe.w4a8.m32.n128",
+        "reduce": "tp2.oneshot.push.c65536"
+      },
+      "scenario_us": 185.9992857142857
+    },
+    {
+      "chosen": {
+        "rank0": "moe.w4a8.m32.n128",
+        "rank1": "moe.w4a8.m16.n128",
+        "reduce": "tp2.oneshot.push.c65536"
+      },
+      "scenario_us": 185.9992857142857
+    },
+    {
+      "chosen": {
+        "rank0": "moe.w4a8.m32.n128",
+        "rank1": "moe.w4a8.m32.n64",
+        "reduce": "tp2.oneshot.push.c65536"
+      },
+      "scenario_us": 185.9992857142857
+    },
+    {
+      "chosen": {
+        "rank0": "moe.w4a8.m32.n64",
+        "rank1": "moe.w4a8.m32.n64",
+        "reduce": "tp2.oneshot.push.c65536"
+      },
+      "scenario_us": 185.9992857142857
+    },
+    {
+      "chosen": {
+        "rank0": "moe.w4a8.m32.n128",
+        "rank1": "moe.w4a8.m16.n64",
+        "reduce": "tp2.oneshot.push.c65536"
+      },
+      "scenario_us": 185.9992857142857
+    },
+    {
+      "chosen": {
+        "rank0": "moe.w4a8.m16.n64",
+        "rank1": "moe.w4a8.m32.n128",
+        "reduce": "tp2.ring2.push.c1073741824"
+      },
+      "scenario_us": 188.91357142857137
+    },
+    {
+      "chosen": {
+        "rank0": "moe.w4a8.m16.n64",
+        "rank1": "moe.w4a8.m16.n64",
+        "reduce": "tp2.ring2.push.c1073741824"
+      },
+      "scenario_us": 188.91357142857137
+    },
+    {
+      "chosen": {
+        "rank0": "moe.w4a8.m16.n128",
+        "rank1": "moe.w4a8.m16.n128",
+        "reduce": "tp2.ring2.push.c1073741824"
+      },
+      "scenario_us": 188.91357142857137
+    },
+    {
+      "chosen": {
+        "rank0": "moe.w4a8.m32.n128",
+        "rank1": "moe.w4a8.m16.n64",
+        "reduce": "tp2.ring2.push.c1073741824"
+      },
+      "scenario_us": 188.91357142857137
+    },
+    {
+      "chosen": {
+        "rank0": "moe.w4a8.m32.n64",
+        "rank1": "moe.w4a8.m16.n64",
+        "reduce": "tp2.ring2.push.c1073741824"
+      },
+      "scenario_us": 188.91357142857137
+    },
+    {
+      "chosen": {
+        "rank0": "moe.w4a8.m16.n128",
+        "rank1": "moe.w4a8.m16.n64",
+        "reduce": "tp2.ring2.push.c1073741824"
+      },
+      "scenario_us": 188.91357142857137
+    },
+    {
+      "chosen": {
+        "rank0": "moe.w4a8.m16.n64",
+        "rank1": "moe.w4a8.m16.n128",
+        "reduce": "tp2.ring2.push.c1073741824"
+      },
+      "scenario_us": 188.91357142857137
+    },
+    {
+      "chosen": {
+        "rank0": "moe.w4a8.m16.n128",
+        "rank1": "moe.w4a8.m32.n128",
+        "reduce": "tp2.ring2.push.c1073741824"
+      },
+      "scenario_us": 188.91357142857137
+    },
+    {
+      "chosen": {
+        "rank0": "moe.w4a8.m16.n128",
+        "rank1": "moe.w4a8.m32.n64",
+        "reduce": "tp2.ring2.push.c1073741824"
+      },
+      "scenario_us": 188.91357142857137
+    },
+    {
+      "chosen": {
+        "rank0": "moe.w4a8.m32.n64",
+        "rank1": "moe.w4a8.m32.n128",
+        "reduce": "tp2.ring2.push.c1073741824"
+      },
+      "scenario_us": 188.91357142857137
+    },
+    {
+      "chosen": {
+        "rank0": "moe.w4a8.m32.n64",
+        "rank1": "moe.w4a8.m32.n64",
+        "reduce": "tp2.ring2.push.c1073741824"
+      },
+      "scenario_us": 188.91357142857137
+    },
+    {
+      "chosen": {
+        "rank0": "moe.w4a8.m32.n128",
+        "rank1": "moe.w4a8.m32.n128",
+        "reduce": "tp2.ring2.push.c1073741824"
+      },
+      "scenario_us": 188.91357142857137
+    },
+    {
+      "chosen": {
+        "rank0": "moe.w4a8.m16.n64",
+        "rank1": "moe.w4a8.m32.n64",
+        "reduce": "tp2.ring2.push.c1073741824"
+      },
+      "scenario_us": 188.91357142857137
+    },
+    {
+      "chosen": {
+        "rank0": "moe.w4a8.m32.n64",
+        "rank1": "moe.w4a8.m16.n128",
+        "reduce": "tp2.ring2.push.c1073741824"
+      },
+      "scenario_us": 188.91357142857137
+    },
+    {
+      "chosen": {
+        "rank0": "moe.w4a8.m32.n128",
+        "rank1": "moe.w4a8.m32.n64",
+        "reduce": "tp2.ring2.push.c1073741824"
+      },
+      "scenario_us": 188.91357142857137
+    },
+    {
+      "chosen": {
+        "rank0": "moe.w4a8.m32.n128",
+        "rank1": "moe.w4a8.m16.n128",
+        "reduce": "tp2.ring2.push.c1073741824"
+      },
+      "scenario_us": 188.91357142857137
+    }
+  ],
+  "automatic_dispatch_changed": false,
+  "candidate_combinations": 96,
+  "catalog_sha256": "30cd6fc262714f6152d26a2a52bc75ce206659567830b6047dc7a38442e72203",
+  "evaluations": 96,
+  "global_hardware_optimum_proved": false,
+  "gpu_executed": false,
+  "graph_sha256": "7866d488e59df5ba43c976eba097d4403d5f3dc9f4fcae7dd7169dc7dca3d883",
+  "limitations": [
+    "Fixed manifest/queue admission, equal resource sharing, no preemption or register-placement simulation.",
+    "Resource floor is conditional on model and profile, not a hardware latency bound.",
+    "Allocation sizes/lifetimes must be complete; opaque allocator or engine buffers are not inferred.",
+    "Concurrent timings must be validated as graph windows, not summed isolated kernels."
+  ],
+  "measurement_requests": [
+    {
+      "candidate_ids": [
+        "moe.w4a8.m16.n64",
+        "moe.w4a8.m16.n128",
+        "moe.w4a8.m32.n64",
+        "moe.w4a8.m32.n128"
+      ],
+      "node": "rank0",
+      "reason": "new operator/overlap model uncalibrated",
+      "workload_id": "moe.r0"
+    },
+    {
+      "candidate_ids": [
+        "moe.w4a8.m16.n64",
+        "moe.w4a8.m16.n128",
+        "moe.w4a8.m32.n64",
+        "moe.w4a8.m32.n128"
+      ],
+      "node": "rank1",
+      "reason": "new operator/overlap model uncalibrated",
+      "workload_id": "moe.r1"
+    },
+    {
+      "candidate_ids": [
+        "tp2.oneshot.push.c4096",
+        "tp2.oneshot.push.c65536",
+        "tp2.ring2.push.c1073741824",
+        "tp2.oneshot.pull.c4096",
+        "tp2.oneshot.pull.c65536",
+        "tp2.ring2.pull.c1073741824"
+      ],
+      "node": "reduce",
+      "reason": "new operator/overlap model uncalibrated",
+      "workload_id": "ar"
+    }
+  ],
+  "production_latency_proved": false,
+  "rejected": [],
+  "schema": "radiance-graph-plan/1",
+  "scope": {
+    "complete_model": false,
+    "hypothesis": "unfused cost phases, not actual fused source dispatch",
+    "window": "MoE with declared synthetic route + explicit two-rank sum"
+  },
+  "search": "exhaustive fixed-policy scenarios",
+  "search_complete": true,
+  "selected": {
+    "chosen": {
+      "rank0": "moe.w4a8.m16.n128",
+      "rank1": "moe.w4a8.m16.n128",
+      "reduce": "tp2.oneshot.push.c65536"
+    },
+    "hardware_scheduler_simulated": false,
+    "makespan_us": 185.9992857142857,
+    "memory": {
+      "gpu0": {
+        "budget_bytes": 34359738368,
+        "fits": true,
+        "peak_bytes": 21475393680
+      },
+      "gpu1": {
+        "budget_bytes": 34359738368,
+        "fits": true,
+        "peak_bytes": 21475342480
+      }
+    },
+    "model": "bottleneck-limited equal-share fluid, fixed manifest admission",
+    "model_floor_us": 185.74328571428572,
+    "node_times": {
+      "rank0": [
+        0.0,
+        178.5478571428571
+      ],
+      "rank1": [
+        0.0,
+        177.4392857142857
+      ],
+      "reduce": [
+        178.5478571428571,
+        185.9992857142857
+      ]
+    },
+    "production_latency_proved": false,
+    "resource_service": {
+      "gpu0:dram": 68744640.0,
+      "gpu0:exp": 17920,
+      "gpu0:matrix:wmma_f16": 13107200,
+      "gpu0:matrix:wmma_fp8": 3961651200,
+      "gpu0:matrix:wmma_i4": 0,
+      "gpu0:matrix:wmma_i8": 0,
+      "gpu0:matrix_issue": 16.019016766755453,
+      "gpu0:vector": 437960.0,
+      "gpu1:dram": 68248000.0,
+      "gpu1:exp": 17280,
+      "gpu1:matrix:wmma_f16": 13107200,
+      "gpu1:matrix:wmma_fp8": 3951820800,
+      "gpu1:matrix:wmma_i4": 0,
+      "gpu1:matrix:wmma_i8": 0,
+      "gpu1:matrix_issue": 15.979529319476882,
+      "gpu1:vector": 432840.0,
+      "link:gpu0-to-gpu1-pull": 0,
+      "link:gpu0-to-gpu1-push": 25600,
+      "link:gpu1-to-gpu0-pull": 0,
+      "link:gpu1-to-gpu0-push": 25600,
+      "shared:root-pcie": 51200
+    },
+    "segments": [
+      {
+        "active": [
+          "rank0/0:router_gemm:start",
+          "rank1/0:router_gemm:start"
+        ],
+        "end_us": 3.0,
+        "rates": {},
+        "start_us": 0.0
+      },
+      {
+        "active": [
+          "rank0/0:router_gemm",
+          "rank1/0:router_gemm"
+        ],
+        "end_us": 8.931428571428572,
+        "rates": {
+          "gpu0:dram": 448000.0,
+          "gpu0:matrix:wmma_f16": 2209788.0539499037,
+          "gpu0:matrix_issue": 0.01779933994321308,
+          "gpu1:dram": 448000.0,
+          "gpu1:matrix:wmma_f16": 2209788.0539499037,
+          "gpu1:matrix_issue": 0.01779933994321308
+        },
+        "start_us": 3.0
+      },
+      {
+        "active": [
+          "rank0/2:router_topk:start",
+          "rank1/2:router_topk:start"
+        ],
+        "end_us": 11.931428571428572,
+        "rates": {},
+        "start_us": 8.931428571428572
+      },
+      {
+        "active": [
+          "rank0/2:router_topk",
+          "rank1/2:router_topk"
+        ],
+        "end_us": 11.955178571428572,
+        "rates": {
+          "gpu0:dram": 448000.00000000006,
+          "gpu0:vector": 1077894.7368421054,
+          "gpu1:dram": 448000.00000000006,
+          "gpu1:vector": 1077894.7368421054
+        },
+        "start_us": 11.931428571428572
+      },
+      {
+        "active": [
+          "rank0/4:dispatch_scatter:start",
+          "rank1/4:dispatch_scatter:start"
+        ],
+        "end_us": 14.955178571428572,
+        "rates": {},
+        "start_us": 11.955178571428572
+      },
+      {
+        "active": [
+          "rank0/4:dispatch_scatter",
+          "rank1/4:dispatch_scatter"
+        ],
+        "end_us": 15.528392857142858,
+        "rates": {
+          "gpu0:dram": 448000.0,
+          "gpu0:vector": 348.90965732087227,
+          "gpu1:dram": 448000.0,
+          "gpu1:vector": 348.90965732087227
+        },
+        "start_us": 14.955178571428572
+      },
+      {
+        "active": [
+          "rank0/6:expert_gate_up:start",
+          "rank1/6:expert_gate_up:start"
+        ],
+        "end_us": 18.528392857142858,
+        "rates": {},
+        "start_us": 15.528392857142858
+      },
+      {
+        "active": [
+          "rank0/6:expert_gate_up",
+          "rank1/6:expert_gate_up"
+        ],
+        "end_us": 113.24357142857143,
+        "rates": {
+          "gpu0:dram": 448000.0,
+          "gpu0:matrix:wmma_fp8": 27677084.492039103,
+          "gpu0:matrix_issue": 0.11117527411945814,
+          "gpu1:dram": 448000.0,
+          "gpu1:matrix:wmma_fp8": 27677084.492039103,
+          "gpu1:matrix_issue": 0.11117527411945814
+        },
+        "start_us": 18.528392857142858
+      },
+      {
+        "active": [
+          "rank0/8:activation_quant:start",
+          "rank1/8:activation_quant:start"
+        ],
+        "end_us": 116.24357142857143,
+        "rates": {},
+        "start_us": 113.24357142857143
+      },
+      {
+        "active": [
+          "rank0/8:activation_quant",
+          "rank1/8:activation_quant"
+        ],
+        "end_us": 117.84357142857142,
+        "rates": {
+          "gpu0:dram": 60000.0,
+          "gpu0:exp": 10000.0,
+          "gpu0:vector": 80000.0,
+          "gpu1:dram": 60000.0,
+          "gpu1:exp": 10000.0,
+          "gpu1:vector": 80000.0
+        },
+        "start_us": 116.24357142857143
+      },
+      {
+        "active": [
+          "rank0/10:expert_down:start",
+          "rank1/10:expert_down:start"
+        ],
+        "end_us": 120.84357142857142,
+        "rates": {},
+        "start_us": 117.84357142857142
+      },
+      {
+        "active": [
+          "rank0/10:expert_down",
+          "rank1/10:expert_down"
+        ],
+        "end_us": 168.5935714285714,
+        "rates": {
+          "gpu0:dram": 448000.0,
+          "gpu0:matrix:wmma_fp8": 27449633.507853404,
+          "gpu0:matrix_issue": 0.11026163288954974,
+          "gpu1:dram": 448000.0,
+          "gpu1:matrix:wmma_fp8": 27449633.507853404,
+          "gpu1:matrix_issue": 0.11026163288954974
+        },
+        "start_us": 120.84357142857142
+      },
+      {
+        "active": [
+          "rank0/12:gather_reduce:start",
+          "rank1/12:gather_reduce:start"
+        ],
+        "end_us": 171.5935714285714,
+        "rates": {},
+        "start_us": 168.5935714285714
+      },
+      {
+        "active": [
+          "rank0/12:gather_reduce",
+          "rank1/12:gather_reduce"
+        ],
+        "end_us": 172.22214285714284,
+        "rates": {
+          "gpu0:dram": 448000.0,
+          "gpu0:vector": 407272.72727272724,
+          "gpu1:dram": 448000.0,
+          "gpu1:vector": 407272.72727272724
+        },
+        "start_us": 171.5935714285714
+      },
+      {
+        "active": [
+          "rank0/14:shared_expert_serial:start",
+          "rank1/14:shared_expert_serial:start"
+        ],
+        "end_us": 175.22214285714284,
+        "rates": {},
+        "start_us": 172.22214285714284
+      },
+      {
+        "active": [
+          "rank0/14:shared_expert_serial",
+          "rank1/14:shared_expert_serial"
+        ],
+        "end_us": 177.4392857142857,
+        "rates": {
+          "gpu0:dram": 448000.0,
+          "gpu0:exp": 577.319587628866,
+          "gpu0:matrix:wmma_fp8": 8867628.86597938,
+          "gpu0:matrix_issue": 0.035620119967782214,
+          "gpu0:vector": 4618.556701030928,
+          "gpu1:dram": 448000.0,
+          "gpu1:exp": 577.319587628866,
+          "gpu1:matrix:wmma_fp8": 8867628.86597938,
+          "gpu1:matrix_issue": 0.035620119967782214,
+          "gpu1:vector": 4618.556701030928
+        },
+        "start_us": 175.22214285714284
+      },
+      {
+        "active": [
+          "rank0/14:shared_expert_serial"
+        ],
+        "end_us": 178.5478571428571,
+        "rates": {
+          "gpu0:dram": 448000.0,
+          "gpu0:exp": 577.319587628866,
+          "gpu0:matrix:wmma_fp8": 8867628.86597938,
+          "gpu0:matrix_issue": 0.035620119967782214,
+          "gpu0:vector": 4618.556701030928
+        },
+        "start_us": 177.4392857142857
+      },
+      {
+        "active": [
+          "reduce/start:gpu0",
+          "reduce/start:gpu1"
+        ],
+        "end_us": 181.5478571428571,
+        "rates": {},
+        "start_us": 178.5478571428571
+      },
+      {
+        "active": [
+          "reduce/2:exchange1:gpu0>gpu1:latency",
+          "reduce/4:exchange1:gpu1>gpu0:latency"
+        ],
+        "end_us": 183.5478571428571,
+        "rates": {},
+        "start_us": 181.5478571428571
+      },
+      {
+        "active": [
+          "reduce/2:exchange1:gpu0>gpu1",
+          "reduce/4:exchange1:gpu1>gpu0"
+        ],
+        "end_us": 184.8278571428571,
+        "rates": {
+          "gpu0:dram": 40000.0,
+          "gpu1:dram": 40000.0,
+          "link:gpu0-to-gpu1-push": 20000.0,
+          "link:gpu1-to-gpu0-push": 20000.0,
+          "shared:root-pcie": 40000.0
+        },
+        "start_us": 183.5478571428571
+      },
+      {
+        "active": [
+          "reduce/6:handshake1"
+        ],
+        "end_us": 185.8278571428571,
+        "rates": {},
+        "start_us": 184.8278571428571
+      },
+      {
+        "active": [
+          "reduce/7:local_reduce1:gpu0",
+          "reduce/8:local_reduce1:gpu1"
+        ],
+        "end_us": 185.9992857142857,
+        "rates": {
+          "gpu0:dram": 448000.0,
+          "gpu0:vector": 74666.66666666666,
+          "gpu1:dram": 448000.0,
+          "gpu1:vector": 74666.66666666666
+        },
+        "start_us": 185.8278571428571
+      }
+    ],
+    "timeline": [
+      {
+        "end_us": 3.0,
+        "id": "rank0/0:router_gemm:start",
+        "label": "router_gemm start-cost scenario",
+        "start_us": 0.0
+      },
+      {
+        "end_us": 3.0,
+        "id": "rank1/0:router_gemm:start",
+        "label": "router_gemm start-cost scenario",
+        "start_us": 0.0
+      },
+      {
+        "end_us": 8.931428571428572,
+        "id": "rank0/0:router_gemm",
+        "label": "router_gemm",
+        "start_us": 3.0
+      },
+      {
+        "end_us": 8.931428571428572,
+        "id": "rank1/0:router_gemm",
+        "label": "router_gemm",
+        "start_us": 3.0
+      },
+      {
+        "end_us": 11.931428571428572,
+        "id": "rank0/2:router_topk:start",
+        "label": "router_topk start-cost scenario",
+        "start_us": 8.931428571428572
+      },
+      {
+        "end_us": 11.931428571428572,
+        "id": "rank1/2:router_topk:start",
+        "label": "router_topk start-cost scenario",
+        "start_us": 8.931428571428572
+      },
+      {
+        "end_us": 11.955178571428572,
+        "id": "rank0/2:router_topk",
+        "label": "router_topk",
+        "start_us": 11.931428571428572
+      },
+      {
+        "end_us": 11.955178571428572,
+        "id": "rank1/2:router_topk",
+        "label": "router_topk",
+        "start_us": 11.931428571428572
+      },
+      {
+        "end_us": 14.955178571428572,
+        "id": "rank0/4:dispatch_scatter:start",
+        "label": "dispatch_scatter start-cost scenario",
+        "start_us": 11.955178571428572
+      },
+      {
+        "end_us": 14.955178571428572,
+        "id": "rank1/4:dispatch_scatter:start",
+        "label": "dispatch_scatter start-cost scenario",
+        "start_us": 11.955178571428572
+      },
+      {
+        "end_us": 15.528392857142858,
+        "id": "rank0/4:dispatch_scatter",
+        "label": "dispatch_scatter",
+        "start_us": 14.955178571428572
+      },
+      {
+        "end_us": 15.528392857142858,
+        "id": "rank1/4:dispatch_scatter",
+        "label": "dispatch_scatter",
+        "start_us": 14.955178571428572
+      },
+      {
+        "end_us": 18.528392857142858,
+        "id": "rank0/6:expert_gate_up:start",
+        "label": "expert_gate_up start-cost scenario",
+        "start_us": 15.528392857142858
+      },
+      {
+        "end_us": 18.528392857142858,
+        "id": "rank1/6:expert_gate_up:start",
+        "label": "expert_gate_up start-cost scenario",
+        "start_us": 15.528392857142858
+      },
+      {
+        "end_us": 113.24357142857143,
+        "id": "rank0/6:expert_gate_up",
+        "label": "expert_gate_up",
+        "start_us": 18.528392857142858
+      },
+      {
+        "end_us": 113.24357142857143,
+        "id": "rank1/6:expert_gate_up",
+        "label": "expert_gate_up",
+        "start_us": 18.528392857142858
+      },
+      {
+        "end_us": 116.24357142857143,
+        "id": "rank0/8:activation_quant:start",
+        "label": "activation_quant start-cost scenario",
+        "start_us": 113.24357142857143
+      },
+      {
+        "end_us": 116.24357142857143,
+        "id": "rank1/8:activation_quant:start",
+        "label": "activation_quant start-cost scenario",
+        "start_us": 113.24357142857143
+      },
+      {
+        "end_us": 117.84357142857142,
+        "id": "rank0/8:activation_quant",
+        "label": "activation_quant",
+        "start_us": 116.24357142857143
+      },
+      {
+        "end_us": 117.84357142857142,
+        "id": "rank1/8:activation_quant",
+        "label": "activation_quant",
+        "start_us": 116.24357142857143
+      },
+      {
+        "end_us": 120.84357142857142,
+        "id": "rank0/10:expert_down:start",
+        "label": "expert_down start-cost scenario",
+        "start_us": 117.84357142857142
+      },
+      {
+        "end_us": 120.84357142857142,
+        "id": "rank1/10:expert_down:start",
+        "label": "expert_down start-cost scenario",
+        "start_us": 117.84357142857142
+      },
+      {
+        "end_us": 168.5935714285714,
+        "id": "rank0/10:expert_down",
+        "label": "expert_down",
+        "start_us": 120.84357142857142
+      },
+      {
+        "end_us": 168.5935714285714,
+        "id": "rank1/10:expert_down",
+        "label": "expert_down",
+        "start_us": 120.84357142857142
+      },
+      {
+        "end_us": 171.5935714285714,
+        "id": "rank0/12:gather_reduce:start",
+        "label": "gather_reduce start-cost scenario",
+        "start_us": 168.5935714285714
+      },
+      {
+        "end_us": 171.5935714285714,
+        "id": "rank1/12:gather_reduce:start",
+        "label": "gather_reduce start-cost scenario",
+        "start_us": 168.5935714285714
+      },
+      {
+        "end_us": 172.22214285714284,
+        "id": "rank0/12:gather_reduce",
+        "label": "gather_reduce",
+        "start_us": 171.5935714285714
+      },
+      {
+        "end_us": 172.22214285714284,
+        "id": "rank1/12:gather_reduce",
+        "label": "gather_reduce",
+        "start_us": 171.5935714285714
+      },
+      {
+        "end_us": 175.22214285714284,
+        "id": "rank0/14:shared_expert_serial:start",
+        "label": "shared_expert_serial start-cost scenario",
+        "start_us": 172.22214285714284
+      },
+      {
+        "end_us": 175.22214285714284,
+        "id": "rank1/14:shared_expert_serial:start",
+        "label": "shared_expert_serial start-cost scenario",
+        "start_us": 172.22214285714284
+      },
+      {
+        "end_us": 178.5478571428571,
+        "id": "rank0/14:shared_expert_serial",
+        "label": "shared_expert_serial",
+        "start_us": 175.22214285714284
+      },
+      {
+        "end_us": 177.4392857142857,
+        "id": "rank1/14:shared_expert_serial",
+        "label": "shared_expert_serial",
+        "start_us": 175.22214285714284
+      },
+      {
+        "end_us": 181.5478571428571,
+        "id": "reduce/start:gpu0",
+        "label": "collective launch-cost scenario",
+        "start_us": 178.5478571428571
+      },
+      {
+        "end_us": 181.5478571428571,
+        "id": "reduce/start:gpu1",
+        "label": "collective launch-cost scenario",
+        "start_us": 178.5478571428571
+      },
+      {
+        "end_us": 183.5478571428571,
+        "id": "reduce/2:exchange1:gpu0>gpu1:latency",
+        "label": "exchange1:gpu0>gpu1 startup",
+        "start_us": 181.5478571428571
+      },
+      {
+        "end_us": 183.5478571428571,
+        "id": "reduce/4:exchange1:gpu1>gpu0:latency",
+        "label": "exchange1:gpu1>gpu0 startup",
+        "start_us": 181.5478571428571
+      },
+      {
+        "end_us": 184.8278571428571,
+        "id": "reduce/2:exchange1:gpu0>gpu1",
+        "label": "exchange1:gpu0>gpu1",
+        "start_us": 183.5478571428571
+      },
+      {
+        "end_us": 184.8278571428571,
+        "id": "reduce/4:exchange1:gpu1>gpu0",
+        "label": "exchange1:gpu1>gpu0",
+        "start_us": 183.5478571428571
+      },
+      {
+        "end_us": 185.8278571428571,
+        "id": "reduce/6:handshake1",
+        "label": "modeled peer-visibility handshake",
+        "start_us": 184.8278571428571
+      },
+      {
+        "end_us": 185.9992857142857,
+        "id": "reduce/7:local_reduce1:gpu0",
+        "label": "local_reduce1:gpu0",
+        "start_us": 185.8278571428571
+      },
+      {
+        "end_us": 185.9992857142857,
+        "id": "reduce/8:local_reduce1:gpu1",
+        "label": "local_reduce1:gpu1",
+        "start_us": 185.8278571428571
+      }
+    ]
+  },
+  "serialized_scenario_us": 369.378,
+  "status": "NEEDS_MEASUREMENT",
+  "system_sha256": "8c61a01cf9a18771a82744d8310572fef6d5220d3aa4ac72671874e5d3afc487",
+  "tp2_runtime_executed": false,
+  "workloads_sha256": "649588b88c14ea0b52d39dc30ed4035964fe6be404d2cfd5eab03e8e3ef35943"
+}
