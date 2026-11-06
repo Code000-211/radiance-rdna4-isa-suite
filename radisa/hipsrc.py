@@ -255,8 +255,8 @@ def source_checks(path: Path, cite) -> list[dict]:
         if mem and not re.search(r'\bs_wait_(load|store|ds|km|sample|bvh|idle)', body):
             add('HIP_INLINE_ASM_MEMORY', 'review', m.start(),
                 f'inline asm issues {mem[1]} without a wait in the same asm statement; the '
-                'compiler does not track counters of asm memory instructions. The machine-code '
-                'check below decides whether a consumer actually races it', '5.7.1')
+                'compiler does not track counters of asm memory instructions. Whether a use races it '
+                'is decided on the machine code (MISSING_WAIT)', '5.7.1')
     for m in re.finditer(r'\b__shfl(?:_xor|_up|_down)?(?:_sync)?\s*\(', src):
         depth, i, args, start = 1, m.end(), [], m.end()
         while i < len(src) and depth:
