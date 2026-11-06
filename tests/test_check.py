@@ -8,7 +8,7 @@ import shutil
 import tempfile
 import unittest
 
-from radisa import hipsrc, isadb, vopd, waits
+from radisa import hipsrc, incremental, isadb, vopd, waits
 from radisa.cli import main
 from radisa.rules import cfg
 from support import ROOT, seq
@@ -258,10 +258,93 @@ class AssemblyCheckTests(unittest.TestCase):
         self.assertIn('too few operands', text)
 
 
+class FingerprintTests(unittest.TestCase):
+    MODULE = """target triple = "amdgcn-amd-amdhsa"
+@lut = internal addrspace(4) constant [2 x i32] [i32 1, i32 2]
+define amdgpu_kernel void @a(ptr %p) #0 {
+  %v = load i32, ptr addrspace(4) @lut, align 4, !tbaa !5
+  store i32 %v, ptr %p, align 4, !dbg !9
+  call void asm sideeffect "s_nop 0", ""(), !srcloc !12
+  ret void
+}
+define amdgpu_kernel void @b(ptr %p) #1 {
+  store i32 7, ptr %p, align 4, !dbg !10
+  ret void
+}
+attributes #0 = { "target-features"="+wavefrontsize32" }
+attributes #1 = { "target-features"="+wavefrontsize32" }
+!5 = !{!6, !6, i64 0}
+!6 = !{!"int", !7, i64 0}
+!7 = !{!"omnipotent char"}
+!9 = !DILocation(line: 4, column: 3, scope: !11)
+!10 = !DILocation(line: 9, column: 3, scope: !11)
+!12 = !{i64 120}
+"""
+
+    def prints(self, text):
+        mod = incremental.parse_module(text)
+        fp = incremental.Fingerprints(mod, 'salt')
+        return {k: fp.of(k) for k in mod['kernels']}
+
+    def test_lines_and_metadata_numbering_do_not_count(self):
+        base = self.prints(self.MODULE)
+        moved = self.MODULE.replace('line: 4', 'line: 7').replace('i64 120', 'i64 160')
+        renumbered = self.MODULE.replace('!tbaa !5', '!tbaa !15').replace('!5 = ', '!15 = ')
+        self.assertEqual(self.prints(moved), base)
+        self.assertEqual(self.prints(renumbered), base)
+
+    def test_code_globals_and_attributes_count(self):
+        base = self.prints(self.MODULE)
+        self.assertNotEqual(self.prints(self.MODULE.replace('i32 7', 'i32 8'))['b'], base['b'])
+        self.assertEqual(self.prints(self.MODULE.replace('i32 7', 'i32 8'))['a'], base['a'])
+        self.assertNotEqual(self.prints(self.MODULE.replace('i32 2]', 'i32 3]'))['a'], base['a'])
+        changed = self.MODULE.replace('attributes #1 = { "target-features"="+wavefrontsize32" }',
+                                      'attributes #1 = { "target-features"="+wavefrontsize32,+cumode" }')
+        self.assertNotEqual(self.prints(changed)['b'], base['b'])
+
+    def test_line_map(self):
+        m = incremental._line_map(['a', 'b', 'c'], ['x', 'a', 'b', 'y', 'c'])
+        self.assertEqual(m, {1: 2, 2: 3, 3: 5})
+
+
 @unittest.skipUnless(gfx1201_compiler(), 'no HIP-capable clang')
 class HipCheckTests(unittest.TestCase):
-    def check(self, name):
-        return run_check(FIX / name, '--cxx', gfx1201_compiler(), '--flag', '-nogpuinc -nogpulib')
+    def setUp(self):
+        self.cache = tempfile.TemporaryDirectory()
+        os.environ['RADISA_CACHE'] = self.cache.name
+
+    def tearDown(self):
+        os.environ.pop('RADISA_CACHE', None)
+        self.cache.cleanup()
+
+    def check(self, name, *extra):
+        return run_check(FIX / name, '--cxx', gfx1201_compiler(), '--flag', '-nogpuinc -nogpulib', *extra)
+
+    def test_per_kernel_codegen_matches_whole_unit(self):
+        full = self.check('clean_compiled.hip', '--no-incremental')[1]
+        inc = self.check('clean_compiled.hip')[1]
+        shape = lambda r: {k['name']: (k['instructions'], k['metadata']) for k in r['kernels']}
+        self.assertEqual(shape(inc), shape(full))
+        self.assertEqual(inc['incremental']['mode'], 'per-kernel')
+
+    def test_cache_follows_edits(self):
+        with tempfile.TemporaryDirectory() as d:
+            src = Path(d, 'k.hip')
+            src.write_text((FIX / 'inline_asm_lds.hip').read_text())
+            run = lambda: run_check(src, '--cxx', gfx1201_compiler(), '--flag', '-nogpuinc -nogpulib')[1]
+            first = run()
+            self.assertEqual(first['incremental']['compiled'], 2)
+            src.write_text('// moved\n// down\n' + src.read_text())
+            moved = run()
+            self.assertEqual((moved['incremental']['compiled'], moved['incremental']['reused']), (0, 2))
+            [f] = [f for k in moved['kernels'] for f in k['findings'] if f['rule'] == 'MISSING_WAIT']
+            self.assertEqual((f['loc']['line'], f['producer_origin']['line']), (17, 16))
+            self.assertIn('k.hip:16', f['message'])
+            text = src.read_text().replace('ds_load_b32 %0, %1" :', 'ds_load_b32 %0, %1\\n\\ts_wait_dscnt 0x0" :', 1)
+            src.write_text(text)
+            fixed = run()
+            self.assertEqual(fixed['incremental']['compiled'], 1)
+            self.assertEqual([f for k in fixed['kernels'] for f in k['findings'] if f['rule'] == 'MISSING_WAIT'], [])
 
     def test_inline_asm_race_points_at_source(self):
         code, r, _ = self.check('inline_asm_lds.hip')

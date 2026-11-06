@@ -22,6 +22,7 @@ import tempfile
 from .binary import ELF, FormatError, extract_code_objects, kernel_inventory
 from .decode import decode_object, select_backend
 from . import hipsrc, isadb, rules, waits
+from .incremental import check_hip_incremental
 
 SEVERITY_LABEL = {'error': 'error', 'review': 'warning', 'incomplete': 'note', 'info': 'note'}
 RULE_SECTION = {'VOPD_': '7.8', 'WMMA_': '7.12.1', 'PERMLANE': '7.2.8', 'DEALLOC': '3.3.3',
@@ -231,6 +232,10 @@ def render(report: dict, strict: bool) -> str:
                  f"instructions in the AMD operand model; {c.get('error', 0)} error(s), "
                  f"{c.get('review', 0)} warning(s), {c.get('incomplete', 0) + c.get('info', 0)} note(s) "
                  f"-> {report['status']}")
+    inc = report.get('incremental')
+    if inc:
+        lines[-1] += (f"; code generation: {inc['compiled']}/{inc['kernels']} kernel(s) compiled, "
+                      f"{inc['reused']} from cache ({inc['mode']})")
     return '\n'.join(lines)
 
 
@@ -238,13 +243,21 @@ def run(args) -> int:
     path = Path(args.input)
     table = isadb.load(args.isa_table)
     backend = select_backend(args.llvm_library, args.objdump)
+    incremental = None
     with tempfile.TemporaryDirectory(prefix='radisa-check-') as tmp:
         work = Path(tmp)
         if args.keep:
             work = Path(args.keep)
             work.mkdir(parents=True, exist_ok=True)
         try:
-            if path.suffix in hipsrc.SOURCE_SUFFIXES:
+            if path.suffix in hipsrc.SOURCE_SUFFIXES and not args.no_incremental:
+                src = hipsrc.source_checks(path, lambda s: isadb.cite(table, s))
+                kernels, findings, incremental = check_hip_incremental(path, table, backend, args, work,
+                                                                       check_object_bytes)
+                findings = src + findings
+                if kernels is None:
+                    kernels = []
+            elif path.suffix in hipsrc.SOURCE_SUFFIXES:
                 kernels, findings = check_hip(path, table, backend, args, work)
             elif path.suffix in ('.s', '.S', '.asm'):
                 kernels, findings = check_assembly(path, table, backend, args, work)
@@ -283,7 +296,7 @@ def run(args) -> int:
     report = {'schema': 'radisa-check-v1', 'input': str(path), 'status': status,
               'isa_table': table['source'], 'decoder': backend, 'counts': dict(counts),
               'operand_model': {'known': known, 'unknown': unknown},
-              'findings': findings, 'kernels': kernels,
+              'findings': findings, 'kernels': kernels, 'incremental': incremental,
               'not_checked': ['numerical correctness', 'inter-wave and cross-device memory ordering',
                               'global memory safety', 'performance beyond the listed resource notes']}
     if args.json:
@@ -315,7 +328,11 @@ def add_parser(sub) -> None:
     c.add_argument('--llvm-library')
     c.add_argument('--objdump')
     c.add_argument('--keep', help='keep intermediate .s/.o files in this directory')
-    c.add_argument('--timeout', type=float, default=600, help='seconds for the disassembler (default 600)')
+    c.add_argument('--timeout', type=float, default=600, help='seconds for each compiler/disassembler step (default 600)')
+    c.add_argument('--no-incremental', action='store_true',
+                   help='HIP: compile the whole unit with clang -S instead of per-kernel llc with a cache')
+    c.add_argument('--jobs', type=int, help='parallel per-kernel code generation (default: CPU count)')
+    c.add_argument('--cache-dir', help='per-kernel result cache for this unit (default: $RADISA_CACHE or ~/.cache/radisa/<unit>)')
     c.set_defaults(fn=run)
     h = sub.add_parser('hook', help='Claude Code PostToolUse hook: check the edited file, exit 2 on errors')
     h.set_defaults(fn=hook)

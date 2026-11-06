@@ -94,8 +94,9 @@ def flags_from_compile_commands(db_path: Path, source: Path) -> tuple[str, list[
     raise FormatError(f'{source} not found in {db_path}')
 
 
-def compile_hip(source: Path, workdir: Path, cxx: str | None, flags: list[str],
-                compile_commands: Path | None, arch: str = 'gfx1201', timeout: float = 600) -> dict:
+def hip_command(source: Path, cxx: str | None, flags: list[str], compile_commands: Path | None,
+                arch: str = 'gfx1201') -> tuple[str, list[str], Path | None]:
+    """Compiler, device-only arguments (without output mode and file) and working folder."""
     cwd = None
     if compile_commands:
         cxx_cc, base, cwd = flags_from_compile_commands(compile_commands, source)
@@ -104,10 +105,16 @@ def compile_hip(source: Path, workdir: Path, cxx: str | None, flags: list[str],
     else:
         cxx = cxx or default_compiler()
         base = list(flags)
-    asm = workdir / (source.stem + '.gfx1201.s')
-    cmd = [cxx, '-x', 'hip', f'--offload-arch={arch}', '--offload-device-only', '-O3', '-gline-tables-only',
-           *base, '-S', str(source.resolve()), '-o', str(asm)]
     # Later -O flags from the project win over our default -O3.
+    return cxx, ['-x', 'hip', f'--offload-arch={arch}', '--offload-device-only', '-O3',
+                 '-gline-tables-only', *base], cwd
+
+
+def compile_hip(source: Path, workdir: Path, cxx: str | None, flags: list[str],
+                compile_commands: Path | None, arch: str = 'gfx1201', timeout: float = 600) -> dict:
+    cxx, args, cwd = hip_command(source, cxx, flags, compile_commands, arch)
+    asm = workdir / (source.stem + '.gfx1201.s')
+    cmd = [cxx, *args, '-S', str(source.resolve()), '-o', str(asm)]
     try:
         p = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, cwd=cwd, check=False)
     except (OSError, subprocess.TimeoutExpired) as ex:

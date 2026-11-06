@@ -39,9 +39,30 @@ The compiler is, in order: `--cxx`, `$RADISA_HIPCC`, `$ROCM_PATH/llvm/bin/clang+
 `clang++`. With `--compile-commands`, the flags CMake used for that file are reused (output, depfile
 and `-c` flags are dropped) and `-x hip --offload-arch=gfx1201 --offload-device-only -O3
 -gline-tables-only -S` is added; project `-O`/`-m` flags still win. Extra flags: `--flag "-I inc -DX=1"`.
-The assembly is then assembled with the `llvm-mc` next to the compiler, so the checked bytes are
-exactly the compiler's. `-gline-tables-only` only adds line tables (`-g` crashes clang 20.1.2 on some
-libr4d units).
+`-gline-tables-only` only adds line tables (`-g` crashes clang 20.1.2 on some libr4d units).
+
+### Only the kernels an edit changed (default)
+
+The optimiser needs the whole unit: whether a helper is inlined depends on how many kernels call it,
+so optimising one kernel alone gives different code (seen on `r4d_ltx`). After it, every libr4d kernel
+is a single self-contained function. `radisa check` therefore:
+
+1. runs `clang -emit-llvm` with the flags above once for the unit (the optimised module);
+2. fingerprints each kernel: its IR plus the globals, declarations, attributes and non-debug metadata
+   it references, the `llc` options (the `-mllvm` options and `-O` level clang's own code generation
+   gets, read from `clang -###`), the `llc` version and the ISA table; debug locations and the source
+   offsets of inline-asm strings are left out;
+3. runs `llvm-extract` + `llc` + `llvm-mc` and the checks only for kernels with a new fingerprint, in
+   parallel (`--jobs`);
+4. takes the other kernels' results from the cache (`--cache-dir`, default `$RADISA_CACHE` or
+   `~/.cache/radisa/<unit>`), with their source lines moved along the edit by a diff of the old and new
+   file; a kernel whose finding line was itself edited is compiled again.
+
+Per-kernel `llc` gives the same machine code as compiling the unit: 241 of 241 kernels in seven
+libr4d units, and identical findings from `--no-incremental` and the default mode on `attn_paged_h256_gqa12`,
+`ltx` and `ar_oneshot_2rank_exact`. When non-kernel functions survive optimisation, module-level code
+generation (the LDS layout across kernels) could differ; then the whole module goes through `llc` and
+nothing is cached. `--no-incremental` restores the single `clang -S` compile.
 
 ## What is checked
 
