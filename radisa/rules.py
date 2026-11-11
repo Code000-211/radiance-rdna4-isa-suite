@@ -121,7 +121,7 @@ TERMINALS = {'s_endpgm', 's_endpgm_saved'}
 def cfg(instructions: list[dict]) -> tuple[dict[int, list[int]], set[int], list[dict]]:
     if not instructions: return {}, set(), []
     pcs = {i['pc'] for i in instructions}
-    edges, issues = {}, []
+    edges, issues, off_end = {}, [], []
     for i in instructions:
         pc, op = i['pc'], i['op']
         nxt, succ = pc+i['size'], []
@@ -139,22 +139,32 @@ def cfg(instructions: list[dict]) -> tuple[dict[int, list[int]], set[int], list[
                         'branch target is outside the kernel or not a decoded instruction boundary', pc,
                         target=target))
                 else: succ.append(target)
-            if op != 's_branch' and nxt in pcs: succ.append(nxt)
+            if op != 's_branch':
+                if nxt in pcs: succ.append(nxt)
+                else: off_end.append(pc)
         elif op.startswith(('s_setpc', 's_swappc', 's_call', 's_rfe', 's_cbranch')):
             issues.append(finding('CFG_INDIRECT', 'incomplete',
                 'call/indirect or unsupported branch requires interprocedural/target evidence', pc))
             if nxt in pcs: succ.append(nxt)
+            elif op.startswith(('s_swappc', 's_call')): off_end.append(pc)   # the callee returns here
         else:
             if nxt in pcs: succ.append(nxt)
-            else:
-                issues.append(finding('CFG_FALLTHROUGH', 'incomplete',
-                    'function extent ends without a recognized terminator', pc))
+            else: off_end.append(pc)
         edges[pc] = sorted(set(succ))
     reached, queue = set(), deque([instructions[0]['pc']])
     while queue:
         pc = queue.popleft()
         if pc in reached: continue
         reached.add(pc); queue.extend(edges.get(pc, []))
+    for pc in off_end:
+        # Past the last instruction lies the next function or S_CODE_END padding: a path
+        # that gets there never executes S_ENDPGM (§5.5 program control).
+        if pc in reached:
+            issues.append(finding('CFG_FALLTHROUGH', 'error',
+                'execution runs past the end of the kernel: this path has no s_endpgm', pc))
+        else:
+            issues.append(finding('CFG_FALLTHROUGH', 'incomplete',
+                'function extent ends without a recognized terminator (not reached by direct branches)', pc))
     for i in instructions:
         if i['pc'] in reached and i['op'] == 's_code_end':
             issues.append(finding('REACHABLE_CODE_END', 'error', 'reachable illegal S_CODE_END padding', i['pc']))

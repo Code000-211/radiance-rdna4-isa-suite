@@ -83,8 +83,9 @@ bash "$S/check-kernel.sh" build/.../r4d_gemm_fp8a8.hip.o --kernel gemm_8a8_prefi
 
 Every instruction is mapped onto AMD's machine-readable RDNA4 operand table (XML, MIT), and the
 memory counters are modelled over the whole CFG. Missing `s_wait_*` (typically after inline-asm
-memory instructions, which the compiler does not track), WMMA and VOPD hazards, VGPR deallocation
-errors, spills and scratch are reported against source lines with manual section and PDF page.
+memory instructions, which the compiler does not track), a missing `s_wait_alu`, an LDS write
+still outstanding at a workgroup barrier, a path without `s_endpgm`, WMMA and VOPD hazards, VGPR
+deallocation errors, spills and scratch are reported against source lines with manual section and PDF page.
 `radisa hook` runs the same check as a Claude Code PostToolUse hook. Details: `docs/CHECK.md`.
 
 ## Main documentation

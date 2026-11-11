@@ -35,7 +35,7 @@ import subprocess
 from .binary import FormatError
 from . import __version__, hipsrc
 
-SCHEMA = 'radisa-incremental-v1'
+SCHEMA = 'radisa-incremental-v2'   # v2: new rules, cached findings of v1 are stale
 LLC_OPT = {'-O0': '-O0', '-O1': '-O1', '-O2': '-O2', '-O3': '-O3', '-Os': '-O2', '-Oz': '-O2'}
 
 
