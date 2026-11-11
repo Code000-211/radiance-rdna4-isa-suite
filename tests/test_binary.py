@@ -2,7 +2,7 @@ import random
 import struct
 import unittest
 from pathlib import Path
-from radisa.binary import ELF,FormatError,MessagePack,extract_code_objects,kernel_inventory,span,unpack_bundle,ar_members
+from radisa.binary import ELF,FormatError,MessagePack,extract_code_objects,kernel_inventory,span,unpack_bundle,ar_members,target_processor
 from support import FIXTURE,ROOT,pack,bundle,archive
 
 class MessagePackTests(unittest.TestCase):
@@ -92,6 +92,20 @@ class ContainerTests(unittest.TestCase):
     def test_bundle_wrong_target_rejected(self):
         b=bundle([('hip-amdgcn-amd-amdhsa--gfx11',FIXTURE)])
         self.assertRaises(FormatError,extract_code_objects,b,'bundle')
+    def test_bundle_llvm21_triple_spelling(self):
+        # LLVM 21 and later print the empty environment field as "unknown".
+        b=bundle([('hip-amdgcn-amd-amdhsa-unknown-gfx1201',FIXTURE)])
+        a,_=extract_code_objects(b,'bundle');self.assertEqual(len(a),1)
+        b=bundle([('hip-amdgcn-amd-amdhsa-unknown-gfx11',FIXTURE)])
+        self.assertRaises(FormatError,extract_code_objects,b,'bundle')
+    def test_target_processor(self):
+        for text,want in [('amdgcn-amd-amdhsa--gfx1201','gfx1201'),
+                          ('amdgcn-amd-amdhsa-unknown-gfx1201','gfx1201'),
+                          ('amdgcn-amd-amdhsa--gfx1201:sramecc-','gfx1201'),
+                          ('amdgcn-amd-amdhsa-unknown-gfx10-1-generic','gfx10-1-generic'),
+                          ('amdgcn-amd-amdhsa--gfx12-generic','gfx12-generic'),
+                          ('gfx1201',None),('',None)]:
+            self.assertEqual(target_processor(text),want,text)
     def test_generic_target_flags(self):
         # ROCm ships one object per generic family under a matching bundle label.
         # The name has to come out of e_flags, not out of the bundle.

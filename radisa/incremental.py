@@ -11,6 +11,7 @@ it), but after it every Radiance kernel is one self-contained function. So:
   2. a fingerprint per kernel: its IR, the globals, declarations, attributes and
      metadata it references, without debug locations; plus the codegen options
   3. llvm-extract + llc only for kernels whose fingerprint is new, in parallel
+     (opt + clang where the toolchain ships neither, as ROCm's LLVM 24 does)
   4. the findings of unchanged kernels come from the cache, their source lines
      moved along with the edit (difflib over the old and new file text)
 
@@ -55,6 +56,53 @@ def codegen_options(cxx: str, args: list[str], source: Path, cwd) -> dict:
             opt = [t for t in toks if t in LLC_OPT]
             return {'mllvm': mllvm, 'opt': LLC_OPT[opt[-1]] if opt else '-O3'}
     raise FormatError('could not read the device compile command from `clang -###`')
+
+
+class Codegen:
+    """One kernel out of the optimised module, and machine code from a module.
+
+    llvm-extract and llc where the toolchain has them. ROCm's LLVM 24 packages ship neither
+    (nor does the compiler Radiance builds from them), so the fallback uses what they do ship:
+    `opt -passes=internalize,globaldce` keeps the kernel, every global variable and what they
+    reach, and clang compiles the IR with its optimiser off (-disable-llvm-passes), which
+    leaves llc's work: code generation at the same -O level with the same -mllvm options."""
+
+    def __init__(self, cxx: str, opts: dict):
+        self.cxx, self.opt_level = cxx, opts['opt']
+        self.mllvm = [o if o.startswith('-') else '-' + o for o in opts['mllvm']]
+        self.tools = {t: hipsrc.find_tool(t, near=cxx) for t in ('llvm-dis', 'llvm-mc')}
+        try:
+            self.tools.update({t: hipsrc.find_tool(t, near=cxx) for t in ('llvm-extract', 'llc')})
+            self.mode = 'llc'
+        except FormatError:
+            self.tools['opt'] = hipsrc.find_tool('opt', near=cxx)
+            self.mode = 'clang'
+        tool = self.tools['llc'] if self.mode == 'llc' else cxx
+        # What a cached result depends on besides the kernel's IR.
+        self.identity = [self.mode, self.opt_level, self.mllvm, _run([tool, '--version']).stdout]
+
+    def compile(self, bc: Path, asm: Path, timeout: float) -> None:
+        if self.mode == 'llc':
+            cmd = [self.tools['llc'], self.opt_level, '-mtriple=amdgcn-amd-amdhsa', '-mcpu=gfx1201', *self.mllvm]
+        else:
+            cmd = [self.cxx, '--target=amdgcn-amd-amdhsa', '-mcpu=gfx1201', self.opt_level, '-x', 'ir',
+                   '-Xclang', '-disable-llvm-passes', '-S']
+            for o in self.mllvm:
+                cmd += ['-mllvm', o]
+        r = _run([*cmd, str(bc), '-o', str(asm)], timeout=timeout)
+        if r.returncode or not asm.exists():
+            raise FormatError(f'{Path(cmd[0]).name} failed on {bc.name}: ' + r.stderr.strip())
+
+    def extract(self, kernel: str, variables: list[str], bc: Path, out: Path, timeout: float) -> None:
+        if self.mode == 'llc':
+            cmd = [self.tools['llvm-extract'], f'--func={kernel}']
+        else:
+            keep = out.with_suffix('.keep')
+            keep.write_text('\n'.join([kernel, *variables]) + '\n', encoding='utf-8')
+            cmd = [self.tools['opt'], '-passes=internalize,globaldce', f'-internalize-public-api-file={keep}']
+        x = _run([*cmd, str(bc), '-o', str(out)], timeout=timeout)
+        if x.returncode or not out.exists():
+            raise FormatError(f'{Path(cmd[0]).name} {kernel}: ' + x.stderr.strip())
 
 
 # ------------------------------------------------------------------ module text
@@ -262,16 +310,13 @@ def check_hip_incremental(path: Path, table: dict, backend: dict, args, work: Pa
     if p.stderr.strip():
         notes.append({'rule': 'COMPILER_DIAGNOSTICS', 'severity': 'info', 'pc': None,
                       'message': p.stderr.strip()})
-    tools = {t: hipsrc.find_tool(t, near=cxx) for t in ('llvm-dis', 'llvm-extract', 'llc', 'llvm-mc')}
-    opts = codegen_options(cxx, cargs, path, cwd)
-    llc_base = [tools['llc'], opts['opt'], '-mtriple=amdgcn-amd-amdhsa', '-mcpu=gfx1201',
-                *[o if o.startswith('-') else '-' + o for o in opts['mllvm']]]
+    gen = Codegen(cxx, codegen_options(cxx, cargs, path, cwd))
+    tools = gen.tools
     d = _run([tools['llvm-dis'], str(bc), '-o', '-'], timeout=args.timeout)
     if d.returncode:
         raise FormatError('llvm-dis failed: ' + d.stderr.strip())
     mod = parse_module(d.stdout)
-    llc_version = _run([tools['llc'], '--version']).stdout
-    salt = json.dumps([SCHEMA, __version__, table['source']['xml_sha256'], llc_base[1:], llc_version])
+    salt = json.dumps([SCHEMA, __version__, table['source']['xml_sha256'], gen.identity])
     fp = Fingerprints(mod, salt)
     kernels = [k for k in mod['kernels']
                if not args.kernel or args.kernel in unquote(k)]
@@ -280,25 +325,24 @@ def check_hip_incremental(path: Path, table: dict, backend: dict, args, work: Pa
                              'message': 'this translation unit emits no gfx1201 kernel '
                                         '(templates instantiated elsewhere, or host code only)'}], {}
     extra = fp.non_kernel_functions()
+    variables = [unquote(g) for g in mod['globals']]
     jobs = max(1, args.jobs or os.cpu_count() or 1)
 
     def assemble(asm: Path, obj: Path):
         a = _run([tools['llvm-mc'], '-triple=amdgcn-amd-amdhsa', '-mcpu=gfx1201', '-filetype=obj',
                   str(asm), '-o', str(obj)], timeout=args.timeout)
         if a.returncode:
-            raise FormatError('llvm-mc could not assemble llc output: ' + a.stderr.strip())
+            raise FormatError('llvm-mc could not assemble the generated code: ' + a.stderr.strip())
 
     if extra:
         # Module-level code generation applies: whole module, no per-kernel cache.
         asm, obj = work / 'module.s', work / 'module.o'
-        r = _run([*llc_base, str(bc), '-o', str(asm)], timeout=args.timeout)
-        if r.returncode:
-            raise FormatError('llc failed: ' + r.stderr.strip())
+        gen.compile(bc, asm, args.timeout)
         assemble(asm, obj)
         functions = hipsrc.parse_asm(asm.read_text(encoding='utf-8', errors='replace'), base_cwd)
         results, n2 = check_object_bytes(obj.read_bytes(), str(path), table, backend, args.kernel,
                                          work, functions, args.timeout)
-        return results, notes + n2, {'mode': 'whole-module', 'kernels': len(results),
+        return results, notes + n2, {'mode': 'whole-module', 'codegen': gen.mode, 'kernels': len(results),
                                      'compiled': len(results), 'reused': 0,
                                      'reason': f'{len(extra)} non-kernel function(s) after optimisation'}
 
@@ -329,12 +373,8 @@ def check_hip_incremental(path: Path, table: dict, backend: dict, args, work: Pa
         kdir = work / f'k{i}'
         kdir.mkdir()
         kbc, asm, obj = kdir / 'k.bc', kdir / 'k.s', kdir / 'k.o'
-        x = _run([tools['llvm-extract'], f'--func={unquote(k)}', str(bc), '-o', str(kbc)], timeout=args.timeout)
-        if x.returncode:
-            raise FormatError(f'llvm-extract {unquote(k)}: ' + x.stderr.strip())
-        r = _run([*llc_base, str(kbc), '-o', str(asm)], timeout=args.timeout)
-        if r.returncode:
-            raise FormatError(f'llc {unquote(k)}: ' + r.stderr.strip())
+        gen.extract(unquote(k), variables, bc, kbc, args.timeout)
+        gen.compile(kbc, asm, args.timeout)
         assemble(asm, obj)
         functions = hipsrc.parse_asm(asm.read_text(encoding='utf-8', errors='replace'), base_cwd)
         rs, n = check_object_bytes(obj.read_bytes(), str(path), table, backend, None, kdir, functions,
@@ -370,5 +410,5 @@ def check_hip_incremental(path: Path, table: dict, backend: dict, args, work: Pa
     ordered = [results[k][0] for k in kernels]
     for k in kernels:
         notes += results[k][1]
-    return ordered, notes, {'mode': 'per-kernel', 'kernels': len(kernels), 'compiled': len(todo),
+    return ordered, notes, {'mode': 'per-kernel', 'codegen': gen.mode, 'kernels': len(kernels), 'compiled': len(todo),
                             'reused': reused, 'jobs': jobs, 'cache': str(cache_dir)}

@@ -326,6 +326,8 @@ class HipCheckTests(unittest.TestCase):
         shape = lambda r: {k['name']: (k['instructions'], k['metadata']) for k in r['kernels']}
         self.assertEqual(shape(inc), shape(full))
         self.assertEqual(inc['incremental']['mode'], 'per-kernel')
+        # llc where the toolchain has it, clang's code generator where it does not (ROCm LLVM 24).
+        self.assertIn(inc['incremental']['codegen'], ('llc', 'clang'))
 
     def test_cache_follows_edits(self):
         with tempfile.TemporaryDirectory() as d:
