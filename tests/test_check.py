@@ -11,7 +11,7 @@ import unittest
 from radisa import hipsrc, incremental, isadb, vopd, waits
 from radisa.cli import main
 from radisa.rules import cfg
-from support import ROOT, seq
+from support import ROOT, instruction, seq, vopd_bytes
 
 FIX = ROOT / 'fixtures' / 'check'
 TABLE = isadb.load()
@@ -150,6 +150,106 @@ class CounterModelTests(unittest.TestCase):
                       ('s_cbranch_scc1', '', -3), ('s_endpgm',))
         self.assertEqual([x['pc'] for x in f], [0])
 
+    def test_d16_store_ignores_the_other_half(self):
+        lo, hi = ('global_load_d16_b16', 'v3, v[4:5], off'), ('global_load_d16_hi_b16', 'v3, v[6:7], off')
+        w1 = ('s_wait_loadcnt', '0x1', 1)
+        # The low half has landed; the high-half load is outstanding and not read.
+        self.assertEqual(run_waits(lo, hi, w1, ('global_store_b16', 'v[8:9], v3, off'), ('s_endpgm',)), [])
+        self.assertEqual(run_waits(hi, lo, w1, ('global_store_d16_hi_b16', 'v[8:9], v3, off'), ('s_endpgm',)), [])
+        self.assertEqual(run_waits(lo, hi, w1, ('ds_store_b16', 'v8, v3'), ('s_endpgm',)), [])
+        # The half that is read is outstanding.
+        for bad in (('global_store_d16_hi_b16', 'v[8:9], v3, off'), ('v_add_nc_u32', 'v9, v3, v3'),
+                    ('global_store_b32', 'v[8:9], v3, off')):
+            self.assertEqual([x['rule'] for x in run_waits(lo, hi, w1, bad, ('s_endpgm',))], ['MISSING_WAIT'], bad)
+        # The data register is also the address: it is read whole.
+        self.assertEqual(len(run_waits(lo, hi, w1, ('ds_store_b16', 'v3, v3'), ('s_endpgm',))), 1)
+
+    def test_lds_store_outstanding_at_barrier(self):
+        st, sig, wt = ('ds_store_b32', 'v1, v2'), ('s_barrier_signal', '-1'), ('s_barrier_wait', '-1')
+        f = run_waits(st, sig, wt, ('s_endpgm',))
+        self.assertEqual([(x['rule'], x['pc'], x['later_uses']) for x in f], [('LDS_STORE_BEFORE_BARRIER', 4, [8])])
+        self.assertEqual(f[0]['required_wait'], 's_wait_dscnt 0')
+        self.assertEqual(run_waits(st, ('s_wait_dscnt', '0x0', 0), sig, wt, ('s_endpgm',)), [])
+        # A global store or an unused LDS read may stay outstanding across the barrier.
+        self.assertEqual(run_waits(('global_store_b32', 'v[4:5], v2, off'), ('ds_load_b32', 'v7, v1'), sig, wt,
+                                   ('s_endpgm',)), [])
+        # One path of two leaves the write outstanding (pc0 skips the wait at pc8).
+        f = run_waits(('s_cbranch_scc1', '', 2), st, ('s_wait_dscnt', '0x0', 0), st, sig, ('s_endpgm',))
+        self.assertEqual([(x['rule'], x['producer']) for x in f], [('LDS_STORE_BEFORE_BARRIER', 12)])
+
+    def test_sgpr_read_after_scalar_write(self):
+        vread, write, read = ('v_mov_b32', 'v0, s4'), ('s_mov_b32', 's4, 1'), ('s_add_co_u32', 's6, s4, 1')
+        f = run_waits(vread, write, read, ('s_endpgm',))
+        self.assertEqual([(x['rule'], x['pc'], x['required_wait']) for x in f],
+                         [('MISSING_ALU_WAIT', 8, 's_wait_alu depctr_sa_sdst(0)')])
+        self.assertEqual(run_waits(vread, write, ('s_wait_alu', 'depctr_sa_sdst(0)', 0xff9e), read, ('s_endpgm',)), [])
+        # The wrong field does not help; the other register of the pair is hazardous as well.
+        self.assertEqual(len(run_waits(vread, write, ('s_wait_alu', 'depctr_va_vcc(0)', 0xff9d), read, ('s_endpgm',))), 1)
+        self.assertEqual(len(run_waits(vread, ('s_mov_b32', 's5, 1'), ('s_add_co_u32', 's6, s5, 1'), ('s_endpgm',))), 1)
+        # No vector instruction has read the pair: nothing to wait for.
+        self.assertEqual(run_waits(write, read, ('s_endpgm',)), [])
+        self.assertEqual(run_waits(('v_mov_b32', 'v0, s8'), write, read, ('s_endpgm',)), [])
+        # Four ds_nop make the hardware forget which pairs vector instructions read (wave32).
+        nop = ('ds_nop', '')
+        self.assertEqual(run_waits(vread, nop, nop, nop, nop, write, read, ('s_endpgm',)), [])
+        self.assertEqual(len(run_waits(vread, nop, nop, nop, write, read, ('s_endpgm',))), 1)
+        # A scalar memory read commits everything.
+        self.assertEqual(run_waits(vread, write, ('s_load_b32', 's9, s[0:1], 0x0'), read, ('s_endpgm',)), [])
+
+    def test_sgpr_read_after_vector_write(self):
+        vread, vwrite = ('v_cndmask_b32', 'v0, v1, v2, s8'), ('v_cmp_eq_u32', 's8, v0, v1')
+        f = run_waits(vread, vwrite, vread, ('s_endpgm',))
+        self.assertEqual([(x['pc'], x['required_wait']) for x in f], [(8, 's_wait_alu depctr_va_sdst(0)')])
+        self.assertEqual(run_waits(vread, vwrite, ('s_wait_alu', 'depctr_va_sdst(0)', 0xf19f), vread, ('s_endpgm',)), [])
+        # A scalar instruction may read it at once.
+        self.assertEqual(run_waits(vread, vwrite, ('s_and_b32', 's9, s8, s8'), ('s_endpgm',)), [])
+        vcc_read, vcc_write = ('v_cndmask_b32', 'v0, v1, v2, vcc_lo'), ('v_cmp_eq_u32', 'vcc_lo, v0, v1')
+        f = run_waits(vcc_read, vcc_write, vcc_read, ('s_endpgm',))
+        self.assertEqual([(x['pc'], x['required_wait']) for x in f], [(8, 's_wait_alu depctr_va_vcc(0)')])
+        self.assertEqual(run_waits(vcc_read, vcc_write, ('s_wait_alu', 'depctr_va_vcc(0)', 0xff9d), vcc_read,
+                                   ('s_endpgm',)), [])
+
+    def test_vopd_cndmask_reads_vcc(self):
+        dual = instruction('v_dual_cndmask_b32', 'v5, v2, v5 :: v_dual_cndmask_b32 v4, v4, v2', pc=8, size=8)
+        dual.update(vopd_independent_decode=True, raw=vopd_bytes(x=9, y=9, dx=5, dy=4).hex())
+        head = seq(('v_cndmask_b32', 'v0, v1, v2, vcc_lo'), ('v_cmp_gt_i32', 'vcc_lo, v6, v21'))
+        tail = [instruction('s_endpgm', pc=16)]
+        def run(ins):
+            edges, reachable, _ = cfg(ins)
+            return waits.analyze(ins, edges, reachable, TABLE)[0]
+        self.assertEqual([(x['rule'], x['pc'], x['required_wait']) for x in run(head + [dual] + tail)],
+                         [('MISSING_ALU_WAIT', 8, 's_wait_alu depctr_va_vcc(0)')])
+        mov = dict(dual, op='v_dual_mov_b32', args='v5, v2 :: v_dual_mov_b32 v4, v3', raw=vopd_bytes(x=8, y=8, dx=5, dy=4).hex())
+        self.assertEqual(run(head + [mov] + tail), [])
+
+    def test_ttmp_read_between_vector_write_and_read(self):
+        # LLVM numbers ttmp registers as SGPR 0: the scalar read of ttmp9 ends, for the compiler, the
+        # pending vector write of s0, and it emits no wait before the read of s0.
+        track, write = ('v_mov_b32', 'v0, s0'), ('v_add_co_u32', 'v1, s0, s12, v1')
+        read = ('v_add_co_ci_u32', 'v2, null, s13, v2, s0')
+        f = run_waits(track, write, ('s_ashr_i32', 's35, ttmp9, 31'), read, ('s_endpgm',))
+        self.assertEqual([(x['rule'], x['severity'], x['pc']) for x in f], [('ALU_WAIT_TTMP', 'review', 12)])
+        # Without the ttmp read the compiler waits, so a missing wait is an error.
+        f = run_waits(track, write, ('s_ashr_i32', 's35, s20, 31'), read, ('s_endpgm',))
+        self.assertEqual([(x['rule'], x['severity'], x['pc']) for x in f], [('MISSING_ALU_WAIT', 'error', 12)])
+
+    def test_sgpr_pair_tracked_later_in_a_loop(self):
+        # The pair of s4 is first read by a vector instruction at pc16, inside the loop that starts at
+        # pc8. LLVM's pass joins that into the loop head, so the scalar read of s4 at pc8 ends the pending
+        # vector write of s8 and the compiler emits no wait at pc12: not an error here either.
+        loop = (('s_and_b32', 's9, s4, s4'), ('v_cndmask_b32', 'v0, v1, v2, s8'),
+                ('v_mov_b32', 'v3, s4'), ('s_cbranch_scc1', '', -4), ('s_endpgm',))
+        self.assertEqual(run_waits(('v_mov_b32', 'v0, s8'), ('v_cmp_eq_u32', 's8, v0, v1'), *loop), [])
+        # Without the scalar read the wait is required on every path.
+        f = run_waits(('v_mov_b32', 'v0, s8'), ('v_cmp_eq_u32', 's8, v0, v1'), ('s_nop', '0'), *loop[1:])
+        self.assertEqual([(x['rule'], x['pc']) for x in f], [('MISSING_ALU_WAIT', 12)])
+
+    def test_sgpr_hazard_on_one_path(self):
+        # pc0 branches over the wait at pc12 to the read at pc16.
+        f = run_waits(('v_mov_b32', 'v0, s4'), ('s_mov_b32', 's4, 1'), ('s_cbranch_scc1', '', 1),
+                      ('s_wait_alu', 'depctr_sa_sdst(0)', 0xff9e), ('s_add_co_u32', 's6, s4, 1'), ('s_endpgm',))
+        self.assertEqual([(x['rule'], x['pc']) for x in f], [('MISSING_ALU_WAIT', 16)])
+
     def test_one_finding_per_producer(self):
         f = run_waits(('global_load_b32', 'v0, v[2:3], off'), ('v_add_f32', 'v1, v0, v2'),
                       ('v_add_f32', 'v3, v0, v2'), ('s_endpgm',))
@@ -248,6 +348,88 @@ class AssemblyCheckTests(unittest.TestCase):
         code, r, _ = run_check(FIX / 'wmma_hazard.s')
         self.assertEqual(code, 1)
         self.assertEqual([f['rule'] for f in findings(r)], ['WMMA_D_TO_AB'])
+
+    def test_d16_halves(self):
+        code, r, _ = run_check(FIX / 'd16_halves.s')
+        self.assertEqual((code, findings(r)), (0, []))
+        self.assertEqual(r['kernels'][0]['operand_model']['d16_other_half_stores'], 1)
+        code, r, _ = run_check(FIX / 'd16_missing_wait.s')
+        self.assertEqual(code, 1)
+        self.assertEqual([(f['rule'], f['loc']['line']) for f in findings(r)],
+                         [('MISSING_WAIT', 5), ('MISSING_WAIT', 10)])
+
+    def test_alu_waits(self):
+        code, r, _ = run_check(FIX / 'clean_alu_waits.s')
+        self.assertEqual((code, findings(r)), (0, []))
+        self.assertEqual(r['kernels'][0]['operand_model']['alu_waits'], 3)
+        code, r, _ = run_check(FIX / 'missing_alu_waits.s')
+        self.assertEqual(code, 1)
+        self.assertEqual([(f['rule'], f['loc']['line'], f['required_wait']) for f in findings(r)],
+                         [('MISSING_ALU_WAIT', 4, 's_wait_alu depctr_va_sdst(0)'),
+                          ('MISSING_ALU_WAIT', 6, 's_wait_alu depctr_sa_sdst(0)'),
+                          ('MISSING_ALU_WAIT', 10, 's_wait_alu depctr_va_vcc(0)')])
+
+    def test_snippet_may_end_without_endpgm(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = Path(d, 'x.s')
+            p.write_text('v_add_f32 v4, v1, v2\n')
+            code, r, _ = run_check(p)
+        self.assertEqual(code, 0)
+        self.assertEqual([(f['rule'], f['severity']) for f in findings(r)], [('CFG_FALLTHROUGH', 'info')])
+
+    def test_whole_kernel_is_clean(self):
+        code, r, _ = run_check(FIX / 'kernel_reduce.s')
+        self.assertEqual((code, r['status'], findings(r)), (0, 'PASS', []))
+        self.assertEqual(r['kernels'][0]['instructions'], 22)
+
+    def mutants(self):
+        """kernel_reduce.s with one fault each: (what, text, rule that has to report it)."""
+        lines = (FIX / 'kernel_reduce.s').read_text().splitlines(keepends=True)
+        expected = {'s_wait_kmcnt 0x0': 'MISSING_WAIT', 's_wait_loadcnt 0x0': 'MISSING_WAIT',
+                    's_wait_dscnt 0x0': None, 's_endpgm': 'CFG_FALLTHROUGH'}
+        dscnt = iter(['LDS_STORE_BEFORE_BARRIER', 'MISSING_WAIT'])
+        for n, ln in enumerate(lines):
+            if ln.strip() in expected:
+                rule = expected[ln.strip()] or next(dscnt)
+                yield f'line {n + 1} `{ln.strip()}` removed', ''.join(lines[:n] + lines[n + 1:]), rule
+        n = next(i for i, ln in enumerate(lines) if ln.strip() == 's_endpgm')
+        yield ('conditional branch as last instruction',
+               ''.join(lines[:n] + ['\ts_cbranch_scc1 .LBB0_2\n'] + lines[n + 1:]), 'CFG_FALLTHROUGH')
+        yield ('a VGPR above the allocation', ''.join(lines).replace(
+            'v_add_f32_e32 v0, v2, v3', 'v_add_f32_e32 v0, v2, v9'), 'VGPR_OUT_OF_RANGE')
+        yield ('wait for the barrier moved behind it', ''.join(lines).replace(
+            '\ts_wait_dscnt 0x0\n\ts_barrier_signal -1\n\ts_barrier_wait -1\n',
+            '\ts_barrier_signal -1\n\ts_barrier_wait -1\n\ts_wait_dscnt 0x0\n'), 'LDS_STORE_BEFORE_BARRIER')
+
+    def test_every_single_fault_in_a_kernel_fails(self):
+        seen = []
+        with tempfile.TemporaryDirectory() as d:
+            for what, text, rule in self.mutants():
+                p = Path(d, 'm.s')
+                p.write_text(text)
+                code, r, _ = run_check(p)
+                errors = {f['rule'] for f in findings(r) if f['severity'] == 'error'}
+                self.assertEqual((code, r['status'], errors), (1, 'FAIL', {rule}), what)
+                seen.append(rule)
+        self.assertEqual(len(seen), 8)
+        self.assertEqual(set(seen), {'MISSING_WAIT', 'LDS_STORE_BEFORE_BARRIER', 'CFG_FALLTHROUGH',
+                                     'VGPR_OUT_OF_RANGE'})
+
+    def test_vgpr_out_of_range(self):
+        # The descriptor allocates 8 VGPRs (granule of 8 in wave32): v7 is the last one the kernel owns.
+        text = (FIX / 'kernel_reduce.s').read_text()
+        with tempfile.TemporaryDirectory() as d:
+            p = Path(d, 'm.s')
+            p.write_text(text.replace('v_add_f32_e32 v0, v2, v3', 'v_add_f32_e32 v0, v2, v7'))
+            code, r, _ = run_check(p)
+            self.assertEqual((code, findings(r)), (0, []))
+            p.write_text(text.replace('v_add_f32_e32 v0, v2, v3', 'v_add_f32_e32 v0, v2, v8'))
+            code, r, _ = run_check(p)
+            f = [x for x in findings(r) if x['rule'] == 'VGPR_OUT_OF_RANGE']
+            self.assertEqual(code, 1)
+            self.assertEqual([(x['instruction'], x['registers'], x['allocated_vgprs']) for x in f],
+                             [('v_add_f32_e32 v0, v2, v8', ['v8'], 8)])
+            self.assertIn('3.3.2', f[0]['source'])
 
     def test_assembler_error_is_reported(self):
         with tempfile.TemporaryDirectory() as d:
@@ -364,6 +546,13 @@ class HipCheckTests(unittest.TestCase):
         code, r, _ = self.check('clean_compiled.hip')
         self.assertEqual(code, 0, findings(r))
         self.assertEqual(r['operand_model']['unknown'], 0)
+
+    def test_barrier_without_release_fence(self):
+        code, r, text = self.check('barrier_no_fence.hip')
+        self.assertEqual(code, 1)
+        f = [x for x in findings(r) if x['severity'] == 'error']
+        self.assertEqual([(x['rule'], x['loc']['line']) for x in f], [('LDS_STORE_BEFORE_BARRIER', 11)])
+        self.assertIn('barrier_no_fence.hip:10', f[0]['message'])
 
     def test_compile_error_is_an_error(self):
         with tempfile.TemporaryDirectory() as d:

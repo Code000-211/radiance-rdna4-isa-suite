@@ -36,6 +36,12 @@ class FlowTests(unittest.TestCase):
         e,r,f=cfg(seq(('s_setpc_b64','s[0:1]')));self.assertEqual(f[0]['severity'],'incomplete')
     def test_missing_terminator(self):
         e,r,f=cfg(seq(('v_mov_b32','v0, 1')));self.assertEqual(f[0]['rule'],'CFG_FALLTHROUGH')
+        self.assertEqual(f[0]['severity'],'error')
+        # A conditional branch or a call as the last instruction falls through as well.
+        for last in (('s_cbranch_scc1','0',0),('s_swappc_b64','s[30:31], s[0:1]')):
+            e,r,f=cfg(seq(('v_mov_b32','v0, 1'),last));self.assertIn(('CFG_FALLTHROUGH','error'),[(x['rule'],x['severity'])for x in f],last)
+        # Not reached by direct branches: the path cannot be decided.
+        e,r,f=cfg(seq(('s_endpgm',),('v_mov_b32','v0, 1')));self.assertEqual([(x['rule'],x['severity'])for x in f],[('CFG_FALLTHROUGH','incomplete')])
     def test_reachable_code_end(self):
         e,r,f=cfg(seq(('s_code_end',)));self.assertEqual(f[0]['rule'],'REACHABLE_CODE_END')
     def test_unreachable_code_end_is_padding(self):

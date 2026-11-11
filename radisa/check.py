@@ -27,7 +27,7 @@ from .incremental import check_hip_incremental
 SEVERITY_LABEL = {'error': 'error', 'review': 'warning', 'incomplete': 'note', 'info': 'note'}
 RULE_SECTION = {'VOPD_': '7.8', 'WMMA_': '7.12.1', 'PERMLANE': '7.2.8', 'DEALLOC': '3.3.3',
                 'USE_AFTER_DEALLOC': '3.3.3', 'REACHABLE_CODE_END': '2.4', 'SGPR_PAIR': '5.8',
-                'WATERFALL': '7.11', 'LAST_USE': '4.1.1', 'DYNAMIC_': '3.3.3'}
+                'WATERFALL': '7.11', 'LAST_USE': '4.1.1', 'DYNAMIC_': '3.3.3', 'VGPR_OUT': '3.3.2'}
 DROP_KERNEL_ISSUES = ('relocatable ELF',)
 
 
@@ -36,6 +36,35 @@ def _section(rule: str) -> str | None:
         if rule.startswith(prefix):
             return sec
     return None
+
+
+def _vgpr_range(kernel: dict, ins: list[dict], findings: list[dict]) -> list[dict]:
+    """Instructions that name a VGPR the kernel descriptor does not allocate.
+
+    The ISA gives out-of-range register references a fallback instead of a trap (§3.3.2), so the
+    code runs on with values the program did not compute. Compiler output never does it;
+    hand-written assembly and inline asm can. Not checked with dynamic VGPRs (s_alloc_vgpr), where the allocation changes at run time.
+    """
+    allocated = (kernel.get('descriptor') or {}).get('encoded_vgprs')
+    if not allocated or any(i['op'] == 's_alloc_vgpr' for i in ins):
+        return []
+    out = []
+    for i in ins:
+        try:
+            regs = isadb.registers(i['args'])
+        except FormatError:
+            continue
+        high = max((n for kind, n in regs if kind == 'v'), default=-1)
+        if high >= allocated:
+            out.append({'rule': 'VGPR_OUT_OF_RANGE', 'severity': 'error', 'pc': i['pc'],
+                        'message': f"{i['op']} uses v{high}, but the kernel descriptor allocates only "
+                                   f'{allocated} VGPRs (v0-v{allocated - 1}); the hardware does not trap on it, '
+                                   'the instruction works with a register the program does not own',
+                        'registers': [f'v{high}'], 'allocated_vgprs': allocated})
+    if out:
+        # The VOPD check says the same for its pairs, as a warning.
+        findings[:] = [f for f in findings if f['rule'] != 'VOPD_REGISTER_RANGE']
+    return out
 
 
 def check_kernel(kernel: dict, decoded: dict, table: dict, origin: dict | None = None) -> dict:
@@ -49,6 +78,12 @@ def check_kernel(kernel: dict, decoded: dict, table: dict, origin: dict | None =
                          'message': f'{len(calls)} call(s)/indirect branch(es); callee bodies are not '
                                     'analysed, counters are assumed drained on return (callee prologue)',
                          'call_pcs': [f['pc'] for f in calls]})
+    if not kernel.get('descriptor'):
+        # A snippet is a fragment: where it ends says nothing about a kernel's end.
+        for f in findings:
+            if f['rule'] == 'CFG_FALLTHROUGH':
+                f.update(severity='info', message='the snippet ends without s_endpgm (not an error for a fragment)')
+    findings += _vgpr_range(kernel, decoded['instructions'], findings)
     for f in findings:
         sec = _section(f['rule'])
         if sec:
@@ -297,7 +332,11 @@ def run(args) -> int:
               'isa_table': table['source'], 'decoder': backend, 'counts': dict(counts),
               'operand_model': {'known': known, 'unknown': unknown},
               'findings': findings, 'kernels': kernels, 'incremental': incremental,
-              'not_checked': ['numerical correctness', 'inter-wave and cross-device memory ordering',
+              'not_checked': ['numerical correctness',
+                              'waits that only a memory ordering asks for (atomics, fences, global_inv/global_wb, '
+                              'cross-device release/acquire): the ordering is not in the machine code',
+                              'an s_endpgm missing in the middle of a kernel (the code falls into its next block)',
+                              's_delay_alu timing', 'callee bodies and indirect branches',
                               'global memory safety', 'performance beyond the listed resource notes']}
     if args.json:
         Path(args.json).write_text(json.dumps(report, indent=2, sort_keys=True, default=_jsonable) + '\n')
