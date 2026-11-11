@@ -273,6 +273,16 @@ class ELF:
                    address + size <= p[3] + p[5] for p in self.segments)
 
 
+def target_processor(declared: str) -> str | None:
+    """The processor of an amdhsa.target string, `<arch>-<vendor>-<os>-<environment>-<processor>[:features]`.
+
+    The environment is empty up to LLVM 20 (`amdgcn-amd-amdhsa--gfx1201`) and `unknown` from
+    LLVM 21 on (`amdgcn-amd-amdhsa-unknown-gfx1201`); a processor may itself hold dashes
+    (`gfx10-1-generic`)."""
+    parts = declared.split(':')[0].split('-', 4)
+    return parts[4] if len(parts) == 5 else None
+
+
 def kernel_inventory(elf: ELF) -> tuple[list[dict], list[str]]:
     """Enumerate expected kernels BEFORE disassembly, cross-check descriptor symbols."""
     if elf.machine != 224:
@@ -283,8 +293,7 @@ def kernel_inventory(elf: ELF) -> tuple[list[dict], list[str]]:
         raise FormatError(f'unsupported AMDHSA code-object ABI byte {elf.abiversion}')
     md = elf.metadata()
     declared = md.get('amdhsa.target')
-    if declared and not (isinstance(declared, str) and
-                         declared.split('--')[-1].split(':')[0] == elf.target):
+    if declared and not (isinstance(declared, str) and target_processor(declared) == elf.target):
         raise FormatError('metadata target disagrees with ELF e_flags')
     out, issues, names, descriptors = [], [], set(), set()
     for raw in md['amdhsa.kernels']:
@@ -494,7 +503,10 @@ def extract_code_objects(data: bytes, origin: str, depth: int = 0) -> tuple[list
                 # A generic family label is the one legitimate exception: ROCm's device
                 # libraries ship one code object for "gfx12" (and gfx10, gfx11, gfx9),
                 # whose ELF names the concrete target gfx1200.
-                label = name.split('--')[-1].split(':')[0] if '--gfx' in name else None
+                at = name.find('amdgcn-')
+                label = target_processor(name[at:]) if at >= 0 else None
+                if not (label or '').startswith('gfx'):
+                    label = None
                 for obj in a:
                     if label and label != obj['target'] and not obj['target'].startswith(label):
                         raise FormatError('bundle ID disagrees with device ELF target')

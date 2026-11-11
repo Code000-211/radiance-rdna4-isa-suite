@@ -53,14 +53,21 @@ is a single self-contained function. `radisa check` therefore:
    gets, read from `clang -###`), the `llc` version and the ISA table; debug locations and the source
    offsets of inline-asm strings are left out;
 3. runs `llvm-extract` + `llc` + `llvm-mc` and the checks only for kernels with a new fingerprint, in
-   parallel (`--jobs`);
+   parallel (`--jobs`). ROCm's LLVM 24 packages, and the compiler Radiance builds from them
+   (`/opt/rocm-repeatable`), ship neither `llvm-extract` nor `llc`; there the same two steps are
+   `opt -passes=internalize,globaldce` (keeps the kernel and every global variable) and
+   `clang -x ir -Xclang -disable-llvm-passes` (code generation only, same `-O` level and `-mllvm`
+   options). The JSON report names the one used as `incremental.codegen` (`llc` or `clang`);
 4. takes the other kernels' results from the cache (`--cache-dir`, default `$RADISA_CACHE` or
    `~/.cache/radisa/<unit>`), with their source lines moved along the edit by a diff of the old and new
    file; a kernel whose finding line was itself edited is compiled again.
 
 Per-kernel `llc` gives the same machine code as compiling the unit: 241 of 241 kernels in seven
 libr4d units, and identical findings from `--no-incremental` and the default mode on `attn_paged_h256_gqa12`,
-`ltx` and `ar_oneshot_2rank_exact`. When non-kernel functions survive optimisation, module-level code
+`ltx` and `ar_oneshot_2rank_exact`. The `opt` + `clang` path was compared the same way with Radiance's
+LLVM 24 compiler and the flags of its `compile_commands.json`: code bytes and kernel descriptor are
+identical for 4475 of 4475 kernels in 117 libr4d units, and for 32 of 32 kernels sampled from the
+2069 of `r4d_gemm_iqr`. When non-kernel functions survive optimisation, module-level code
 generation (the LDS layout across kernels) could differ; then the whole module goes through `llc` and
 nothing is cached. `--no-incremental` restores the single `clang -S` compile.
 
