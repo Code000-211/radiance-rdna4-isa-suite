@@ -124,16 +124,6 @@ scenario, not a measured R9700 latency. The attention demo runs genuine Radiance
 results are not FP8 GPU calibration. A changed source hash requires adapter review, not removal
 of the hash check.
 
-| Implemented in v0.6 | Not implied |
-|---|---|
-| QSA history scoring + selected attention + merge counts | Exact per-instruction GPU timing, selector accuracy or unseen inputs |
-| Explicit expert histograms, whole-block TP widths, shared-expert costs | Router prediction, complete EP routing, actual MoE GPU execution |
-| Push/pull directions, two-rank oneshot/ring cost hypotheses | Runtime TP2 support, atomic ordering or wedge testing |
-| DAG/queue/resource contention and finite candidate search | Exact AMD scheduler, native kernel generation, hardware-optimal schedule |
-| Declared buffers and workspace highwater | Discovery of hidden allocator/KV/state buffers |
-| Finite rate-sensitivity and external graph comparison protocol | Statistical confidence or automatic calibration of all new operators |
-| Partial source-specific model shape extraction | Complete transformer/GDN/MTP graph or tokens/s prediction |
-
 ## Tests
 
 ```bash
