@@ -322,6 +322,7 @@ def kernel_inventory(elf: ELF) -> tuple[list[dict], list[str]]:
             group, private, kernarg = unpack('<III', desc)
             entry_off = unpack('<q', desc, 16)[0]
             rsrc3, rsrc1, rsrc2, props = unpack('<IIIH', desc, 44)
+            preload = unpack('<H', desc, 58)[0]  # KERNARG_PRELOAD_SPEC: LENGTH 6:0, OFFSET 15:7
             wave = 32 if props & (1 << 10) else 64
             if wave != raw['.wavefront_size']:
                 raise FormatError('descriptor and metadata wave sizes disagree')
@@ -362,7 +363,8 @@ def kernel_inventory(elf: ELF) -> tuple[list[dict], list[str]]:
                      code_sha256=sha256(code), code_hex=code.hex(),
                      descriptor={'wave': wave, 'encoded_vgprs': encoded,
                                  'rsrc1': rsrc1, 'rsrc2': rsrc2, 'rsrc3': rsrc3,
-                                 'properties': props, 'kernarg': kernarg},
+                                 'properties': props, 'kernarg': kernarg,
+                                 'kernarg_preload': preload},
                      padding_file_backed=proved,
                      padding_bytes_proved=lookahead if proved else 0)
             if not proved:

@@ -1,0 +1,59 @@
+# radisa: unit tests and `radisa check-all` on the clean assembly fixtures.
+#
+# Honest scope: this runs on Ubuntu's packaged LLVM/clang (no ROCm, no GPU). Tests that need a
+# newer llvm-mc (compiler-emitted kernels with `instprefsize`, the 4-component target id) or a clang
+# that compiles fixtures/check/clean_compiled.hip SKIP here, because RAD_ISA_REQUIRE_LLVM is not set.
+# Full validation needs the ROCm / Radiance LLVM 24 toolchain: run `bash check.sh` there
+# (it sets RAD_ISA_REQUIRE_LLVM=1, so nothing is skipped). No finding is confirmed on hardware.
+name: radisa
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install LLVM and clang
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends llvm clang
+          llvm-mc --version | head -n 3
+          clang++ --version | head -n 1
+
+      - name: Unit tests (toolchain-dependent tests skip without RAD_ISA_REQUIRE_LLVM)
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python3 -m unittest discover -s tests
+
+      - name: check-all on the clean snippets (expected PASS)
+        run: |
+          bash check-tree.sh \
+            fixtures/check/clean_waits.s fixtures/check/clean_alu_waits.s \
+            fixtures/check/d16_halves.s fixtures/check/minimal_kernel.s \
+            fixtures/check/*_clean.s \
+            --jobs 4 --timeout-per-file 300 --format sarif --out radisa.sarif
+
+      - name: GitHub annotations for the same files
+        if: always()
+        run: |
+          bash check-tree.sh \
+            fixtures/check/clean_waits.s fixtures/check/clean_alu_waits.s \
+            fixtures/check/d16_halves.s fixtures/check/minimal_kernel.s \
+            fixtures/check/*_clean.s \
+            --jobs 4 --timeout-per-file 300 --format github --quiet || true
+
+      - name: Upload SARIF
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: radisa-sarif
+          path: radisa.sarif
+          if-no-files-found: warn

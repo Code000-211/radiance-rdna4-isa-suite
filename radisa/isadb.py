@@ -162,9 +162,53 @@ def cite(table: dict, section: str) -> str:
 
 # ---------------------------------------------------------------- operand model
 
+# A literal operand in disassembly. LLVM up to 23 prints only the value (`0x100`, `32`, `-16`).
+# ROCm LLVM 24 (d6f6cb69) prints a literal whose value would also fit an inline constant as
+# `lit(0x20)`, a 64-bit one as `lit64(0x...)`: AMDGPUDisassembler::decodeLiteralConstant /
+# decodeLiteral64Constant wrap it in AMDGPUMCExpr::createLit (AGVK_Lit / AGVK_Lit64), whose
+# printImpl writes `lit(` / `lit64(` around an MCConstantExpr created with PrintInHex. The
+# assembler accepts the same spelling. Every place that reads an immediate from disassembly
+# text goes through `immediate`; everything else reads the encoding (`raw`).
+LITERAL = re.compile(r'\b(lit64|lit)\(\s*([-+]?(?:0[xX][0-9a-fA-F]+|\d+))\s*\)')
+_INT = re.compile(r'[-+]?(?:0[xX][0-9a-fA-F]+|0[bB][01]+|0[oO]?[0-7]+|[1-9]\d*|0)')
+
+
+def immediate(token: str) -> int | None:
+    """Integer value of one printed immediate operand: `0x20`, `32`, `-16`, `lit(0x20)`,
+    `lit64(0x100000000)`; None for anything else (registers, floats such as `1.0`, expressions).
+    The value is returned as printed (a 32-bit literal is not sign-extended); callers that need
+    the operand width mask it."""
+    t = token.strip()
+    m = re.fullmatch(r'(?:lit64|lit)\(\s*(.*?)\s*\)', t)
+    if m:
+        t = m[1]
+    if not _INT.fullmatch(t):
+        return None
+    sign = -1 if t[0] == '-' else 1
+    t = t.lstrip('+-')
+    if t[:2].lower() in ('0x', '0b', '0o'):
+        return sign * int(t, 0)
+    return sign * int(t, 8 if len(t) > 1 and t[0] == '0' else 10)
+
+
+def canonical_literals(text: str) -> str:
+    """`text` with every `lit(X)` / `lit64(X)` replaced by X as LLVM 18-23 prints the same integer
+    operand: a value that fits an inline constant (-16..64) in decimal, anything else in hex. Used
+    where instruction text is compared across LLVM versions (baseline fingerprints). A literal of
+    a floating-point operand is printed by LLVM 18-23 as e.g. `1.0` and stays different."""
+    def repl(m):
+        bits = 64 if m[1] == 'lit64' else 32
+        v = immediate(m[2]) & ((1 << bits) - 1)
+        s = v - (1 << bits) if v >> (bits - 1) else v
+        return str(s) if -16 <= s <= 64 else hex(v)
+    return LITERAL.sub(repl, text)
+
+
 REG_TOKEN = re.compile(
-    r'(?<![\w])(?:([vs])\[(\d+):(\d+)\]|([vs])(\d+)|ttmp\[(\d+):(\d+)\]|ttmp(\d+)|'
+    r'(?<![\w])(?:([vs])\[\s*(\d+)\s*(?::\s*(\d+)\s*)?\]|([vs])(\d+)|'
+    r'ttmp\[\s*(\d+)\s*(?::\s*(\d+)\s*)?\]|ttmp(\d+)|'
     r'(vcc_lo|vcc_hi|vcc|exec_lo|exec_hi|exec|m0|scc))(?![\w])')
+# `v[7]` (one register in brackets) is accepted by llvm-mc and printed as v7; it is read as v7.
 SPECIAL = {'vcc_lo': [106], 'vcc_hi': [107], 'vcc': [106, 107], 'exec_lo': [126],
            'exec_hi': [127], 'exec': [126, 127], 'm0': [125]}
 
@@ -174,14 +218,14 @@ def registers(text: str) -> set[tuple[str, int]]:
     for m in REG_TOKEN.finditer(text):
         kind, lo, hi, kind1, single, tlo, thi, tsingle, special = m.groups()
         if kind:
-            a, b = int(lo), int(hi)
+            a, b = int(lo), int(hi if hi is not None else lo)
             if a > b or b > 4096:
                 raise FormatError(f'invalid register range in {text!r}')
             out.update((kind, n) for n in range(a, b + 1))
         elif kind1:
             out.add((kind1, int(single)))
         elif tlo is not None:
-            out.update(('s', 108 + n) for n in range(int(tlo), int(thi) + 1))
+            out.update(('s', 108 + n) for n in range(int(tlo), int(thi if thi is not None else tlo) + 1))
         elif tsingle is not None:
             out.add(('s', 108 + int(tsingle)))
         elif special == 'scc':
@@ -238,7 +282,8 @@ def _align(positional: list[str], ops: list[list], drop_vdst: bool) -> list[tupl
     """Align printed operands to explicit XML operands, allowing LLVM's omissions.
 
     LLVM leaves out the EXEC destination of V_CMPX and sometimes the VCC operand
-    of VOP2/VOPC; a non-returning VMEM atomic has no VDST. Nothing else may vanish.
+    of VOP2/VOPC; a non-returning FLAT/GLOBAL atomic has no VDST (`drop_vdst`; a MUBUF/MIMG atomic
+    keeps it as its data operand, see operand_model). Nothing else may vanish.
     """
     explicit = [o for o in ops if not o[1]]
     result: list[tuple[str, list]] = []
@@ -278,16 +323,25 @@ def _looks_like(token: str, op: list) -> bool:
 
 
 def operand_model(table: dict, op: str, args: str, wave: int = 32) -> dict:
-    """Reads/writes of one disassembled instruction, or `known=False`."""
+    """Reads/writes of one disassembled instruction, or `known=False`.
+
+    An unknown instruction (mnemonic not in the table, or no XML form fits the printed operands) is
+    taken to read AND write every register its text names: nothing about it is assumed harmless.
+    """
     name, entry = lookup(table, op)
     text_regs = registers(args)
     if entry is None:
-        return {'known': False, 'name': None, 'reads': text_regs, 'writes': set(),
+        return {'known': False, 'name': None, 'reads': text_regs, 'writes': set(text_regs),
                 'reason': 'mnemonic not in AMD ISA table'}
     args = re.split(r'\s(?://|;)', ' ' + args, maxsplit=1)[0].strip()
     positional = split_operands(args)
     vmem_atomic = 'ATOMIC' in entry['subgroups'] and not name.startswith('DS_')
-    drop_vdst = vmem_atomic and 'TH_ATOMIC_RETURN' not in args.upper()
+    returning = 'TH_ATOMIC_RETURN' in args.upper()
+    # A MUBUF/MIMG atomic has one VGPR operand for its data and its return value (VDATA): the XML
+    # lists it once, as VDST. It is always read (the data); written only with TH_ATOMIC_RETURN.
+    # FLAT/GLOBAL/SCRATCH atomics have a separate VDATA operand and no VDST without a return.
+    inout = vmem_atomic and name.startswith(('BUFFER_', 'TBUFFER_', 'IMAGE_'))
+    drop_vdst = vmem_atomic and not inout and not returning
     for form in entry['forms']:
         aligned = _align(positional, form['ops'], drop_vdst)
         if aligned is None:
@@ -300,6 +354,11 @@ def operand_model(table: dict, op: str, args: str, wave: int = 32) -> dict:
                 regs = implicit_registers(o[2], wave)
             if not token and o[3] == 'VDST':
                 returns = False
+            if inout and o[3] == 'VDST':
+                reads |= regs
+                if not returning:
+                    returns = False
+                    continue
             if 'r' in o[0]:
                 reads |= regs
             if 'w' in o[0]:
@@ -322,5 +381,5 @@ def operand_model(table: dict, op: str, args: str, wave: int = 32) -> dict:
         return {'known': True, 'name': name, 'entry': entry, 'enc': form['enc'],
                 'reads': reads, 'writes': writes, 'returns': returns,
                 'mem_read': mem_read, 'mem_write': mem_write}
-    return {'known': False, 'name': name, 'entry': entry, 'reads': text_regs, 'writes': set(),
+    return {'known': False, 'name': name, 'entry': entry, 'reads': text_regs, 'writes': set(text_regs),
             'reason': f'{len(positional)} printed operands match no XML form of {name}'}

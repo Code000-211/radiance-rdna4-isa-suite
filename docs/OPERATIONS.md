@@ -28,7 +28,7 @@ mechanisms to force a stress test to continue.
   `tools/vcc_hi_probe.hip` returns 3+7 = 10 both from a plain `v_add_nc_u32` and from the
   Y slot of a real VOPD pair, and `s_mov_b32 exec_hi, 7` reads back as 7 with no effect on
   lane masking. Kept visible as a table deviation, not raised as a hardware failure.
-- `VOPD_ANTIDEP` (`review`): `vdstX` is a source of `opY` in the encoded word,
+- `VOPD_ANTIDEP` (`info`): `vdstX` is a source of `opY` in the encoded word,
   which ISA §7.8 forbids. LLVM's `gcn-create-vopd` produces this on purpose when
   a program-order WAR pair is swapped into the X/Y slots, and
   `SIInstrInfo::isVOPDAntidependencyAllowed` permits exactly that for every

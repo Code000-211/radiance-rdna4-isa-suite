@@ -11,7 +11,7 @@ import unittest
 from radisa import hipsrc, incremental, isadb, vopd, waits
 from radisa.cli import main
 from radisa.rules import cfg
-from support import ROOT, instruction, seq, vopd_bytes
+from support import ROOT, instruction, needs_hip, needs_kernel_asm, seq, vopd_bytes
 
 FIX = ROOT / 'fixtures' / 'check'
 TABLE = isadb.load()
@@ -75,6 +75,30 @@ class TableTests(unittest.TestCase):
         self.assertEqual(waits.domains(none, 'global_atomic_add_u32'), ['store'])
         self.assertEqual(waits.domains(rtn, 'global_atomic_add_u32'), ['load'])
 
+    def test_buffer_and_image_atomic_data_is_vdst(self):
+        # MUBUF/MIMG atomics have one VGPR operand for data and return value: always read,
+        # written only with TH_ATOMIC_RETURN (FLAT/GLOBAL atomics have a separate VDATA).
+        none = model('buffer_atomic_add_u32', 'v1, off, s[0:3], null')
+        self.assertTrue(none['known'])
+        self.assertIn(('v', 1), none['reads'])
+        self.assertEqual(names(none['writes']), [])
+        self.assertEqual(waits.domains(none, ''), ['store'])
+        rtn = model('buffer_atomic_add_u32', 'v1, off, s[0:3], null th:TH_ATOMIC_RETURN')
+        self.assertIn(('v', 1), rtn['reads'])
+        self.assertEqual(names(rtn['writes']), ['v1'])
+        self.assertEqual(waits.domains(rtn, ''), ['load'])
+        img = model('image_atomic_add_uint', 'v1, v0, s[0:7] dmask:0x1 dim:SQ_RSRC_IMG_1D')
+        self.assertTrue(img['known'])
+        self.assertEqual(names(img['writes']), [])
+        self.assertIn(('v', 1), img['reads'])
+
+    def test_single_register_in_brackets(self):
+        # llvm-mc accepts v[7] / s[7] / ttmp[3] and prints v7 / s7 / ttmp3.
+        self.assertEqual(names(isadb.registers('v[7], s[ 7 ], ttmp[3], v[0:1]')), ['s111', 's7', 'v0', 'v1', 'v7'])
+        m = model('v_mov_b32', 'v[7], v1')
+        self.assertTrue(m['known'])
+        self.assertEqual(names(m['writes']), ['v7'])
+
     def test_memory_domains(self):
         self.assertEqual(waits.domains(model('flat_load_b32', 'v1, v[2:3]'), ''), ['load', 'ds'])
         self.assertEqual(waits.domains(model('ds_load_b32', 'v1, v3 offset:256'), ''), ['ds'])
@@ -90,6 +114,11 @@ class TableTests(unittest.TestCase):
         m = model('v_made_up_b32', 'v1, v2')
         self.assertFalse(m['known'])
         self.assertEqual(names(m['reads']), ['v1', 'v2'])
+        self.assertEqual(names(m['writes']), ['v1', 'v2'])
+        # A known mnemonic whose printed operands fit no XML form is unknown the same way.
+        m = model('v_mov_b32_e32', 'v1, v2, v3, v4')
+        self.assertFalse(m['known'])
+        self.assertEqual(names(m['writes']), ['v1', 'v2', 'v3', 'v4'])
 
 
 def run_waits(*spec):
@@ -169,6 +198,12 @@ class CounterModelTests(unittest.TestCase):
         f = run_waits(st, sig, wt, ('s_endpgm',))
         self.assertEqual([(x['rule'], x['pc'], x['later_uses']) for x in f], [('LDS_STORE_BEFORE_BARRIER', 4, [8])])
         self.assertEqual(f[0]['required_wait'], 's_wait_dscnt 0')
+        # 'error' although LLVM waits here only for a cross-address-space release fence (SIMemoryLegalizer):
+        # the R9700 lost LDS writes without it (hwprobe lds_store_barrier, 137 and 152 of 200 launches).
+        self.assertEqual(f[0]['severity'], 'error')
+        from radisa.suppress import RULES
+        self.assertEqual(RULES['LDS_STORE_BEFORE_BARRIER']['severity'], 'error')
+        self.assertIn('R9700', RULES['LDS_STORE_BEFORE_BARRIER']['basis'])
         self.assertEqual(run_waits(st, ('s_wait_dscnt', '0x0', 0), sig, wt, ('s_endpgm',)), [])
         # A global store or an unused LDS read may stay outstanding across the barrier.
         self.assertEqual(run_waits(('global_store_b32', 'v[4:5], v2, off'), ('ds_load_b32', 'v7, v1'), sig, wt,
@@ -243,6 +278,28 @@ class CounterModelTests(unittest.TestCase):
         # Without the scalar read the wait is required on every path.
         f = run_waits(('v_mov_b32', 'v0, s8'), ('v_cmp_eq_u32', 's8, v0, v1'), ('s_nop', '0'), *loop[1:])
         self.assertEqual([(x['rule'], x['pc']) for x in f], [('MISSING_ALU_WAIT', 12)])
+
+    def test_long_branch_is_a_jump_for_sgpr_hazards(self):
+        # A resolved long branch (s_getpc/s_add/s_setpc, built by BranchRelaxation after the hazard
+        # passes, with s_wait_alu depctr_sa_sdst(0) fillers on LLVM 20+) passes the pending hazards on
+        # to its target like s_branch: the wait belongs before the read there, not at the s_setpc_b64.
+        sa = ('s_wait_alu', 'depctr_sa_sdst(0)', 0xfffe)
+        lb = [('s_getpc_b64', 's[4:5]'), sa, ('s_add_co_u32', 's4, s4, 0x18'), ('s_add_co_ci_u32', 's5, s5, 0'), sa,
+              ('s_setpc_b64', 's[4:5]')]
+        track, vwrite, vread = ('v_add_f32', 'v0, s10, v0'), ('v_cmp_gt_f32', 's10, v0, v1'), \
+            ('v_cndmask_b32', 'v1, v2, v3, s10')
+        f = run_waits(track, vwrite, *lb, ('s_endpgm',), vread, ('s_endpgm',))
+        self.assertEqual([(x['rule'], x['pc']) for x in f], [('MISSING_ALU_WAIT', 36)])
+        self.assertEqual(run_waits(track, vwrite, *lb, ('s_endpgm',),
+                                   ('s_wait_alu', 'depctr_va_sdst(0)', 0xf1ff), vread, ('s_endpgm',)), [])
+        # Without the fillers the s_setpc_b64 reads its address pair before the s_add writes commit.
+        f = run_waits(('v_add_f32', 'v0, s4, v0'), lb[0], ('s_add_co_u32', 's4, s4, 0x10'), lb[3],
+                      ('s_setpc_b64', 's[4:5]'), ('s_endpgm',), ('s_endpgm',))
+        setpc, = [x for x in f if x['pc'] == 16]
+        self.assertIn('reads s4, s5', setpc['message'])
+        # An unresolved s_setpc_b64 still leaves the function: every pending write must be committed.
+        f = run_waits(track, vwrite, ('s_mov_b64', 's[4:5], 0'), ('s_setpc_b64', 's[4:5]'), ('s_endpgm',))
+        self.assertEqual([(x['pc'], 'leaves the function' in x['message']) for x in f], [(12, True)])
 
     def test_sgpr_hazard_on_one_path(self):
         # pc0 branches over the wait at pc12 to the read at pc16.
@@ -377,6 +434,7 @@ class AssemblyCheckTests(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertEqual([(f['rule'], f['severity']) for f in findings(r)], [('CFG_FALLTHROUGH', 'info')])
 
+    @needs_kernel_asm
     def test_whole_kernel_is_clean(self):
         code, r, _ = run_check(FIX / 'kernel_reduce.s')
         self.assertEqual((code, r['status'], findings(r)), (0, 'PASS', []))
@@ -401,7 +459,10 @@ class AssemblyCheckTests(unittest.TestCase):
             '\ts_wait_dscnt 0x0\n\ts_barrier_signal -1\n\ts_barrier_wait -1\n',
             '\ts_barrier_signal -1\n\ts_barrier_wait -1\n\ts_wait_dscnt 0x0\n'), 'LDS_STORE_BEFORE_BARRIER')
 
+    @needs_kernel_asm
     def test_every_single_fault_in_a_kernel_fails(self):
+        """Every fault is an error, LDS_STORE_BEFORE_BARRIER included (hwprobe lds_store_barrier lost LDS
+        writes on an R9700 in 137 and 152 of 200 launches without the s_wait_dscnt)."""
         seen = []
         with tempfile.TemporaryDirectory() as d:
             for what, text, rule in self.mutants():
@@ -415,13 +476,20 @@ class AssemblyCheckTests(unittest.TestCase):
         self.assertEqual(set(seen), {'MISSING_WAIT', 'LDS_STORE_BEFORE_BARRIER', 'CFG_FALLTHROUGH',
                                      'VGPR_OUT_OF_RANGE'})
 
+    @needs_kernel_asm
     def test_vgpr_out_of_range(self):
         # The descriptor allocates 8 VGPRs (granule of 8 in wave32): v7 is the last one the kernel owns.
+        # Nothing writes v7 (the entry state defines only v0), so reading it is UNINITIALIZED_READ, a
+        # warning ('review'): exit 0 and no other finding, in particular no VGPR_OUT_OF_RANGE.
         text = (FIX / 'kernel_reduce.s').read_text()
         with tempfile.TemporaryDirectory() as d:
             p = Path(d, 'm.s')
             p.write_text(text.replace('v_add_f32_e32 v0, v2, v3', 'v_add_f32_e32 v0, v2, v7'))
             code, r, _ = run_check(p)
+            self.assertEqual((code, [(x['rule'], x['severity'], x['instruction'], x.get('registers'))
+                                     for x in findings(r)]),
+                             (0, [('UNINITIALIZED_READ', 'review', 'v_add_f32_e32 v0, v2, v7', ['v7'])]))
+            code, r, _ = run_check(p, '--no-liveness')
             self.assertEqual((code, findings(r)), (0, []))
             p.write_text(text.replace('v_add_f32_e32 v0, v2, v3', 'v_add_f32_e32 v0, v2, v8'))
             code, r, _ = run_check(p)
@@ -502,6 +570,7 @@ class HipCheckTests(unittest.TestCase):
     def check(self, name, *extra):
         return run_check(FIX / name, '--cxx', gfx1201_compiler(), '--flag', '-nogpuinc -nogpulib', *extra)
 
+    @needs_hip(gfx1201_compiler(), FIX / 'clean_compiled.hip')
     def test_per_kernel_codegen_matches_whole_unit(self):
         full = self.check('clean_compiled.hip', '--no-incremental')[1]
         inc = self.check('clean_compiled.hip')[1]
@@ -530,6 +599,32 @@ class HipCheckTests(unittest.TestCase):
             self.assertEqual(fixed['incremental']['compiled'], 1)
             self.assertEqual([f for k in fixed['kernels'] for f in k['findings'] if f['rule'] == 'MISSING_WAIT'], [])
 
+    def test_relative_keep_with_compile_commands(self):
+        """Regression (target run): clang runs in the compile_commands directory, so a relative
+        --keep named another directory for it than for radisa, and the compile failed."""
+        cxx = gfx1201_compiler()
+        with tempfile.TemporaryDirectory() as d:
+            d = Path(d)
+            build, here, src = d / 'build', d / 'here', d / 'k.hip'
+            build.mkdir()
+            here.mkdir()
+            src.write_text((FIX / 'clean_compiler_basic.hip').read_text())
+            db = build / 'compile_commands.json'
+            db.write_text(json.dumps([{'directory': str(build), 'file': str(src), 'command':
+                                       f'{cxx} -nogpuinc -nogpulib -O1 -x hip --offload-arch=gfx1201 -c {src} -o k.o'}]))
+            old = os.getcwd()
+            os.chdir(here)
+            try:
+                for mode in ((), ('--no-incremental',)):
+                    code, r, _ = run_check(src, '--compile-commands', db, '--keep', 'keep', *mode)
+                    bad = [f['rule'] for f in findings(r) if f['severity'] == 'incomplete' or f['rule'] == 'COMPILE']
+                    self.assertEqual((bad, bool(r['kernels'])), ([], True), (mode, findings(r)[:3]))
+                    self.assertTrue(list((here / 'keep').rglob('*.s')), mode)
+                    self.assertFalse((build / 'keep').exists(), mode)
+                    shutil.rmtree(here / 'keep')
+            finally:
+                os.chdir(old)
+
     def test_inline_asm_race_points_at_source(self):
         code, r, _ = self.check('inline_asm_lds.hip')
         self.assertEqual(code, 1)
@@ -542,6 +637,7 @@ class HipCheckTests(unittest.TestCase):
         lexical = [f for f in r['findings'] if f['rule'] == 'HIP_INLINE_ASM_MEMORY']
         self.assertEqual([f['loc']['line'] for f in lexical], [14])
 
+    @needs_hip(gfx1201_compiler(), FIX / 'clean_compiled.hip')
     def test_compiler_scheduled_code_is_clean(self):
         code, r, _ = self.check('clean_compiled.hip')
         self.assertEqual(code, 0, findings(r))
@@ -553,6 +649,26 @@ class HipCheckTests(unittest.TestCase):
         f = [x for x in findings(r) if x['severity'] == 'error']
         self.assertEqual([(x['rule'], x['loc']['line']) for x in f], [('LDS_STORE_BEFORE_BARRIER', 11)])
         self.assertIn('barrier_no_fence.hip:10', f[0]['message'])
+
+    def test_one_as_fence_barrier_is_an_error(self):
+        """A "workgroup-one-as" release fence makes LLVM (upstream and ROCm d6f6cb69) emit no
+        s_wait_dscnt before the barrier; on an R9700 that shape lost LDS writes (hwprobe
+        lds_store_barrier), so it is an error, which an inline suppression with a reason can accept."""
+        code, r, _ = self.check('barrier_one_as.hip')
+        self.assertEqual(code, 1)
+        f = [x for x in findings(r) if x['rule'] == 'LDS_STORE_BEFORE_BARRIER']
+        self.assertEqual([(x['severity'], x['loc']['line']) for x in f], [('error', 14)])
+        self.assertEqual([x['rule'] for x in findings(r) if x['severity'] == 'error'], ['LDS_STORE_BEFORE_BARRIER'])
+        for word in ('-one-as', 'R9700', 'ignore[LDS_STORE_BEFORE_BARRIER]'):
+            self.assertIn(word, f[0]['message'])
+        with tempfile.TemporaryDirectory() as d:
+            src = Path(d, 'barrier_one_as.hip')
+            lines = (FIX / 'barrier_one_as.hip').read_text().splitlines()
+            lines[13] += '  // radisa: ignore[LDS_STORE_BEFORE_BARRIER] no wave reads another wave\'s s[] here'
+            src.write_text('\n'.join(lines) + '\n')
+            code, r, _ = run_check(src, '--cxx', gfx1201_compiler(), '--flag', '-nogpuinc -nogpulib')
+        self.assertEqual((code, [x['rule'] for x in findings(r) if x['severity'] == 'error']), (0, []))
+        self.assertEqual([x['rule'] for x in r['suppressed']], ['LDS_STORE_BEFORE_BARRIER'])
 
     def test_compile_error_is_an_error(self):
         with tempfile.TemporaryDirectory() as d:

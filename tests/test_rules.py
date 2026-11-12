@@ -37,8 +37,9 @@ class FlowTests(unittest.TestCase):
     def test_missing_terminator(self):
         e,r,f=cfg(seq(('v_mov_b32','v0, 1')));self.assertEqual(f[0]['rule'],'CFG_FALLTHROUGH')
         self.assertEqual(f[0]['severity'],'error')
-        # A conditional branch or a call as the last instruction falls through as well.
-        for last in (('s_cbranch_scc1','0',0),('s_swappc_b64','s[30:31], s[0:1]')):
+        # A conditional branch as the last instruction falls through as well. A final call is taken as
+        # a call to a noreturn function (rules.cfg docstring; see tests/test_hazards.py CfgTests).
+        for last in (('s_cbranch_scc1','0',0),):
             e,r,f=cfg(seq(('v_mov_b32','v0, 1'),last));self.assertIn(('CFG_FALLTHROUGH','error'),[(x['rule'],x['severity'])for x in f],last)
         # Not reached by direct branches: the path cannot be decided.
         e,r,f=cfg(seq(('s_endpgm',),('v_mov_b32','v0, 1')));self.assertEqual([(x['rule'],x['severity'])for x in f],[('CFG_FALLTHROUGH','incomplete')])
@@ -94,10 +95,43 @@ class HazardTests(unittest.TestCase):
     def test_permlane_cmpx(self):
         self.assertIn('PERMLANE_AFTER_CMPX',self.rules(seq(('v_cmpx_eq_u32','v0,v1'),('v_permlane16_b32','v0,v1,s0,s1'),('s_endpgm',))))
     def test_permlane_vnop(self):
-        self.assertNotIn('PERMLANE_AFTER_CMPX',self.rules(seq(('v_cmpx_eq_u32','v0,v1'),('v_nop',),('v_permlane16_b32','v0,v1,s0,s1'),('s_endpgm',))))
+        # LLVM GCNHazardRecognizer::fixVcmpxPermlaneHazards: V_NOP does not expire the hazard ("V_NOP will be
+        # discarded by SQ"); its fix is a v_mov_b32 of the permlane's src0 onto itself.
+        self.assertIn('PERMLANE_AFTER_CMPX',self.rules(seq(('v_cmpx_eq_u32','v0,v1'),('v_nop',),('v_permlane16_b32','v0,v1,s0,s1'),('s_endpgm',))))
+        self.assertNotIn('PERMLANE_AFTER_CMPX',self.rules(seq(('v_cmpx_eq_u32','v0,v1'),('v_mov_b32','v1,v1'),('v_permlane16_b32','v0,v1,s0,s1'),('s_endpgm',))))
     def test_sgpr_documented_pattern(self):
         self.assertIn('SGPR_PAIR_GUARD',self.rules(seq(('v_mov_b32','v0,s1'),('s_mov_b32','s0,0x42'),('s_mov_b32','s2,s0'),('s_endpgm',))))
     def test_sgpr_different_pair(self):
         self.assertNotIn('SGPR_PAIR_GUARD',self.rules(seq(('v_mov_b32','v0,s3'),('s_mov_b32','s0,0x42'),('s_mov_b32','s2,s0'),('s_endpgm',))))
     def test_plain_salu_not_blanket_hazard(self):
         self.assertNotIn('SGPR_PAIR_GUARD',self.rules(seq(('s_mov_b32','s1,0'),('s_mov_b32','s0,0x42'),('s_mov_b32','s2,s0'),('s_endpgm',))))
+
+class ImmediateTests(unittest.TestCase):
+    """isadb.immediate: the one parser for immediates printed in disassembly (LLVM 18-23 and LLVM 24)."""
+    def test_spellings(self):
+        from radisa.isadb import immediate
+        for t,v in [('0x20',32),('32',32),('-16',-16),('-0x10',-16),('0',0),('lit(0x20)',32),('lit( 0x0 )',0),
+                    ('lit(0xfffffff0)',0xfffffff0),('lit64(0x100000000)',1<<32),('lit(-5)',-5),(' 7 ',7),('0b101',5)]:
+            self.assertEqual(immediate(t),v,t)
+    def test_not_an_integer(self):
+        from radisa.isadb import immediate
+        for t in ['s2','v[0:1]','1.0','lit(1.0)','lit(foo)','(a-b)&0xffffffff','','lit(','lit()','0x','vcc','2.0','litx(1)']:
+            self.assertIsNone(immediate(t),t)
+    def test_canonical_literals(self):
+        from radisa.isadb import canonical_literals as c
+        self.assertEqual(c('s_add_co_u32 s2, s2, lit(0x20)'),'s_add_co_u32 s2, s2, 32')
+        self.assertEqual(c('s_add_co_ci_u32 s3, s3, lit(0xffffffff)'),'s_add_co_ci_u32 s3, s3, -1')
+        self.assertEqual(c('v_mov_b64 v[0:1], lit64(0xfffffffffffffff0)'),'v_mov_b64 v[0:1], -16')
+        self.assertEqual(c('s_mov_b32 s0, lit(0x3f800000)'),'s_mov_b32 s0, 0x3f800000')   # LLVM 18 prints 1.0
+        self.assertEqual(c('s_mov_b32 s0, 0x100'),'s_mov_b32 s0, 0x100')
+    def test_baseline_text_matches_across_llvm(self):
+        from radisa.suppress import _norm
+        self.assertEqual(_norm('s_add_co_u32 s2, s2, lit(0x20)'),_norm('s_add_co_u32 s2, s2, 32'))
+    def test_operand_model_ignores_literal(self):
+        from radisa import isadb
+        t=isadb.load(None)
+        a=isadb.operand_model(t,'s_add_co_u32','s2, s2, lit(0x20)')
+        b=isadb.operand_model(t,'s_add_co_u32','s2, s2, 32')
+        self.assertTrue(a['known'])
+        self.assertEqual((a['reads'],a['writes']),(b['reads'],b['writes']))
+        self.assertEqual(regs('s2, s2, lit(0x20)'),{('s',2)})

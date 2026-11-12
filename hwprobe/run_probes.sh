@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+# Build and run the hazard probes on a gfx1201 GPU (Radeon AI PRO R9700). Run once on one R9700 with
+# ROCm (2026-11-12, cases as of commit 1fe68fb); results in hwprobe/README.md.
+#
+#   bash hwprobe/run_probes.sh [OUT_DIR]          (default hwprobe/build)
+#
+# Environment: ROCM_PATH (default /opt/rocm), HWPROBE_CLANG (device compiler, default
+# $ROCM_PATH/llvm/bin/clang++), HIPCC (host compiler, default $ROCM_PATH/bin/hipcc),
+# HWPROBE_ITERATIONS (launches per kernel, default 200), HWPROBE_GRID (workgroups, default 512),
+# HWPROBE_CASE (only cases whose name contains it; matching none is an error).
+#
+# Writes OUT_DIR/lint/<case>.json (radisa check of the very code objects that run) and
+# OUT_DIR/results.json (host_runner; rewritten after every kernel and on a runtime error, with
+# "complete": false until the run finishes). Before anything runs, every kernel's lint verdict must
+# match the manifest (the rule on _hazard, no error on _fixed): otherwise exit 2.
+# Exit: 0 every fixed variant matched (hazard variants are informational), 1 a fixed variant
+# mismatched, 2 build, setup, lint-mismatch or runtime error.
+set -uo pipefail
+HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+REPO=$(dirname "$HERE")
+OUT=${1:-$HERE/build}
+ROCM=${ROCM_PATH:-/opt/rocm}
+CLANG=${HWPROBE_CLANG:-$ROCM/llvm/bin/clang++}
+HIPCC=${HIPCC:-$ROCM/bin/hipcc}
+ITER=${HWPROBE_ITERATIONS:-200}
+GRID=${HWPROBE_GRID:-512}
+fail() { echo "run_probes: $*" >&2; exit 2; }
+[[ $ITER =~ ^[1-9][0-9]*$ ]] || fail "HWPROBE_ITERATIONS must be a positive integer, not '$ITER'"
+[[ $GRID =~ ^[1-9][0-9]*$ ]] || fail "HWPROBE_GRID must be a positive integer, not '$GRID'"
+
+[ -x "$CLANG" ] || fail "device compiler $CLANG not found (set HWPROBE_CLANG or ROCM_PATH)"
+[ -x "$HIPCC" ] || fail "hipcc $HIPCC not found (set HIPCC or ROCM_PATH)"
+python3 "$HERE/generate.py" --check || fail "hwprobe/cases is stale: run python3 hwprobe/generate.py"
+mkdir -p "$OUT/hsaco" "$OUT/lint" || fail "cannot create $OUT"
+
+# Device code: one raw gfx1201 code object (ELF, not an offload bundle) per case, for hipModuleLoad.
+for src in "$HERE"/cases/*.hip; do
+  name=$(basename "$src" .hip)
+  "$CLANG" -x hip --offload-arch=gfx1201 --offload-device-only --no-gpu-bundle-output -nogpuinc -nogpulib \
+    -O3 "$src" -o "$OUT/hsaco/$name.hsaco" || fail "compiling $src"
+  # The linter's verdict on the same bytes that run (exit 1 on the hazard variants is expected).
+  PYTHONPATH="$REPO" python3 -m radisa check "$OUT/hsaco/$name.hsaco" --json "$OUT/lint/$name.json" >/dev/null
+  [ $? -le 1 ] || fail "radisa check could not analyse $OUT/hsaco/$name.hsaco"
+done
+# The exit code above cannot tell whether each kernel got its expected verdict (one code object holds
+# both kernels, and _hazard alone makes it 1): compare lint/<case>.json with the manifest per kernel.
+python3 "$HERE/generate.py" --verify-lint "$OUT/lint" --case "${HWPROBE_CASE:-}" \
+  || fail "the linter's verdict on the compiled code objects does not match the manifest (see above); results would be mislabelled"
+
+python3 "$HERE/generate.py" --data "$OUT/data" --hsaco-dir "$OUT/hsaco" --grid "$GRID" >/dev/null \
+  || fail "writing probe data"
+"$HIPCC" -O2 -std=c++17 "$HERE/host_runner.cpp" -o "$OUT/host_runner" || fail "building host_runner"
+
+"$OUT/host_runner" "$OUT/data/cases.tsv" "$ITER" "$OUT/results.json" ${HWPROBE_CASE:+"$HWPROBE_CASE"}
+rc=$?
+echo "results: $OUT/results.json  lint: $OUT/lint/"
+case $rc in
+  0) echo "fixed variants: all matched. Hazard variants without mismatches do NOT show a rule is unnecessary." ;;
+  1) echo "a FIXED variant mismatched: harness bug (or, for d16_other_half, evidence against the linter's relaxation)" ;;
+  *) echo "setup or runtime error: results.json holds the kernels that finished (\"complete\": false)"; rc=2 ;;
+esac
+exit $rc

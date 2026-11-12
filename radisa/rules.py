@@ -7,7 +7,7 @@ from __future__ import annotations
 from collections import Counter, deque
 import re
 from .binary import FormatError
-from . import vopd
+from . import hazards, isadb, vopd
 
 SOURCES = {
     'resources': 'AMD RDNA4 ISA §3.3.2.1, printed p.17; LLVM AMDGPUUsage kernel descriptor',
@@ -116,17 +116,102 @@ def rw(ins: dict) -> tuple[set, set, bool]:
 
 DIRECT_CONDITIONS = {f's_cbranch_{s}' for s in ('scc0','scc1','vccz','vccnz','execz','execnz')}
 TERMINALS = {'s_endpgm', 's_endpgm_saved'}
+CALLS = ('s_swappc', 's_call')
+JUMPS = ('s_setpc', 's_rfe')          # write PC: a jump, return or tail call, never a fall-through
+LLVM_TRAP = 2                         # AMDGPUUsage Trap Handler ABI: llvm.trap = s_trap 0x02
+# Instructions LLVM may place inside its long-branch sequence: s_wait_alu (s_waitcnt_depctr) from
+# insertIndirectBranch's ApplyHazardWorkarounds, s_delay_alu and s_nop from later passes.
+_LONG_BRANCH_FILLER = {'s_wait_alu', 's_waitcnt_depctr', 's_delay_alu', 's_nop'}
+
+
+def _imm(i: dict) -> int:
+    return int.from_bytes(bytes.fromhex(i['raw'])[:2], 'little')
+
+
+def long_branch_target(ins: list[dict], ix: int) -> int | None:
+    """Target of the long branch that ends at ins[ix] (`s_setpc_b64 s[N:N+1]`), or None.
+
+    LLVM BranchRelaxation expands an out-of-range branch with SIInstrInfo::insertIndirectBranch
+    (llvm/lib/Target/AMDGPU/SIInstrInfo.cpp) into
+        s_getpc_b64 s[N:N+1]                      ; .Lpost_getpc follows it
+        s_add_u32  sN,   sN,   (dest-.Lpost_getpc)&0xffffffff    (gfx12 spelling s_add_co_u32)
+        s_addc_u32 sN+1, sN+1, (dest-.Lpost_getpc)>>32           (gfx12 spelling s_add_co_ci_u32)
+        s_setpc_b64 s[N:N+1]
+    with s_wait_alu fillers on LLVM 20+. The offset is relative to the instruction after s_getpc_b64
+    (the comment in SIInstrInfo::expandPostRAPseudo: s_getpc returns the address of the next
+    instruction). Only exactly this shape is resolved; anything else stays an indirect branch.
+    """
+    target = ins[ix]['args'].strip()
+    m = re.fullmatch(r's\[(\d+):(\d+)\]', target)
+    if not m or int(m[2]) != int(m[1])+1: return None
+    lo, hi = f's{m[1]}', f's{m[2]}'
+    j, imms = ix-1, []
+    for ops, reg in ((('s_add_co_ci_u32', 's_addc_u32'), hi), (('s_add_co_u32', 's_add_u32'), lo)):
+        while j >= 0 and ins[j]['op'] in _LONG_BRANCH_FILLER: j -= 1
+        if j < 0 or ins[j]['op'] not in ops: return None
+        a = operands(ins[j]['args'])
+        if len(a) != 3 or a[0] != reg or a[1] != reg: return None
+        imm = isadb.immediate(a[2])                # `0x20`, or `lit(0x20)` from LLVM 24
+        if imm is None: return None
+        imms.append(imm & 0xffffffff)
+        j -= 1
+    while j >= 0 and ins[j]['op'] in _LONG_BRANCH_FILLER: j -= 1
+    if j < 0 or ins[j]['op'] != 's_getpc_b64' or ins[j]['args'].strip() != target: return None
+    offset = imms[1] | imms[0] << 32
+    if offset >= 1 << 63: offset -= 1 << 64
+    return ins[j]['pc'] + ins[j]['size'] + offset
 
 
 def cfg(instructions: list[dict]) -> tuple[dict[int, list[int]], set[int], list[dict]]:
+    """Direct-branch CFG of one function extent: (edges pc -> sorted successor pcs, reachable, issues).
+
+    Successors (AMD RDNA4 ISA §5.5 program control; where the ISA leaves a choice, what LLVM emits):
+    - s_endpgm, s_code_end: none. s_trap 0x02 (llvm.trap): none, the AMDGPUUsage Trap Handler ABI
+      says the wave is halted and its queue put into the error state; any other s_trap falls through
+      (0x03 llvm.debugtrap continues when no debugger is attached).
+    - s_branch / s_cbranch_{scc,vcc,exec}*: the SIMM16 target; the conditional ones also fall through.
+    - s_setpc_b64 / s_rfe_b64: never fall through. LLVM emits s_setpc_b64 for a return
+      (s[30:31]), a tail call or a long branch, and always ends the block with it. A long branch in
+      the exact BranchRelaxation shape (`long_branch_target`) gets its target as its only successor;
+      otherwise there is no successor and CFG_INDIRECT ('incomplete') is reported.
+    - s_swappc_b64 / s_call_b64: CFG_INDIRECT; the callee returns to the next instruction, which is
+      the successor. If the call is the last instruction of the extent, or only S_CODE_END padding
+      follows it, there is no successor and no CFG_FALLTHROUGH: LLVM ends the block of a call to a
+      noreturn function with the call itself (e.g. `__builtin_trap()` in the callee), and a
+      returning call is always followed by more code of the same function. The CFG_INDIRECT finding
+      then carries `noreturn: True`: if that callee does return, execution runs past the end.
+    - anything else: the next instruction; if there is none, CFG_FALLTHROUGH ('error' when
+      reachable: that path never executes s_endpgm).
+    """
     if not instructions: return {}, set(), []
     pcs = {i['pc'] for i in instructions}
+    bypc = {i['pc']: i for i in instructions}
     edges, issues, off_end = {}, [], []
-    for i in instructions:
+    for ix, i in enumerate(instructions):
         pc, op = i['pc'], i['op']
         nxt, succ = pc+i['size'], []
-        if op in TERMINALS or op == 's_code_end':
+        if op in TERMINALS or op == 's_code_end' or (op == 's_trap' and _imm(i) == LLVM_TRAP):
             pass
+        elif op.startswith(JUMPS):
+            target = long_branch_target(instructions, ix) if op == 's_setpc_b64' else None
+            if target is None:
+                issues.append(finding('CFG_INDIRECT', 'incomplete',
+                    'indirect branch or return: its target needs interprocedural/target evidence', pc))
+            elif target in pcs: succ.append(target)
+            else:
+                issues.append(finding('CFG_TARGET', 'incomplete',
+                    'long-branch target is outside the kernel or not a decoded instruction boundary', pc,
+                    target=target))
+        elif op.startswith(CALLS):
+            if nxt in pcs and bypc[nxt]['op'] != 's_code_end':
+                succ.append(nxt)
+                issues.append(finding('CFG_INDIRECT', 'incomplete',
+                    'call requires interprocedural/target evidence', pc))
+            else:
+                issues.append(finding('CFG_INDIRECT', 'incomplete',
+                    'call at the end of the code is taken as a call to a noreturn function (LLVM ends '
+                    'such a block with the call); if the callee returns, execution runs past the end', pc,
+                    noreturn=True))
         elif op == 's_branch' or op in DIRECT_CONDITIONS:
             # SOPP immediate is signed DWORD displacement from next instruction.
             if i['size'] != 4:
@@ -142,11 +227,10 @@ def cfg(instructions: list[dict]) -> tuple[dict[int, list[int]], set[int], list[
             if op != 's_branch':
                 if nxt in pcs: succ.append(nxt)
                 else: off_end.append(pc)
-        elif op.startswith(('s_setpc', 's_swappc', 's_call', 's_rfe', 's_cbranch')):
+        elif op.startswith('s_cbranch'):
             issues.append(finding('CFG_INDIRECT', 'incomplete',
-                'call/indirect or unsupported branch requires interprocedural/target evidence', pc))
+                'unsupported conditional branch requires target evidence', pc))
             if nxt in pcs: succ.append(nxt)
-            elif op.startswith(('s_swappc', 's_call')): off_end.append(pc)   # the callee returns here
         else:
             if nxt in pcs: succ.append(nxt)
             else: off_end.append(pc)
@@ -200,27 +284,28 @@ def deallocation_checks(ins: list[dict], edges: dict, reachable: set) -> list[di
     return out
 
 
-def local_checks(ins: list[dict], edges: dict, reachable: set) -> tuple[list[dict], dict]:
-    """Pattern-level checks within basic blocks. No inter-wave memory proof."""
+def local_checks(ins: list[dict], edges: dict, reachable: set, wave: int = 32, models: dict | None = None,
+                 table: dict | None = None) -> tuple[list[dict], dict]:
+    """Pattern-level checks within basic blocks. No inter-wave memory proof. `models`, `table`: passed
+    on to hazards.analyze (radisa check builds the operand models once per kernel).
+
+    The LLVM-fixed ALU hazards (WMMA_D_TO_AB, PERMLANE_AFTER_CMPX), DEALLOC_NO_NOP and the s_clause
+    lint run over the whole direct CFG in `hazards.analyze`; their findings are appended here.
+    """
     out, count = [], Counter()
     preds = Counter(x for xs in edges.values() for x in xs)
     branch_targets = {x for i in ins if i['op'].startswith(('s_branch','s_cbranch')) for x in edges.get(i['pc'], [])}
     pending: dict[str, list[tuple[set, int]]] = {'load': [], 'ds': [], 'km': [], 'exp': []}
-    last_wmma = None
     previous = None
     for i in ins:
         pc, op = i['pc'], i['op']
         if pc not in reachable: continue
         if pc in branch_targets or preds[pc] > 1 or (previous and edges.get(previous['pc']) != [pc]):
-            pending = {k: [] for k in pending}; last_wmma = None
+            pending = {k: [] for k in pending}
             count['basic_block_resets'] += 1
         reads, writes, known = rw(i)
         if not known: count['instructions_outside_rw_subset'] += 1
         else: count['instructions_in_rw_subset'] += 1
-        # Independent of rw modeling: immediate CMPX -> PERMLANE restriction.
-        if previous and op.startswith('v_permlane') and previous['op'].startswith('v_cmpx'):
-            out.append(finding('PERMLANE_AFTER_CMPX', 'error',
-                'PERMLANE immediately follows V_CMPX without intervening VALU', pc, 'permlane'))
         # RAW/WAW candidates: narrow supported instruction subset only.
         if known:
             for domain, records in pending.items():
@@ -251,28 +336,6 @@ def local_checks(ins: list[dict], edges: dict, reachable: set) -> tuple[list[dic
                 pending['load'].append((writes, pc)); pending['ds'].append((writes, pc))
             elif op.startswith('ds_load_'): pending['ds'].append((writes, pc))
             elif op.startswith(('s_load_', 's_buffer_load_')): pending['km'].append((writes, pc))
-        if op.startswith(('v_wmma_', 'v_swmmac_')):
-            a = operands(i['args'])
-            if len(a) < 4:
-                out.append(finding('WMMA_OPERANDS', 'incomplete', 'WMMA operands not understood', pc, 'wmma'))
-            else:
-                dst = regs(a[0])
-                abindex = regs(','.join(a[1:3]+a[4:]))
-                if last_wmma and last_wmma[1] & abindex:
-                    out.append(finding('WMMA_D_TO_AB', 'error',
-                        'WMMA D feeds next WMMA A/B/index without V_NOP or proved independent VALU',
-                        pc, 'wmma', producer=last_wmma[0]))
-                last_wmma = (pc, dst)
-        elif op == 'v_nop': last_wmma = None
-        elif op.startswith('v_') and last_wmma:
-            if known and not (last_wmma[1] & (reads|writes)):
-                last_wmma = None
-            else:
-                # A dependent/unknown VALU might add the required scheduling
-                # separation but we cannot certify independence. Do not turn a
-                # later overlap into a definite violation.
-                last_wmma = None
-                count['wmma_separation_unknown'] += 1
         previous = i
     # Exact three-/four-instruction instance of the documented SGPR-pair hazard.
     # Broader ALU scoreboard modeling remains explicitly outside coverage.
@@ -291,6 +354,8 @@ def local_checks(ins: list[dict], edges: dict, reachable: set) -> tuple[list[dic
                 out.append(finding('SGPR_PAIR_GUARD', 'review',
                     'documented VALU-read/SALU-write/read SGPR-pair pattern lacks S_WAIT_ALU guard',
                     c['pc'], 'wait', producer=a['pc']))
+    hz, hstats = hazards.analyze(ins, edges, reachable, models, table, wave=wave)
+    out += hz; count.update(hstats)
     return out, dict(count)
 
 
@@ -312,7 +377,9 @@ def waterfall_checks(ins: list[dict], edges: dict) -> list[dict]:
     return out
 
 
-def audit_kernel(kernel: dict, decoded: dict) -> dict:
+def audit_kernel(kernel: dict, decoded: dict, models: dict | None = None, table: dict | None = None) -> dict:
+    """The per-kernel audit (`radisa audit`, and the base of `radisa check`). `models` (as from
+    waits.operand_models for the kernel's wave size) and `table`: see local_checks."""
     ins = decoded['instructions']
     issues = [finding('KERNEL_EVIDENCE', 'incomplete', m) for m in kernel['issues']]
     issues += [finding('DECODE', 'incomplete', e['message'], e.get('pc')) for e in decoded['issues']]
@@ -326,7 +393,10 @@ def audit_kernel(kernel: dict, decoded: dict) -> dict:
         if i.get('vopd_independent_decode'):
             for rule, text in vopd.validate(vopd.decode(bytes.fromhex(i['raw'])), md['.wavefront_size'],
                                              descriptor.get('encoded_vgprs')):
-                issues.append(finding('VOPD_'+rule, 'review' if rule in ('REGISTER_RANGE', 'ANTIDEP', 'SOURCE_HI') else 'error',
+                # ANTIDEP is a note: LLVM emits it on purpose (isVOPDAntidependencyAllowed); 3065 hits, all
+                # compiler output, in the 114 libr4d units measured with AMD clang 24.
+                severity = 'info' if rule == 'ANTIDEP' else 'review' if rule in ('REGISTER_RANGE', 'SOURCE_HI') else 'error'
+                issues.append(finding('VOPD_'+rule, severity,
                                       text, i['pc'], 'resources' if rule == 'REGISTER_RANGE' else 'vopd'))
         elif 'v_dual_' in i['text']:
             issues.append(finding('VOPD_IDENTITY', 'incomplete', 'LLVM VOPD does not match raw format detector',i['pc'],'vopd'))
@@ -340,7 +410,7 @@ def audit_kernel(kernel: dict, decoded: dict) -> dict:
                 'last-use dirty discard requires whole-buffer lifetime proof',i['pc'],'cache'))
     edges, reachable, cissues = cfg(ins); issues += cissues
     issues += deallocation_checks(ins, edges, reachable)
-    local, stats = local_checks(ins, edges, reachable); issues += local
+    local, stats = local_checks(ins, edges, reachable, md.get('.wavefront_size', 32), models, table); issues += local
     issues += waterfall_checks(ins, edges)
     counts = Counter(i['op'] for i in ins)
     return {'name': kernel['name'], 'symbol': kernel['symbol'],
@@ -354,7 +424,9 @@ def audit_kernel(kernel: dict, decoded: dict) -> dict:
             'checks':{
                 'vopd':'raw-binary legality subset', 'direct_cfg':'intra-kernel direct edges',
                 'deallocation':'reachable uses, explicit CFG only',
-                'wmma':'basic-block explicit D-to-A/B/index hazards',
+                'wmma':'whole direct-CFG D-to-A/B/index hazards (LLVM fixWMMAHazards)',
+                'alu_hazards':'whole direct-CFG CMPX->PERMLANE (LLVM fixVcmpxPermlaneHazards)',
+                'clauses':'s_clause length/type/branch lint (LLVM SIInsertHardClauses)',
                 'memory_waits':'local supported-op diagnostic; not proof',
                 'sgpr_pair':'documented narrow pattern diagnostic; not full scoreboard',
                 'waterfall':'measured-cost candidate, not correctness failure',

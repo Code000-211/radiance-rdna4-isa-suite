@@ -35,8 +35,16 @@ FIELD = {WA_SALU: 'depctr_sa_sdst(0)', WA_VALU: 'depctr_va_sdst(0)', WA_VCC: 'de
 TTMP0 = 108
 
 
-def classify(ins: dict, model: dict, ttmp_as_s0: bool = False) -> tuple[str, list[int], list[int]]:
-    """('valu' | 'salu' | 'clear' | 'wait' | 'setpc' | 'call' | '', SGPR uses, SGPR defs)."""
+def classify(ins: dict, model: dict, ttmp_as_s0: bool = False,
+             jump: bool = False) -> tuple[str, list[int], list[int]]:
+    """('valu' | 'salu' | 'clear' | 'wait' | 'setpc' | 'call' | '', SGPR uses, SGPR defs).
+
+    `jump`: the instruction is an s_setpc_b64 that rules.cfg resolves to a target inside the
+    function (a long branch, rules.long_branch_target). LLVM's pass never sees it: BranchRelaxation
+    builds the s_getpc/s_add/s_setpc sequence after the hazard passes and flushes the SGPR writes
+    it adds itself with s_wait_alu depctr_sa_sdst(0) (SIInstrInfo::insertIndirectBranch,
+    ApplyHazardWorkarounds). It is a scalar read of its address pair followed by a jump, so the
+    hazard state flows on to the target as over s_branch."""
     def _sgprs(regs) -> list[int]:
         # The registers the hazard applies to: not null, m0, exec, SCC.
         return sorted({0 if ttmp_as_s0 and n >= TTMP0 else n for kind, n in regs if kind == 's' and n <= 123})
@@ -54,6 +62,8 @@ def classify(ins: dict, model: dict, ttmp_as_s0: bool = False) -> tuple[str, lis
     enc = model['enc']
     if enc in CLEARING:
         return 'clear', [], []
+    if op == 's_setpc_b64' and jump:
+        return 'salu', _sgprs(model['reads']), []
     if op in SET_PC:
         return ('call' if op in CALLS else 'setpc'), [], _sgprs(model['writes'])
     if enc in SCALAR:
@@ -170,7 +180,7 @@ def _required(instructions, edges, reachable, models, callee, ttmp_as_s0, stats,
     """
     cls = {}
     for i in instructions:
-        kind, uses, defs = classify(i, models[i['pc']], ttmp_as_s0)
+        kind, uses, defs = classify(i, models[i['pc']], ttmp_as_s0, bool(edges.get(i['pc'])))
         cls[i['pc']] = (kind, uses, defs, wait_fields(i) if kind == 'wait' else None)
         if stats is not None:
             stats['alu_waits'] += kind == 'wait'
@@ -226,7 +236,7 @@ def analyze(instructions: list[dict], edges: dict, reachable: set, models: dict,
             continue
         wait, why = hardware[pc]
         need = ' '.join(FIELD[b] for b in (WA_SALU, WA_VALU, WA_VCC) if wait & b)
-        if i['op'] in SET_PC:
+        if i['op'] in SET_PC and not (i['op'] == 's_setpc_b64' and edges.get(pc)):
             what = f"{i['op']} leaves the function while SGPR writes are not committed"
         else:
             what = (f"{i['op']} reads {', '.join(_name(n) for n in why)} before the last write to it is committed "
