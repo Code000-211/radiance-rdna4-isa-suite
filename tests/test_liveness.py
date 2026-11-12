@@ -75,7 +75,8 @@ class AnalysisTests(unittest.TestCase):
         self.assertEqual({x['severity'] for x in f}, {'review'})
         self.assertEqual({x['rule'] for x in f}, {'UNINITIALIZED_READ'})
         first = [x for x in f if 'v200' in x['registers']][0]
-        self.assertEqual((first['pc'], first['later_uses']), (0, [8]))
+        self.assertEqual((first['pc'], first['later_uses'], first['later_use_count']), (0, [8], 1))
+        self.assertEqual({x['undefined_on'] for x in f}, {'every path'})
         self.assertIn('packs the work-item IDs into v0', first['message'])
         self.assertTrue(all('AMDGPUUsage' in x['source'] for x in f))
 
@@ -85,10 +86,13 @@ class AnalysisTests(unittest.TestCase):
                                   ('global_store_b32', 'v1, v2, s[4:5]'), ('s_endpgm',)), [])
 
     def test_one_path_without_write(self):
-        # s_cbranch_scc1 +1 skips the write of v4: a uniform branch, a real path.
+        # s_cbranch_scc1 +1 skips the write of v4: a uniform branch, a real path. Written on the other
+        # path, so maybe undefined: 'info' (LLVM's phi(undef, x) looks the same).
         f = run_pass(('s_cmp_eq_u32', 's2, 0'), ('s_cbranch_scc1', '', 1), ('v_mov_b32', 'v4, 1.0'),
                      ('v_add_f32', 'v5, v4, v0'), ('s_endpgm',))
         self.assertEqual(regs(f), ['v4'])
+        self.assertEqual((f[0]['severity'], f[0]['undefined_on']), ('info', 'some paths'))
+        self.assertIn('SILowerI1Copies', f[0]['source'])
 
     def test_implicit_operands(self):
         # V_CNDMASK reads VCC; S_CSELECT reads SCC; neither is set up at launch.
@@ -120,7 +124,7 @@ class AnalysisTests(unittest.TestCase):
         self.assertEqual(run_pass(*spec), [])
         # The same CFG with a uniform (SCC) branch is a real path past both writes.
         uniform = [(op if op != 's_cbranch_execz' else 's_cbranch_scc1', *rest) for op, *rest in spec]
-        self.assertEqual(regs(run_pass(*uniform)), ['v6'])
+        self.assertEqual([(x['registers'], x['severity']) for x in run_pass(*uniform)], [(['v6'], 'info')])
         # s_cbranch_execnz: the fall-through is the no-lane edge.
         f = run_pass(('v_cmpx_gt_u32', '64, v0'), ('s_cbranch_execnz', '', 1), ('s_branch', '', 1),
                      ('v_mov_b32', 'v6, 2.0'), ('v_add_f32', 'v7, v6, v0'), ('s_endpgm',))
@@ -154,7 +158,7 @@ class AnalysisTests(unittest.TestCase):
                      ('s_add_co_i32', 's3, s3, -1'), ('s_cmp_lg_u32', 's3, 0'), ('s_cbranch_scc1', '', -5),
                      ('s_endpgm',))
         self.assertEqual(regs(f), ['v3'])
-        self.assertEqual(f[0]['pc'], 4)
+        self.assertEqual((f[0]['pc'], f[0]['severity']), (4, 'info'))
 
     def test_scope(self):
         spec = [('v_add_f32', 'v2, v200, v201'), ('s_endpgm',)]
@@ -166,6 +170,98 @@ class AnalysisTests(unittest.TestCase):
         self.assertIn('v200, EXEC, TTMP0-15', f[0]['message'])
 
 
+def sev(findings):
+    return sorted((r, f['severity']) for f in findings for r in f['registers'])
+
+
+class ReviewRegressionTests(unittest.TestCase):
+    """Issues from the adversarial review of the liveness feature."""
+
+    def test_loop_carried_implicit_def_is_info(self):
+        # clang 18 -O2 of `for (...) { v = a[..]; if (v > 0) { last = v; f = true; } } o[t] = f ? last : -1;`
+        # (well-defined C++): v3 (`last`) and s3 (the lane mask of `f`) are phi(implicit-def, ...) at the
+        # loop header, merged by v_cndmask / s_and_not1 with EXEC (SILowerI1Copies). v6 is a speculative
+        # computation on the maybe-undefined v3. Defined on the back edge: 'info', never 'review'.
+        f = run_pass(('s_mov_b32', 's8, 4'), ('global_load_b32', 'v4, v0, s[0:1]'),
+                     ('s_and_not1_b32', 's9, s3, exec_lo'), ('s_wait_loadcnt', '0x0'),
+                     ('v_add_nc_u32', 'v6, v3, 1'), ('v_cmp_lt_i32', 'vcc_lo, 0, v4'),
+                     ('v_cndmask_b32', 'v3, v3, v4, vcc_lo'), ('s_or_b32', 's3, s9, vcc_lo'),
+                     ('s_add_co_i32', 's8, s8, -1'), ('s_cmp_eq_u32', 's8, 0'), ('s_cbranch_scc0', '', -10),
+                     ('v_cndmask_b32', 'v5, -1, v3, s3'), ('s_endpgm',))
+        self.assertEqual(sev(f), [('s3', 'info'), ('v3', 'info')])
+        self.assertEqual(f[[x['registers'] for x in f].index(['v3'])]['later_uses'], [24])
+        # The same read with no write anywhere is undefined on every path: 'review'.
+        f = run_pass(('s_and_not1_b32', 's9, s3, exec_lo'), ('v_cndmask_b32', 'v3, v3, v0, vcc_lo'),
+                     ('s_endpgm',))
+        self.assertEqual(sev(f), [('s3', 'review'), ('v3', 'review'), ('vcc_lo', 'review')])
+
+    def test_divergent_loop_exit_execnz(self):
+        # A divergent loop whose latch is s_cbranch_execnz: lanes leave with the VGPRs they had in the
+        # loop; the fall-through is no "no lane" edge. v7 is written nowhere.
+        f = run_pass(('v_lshlrev_b32', 'v2, 2, v0'), ('s_mov_b32', 's6, exec_lo'),
+                     ('v_add_nc_u32', 'v1, 1, v0'), ('v_cmp_gt_u32', 'vcc_lo, 5, v1'),
+                     ('s_and_b32', 'exec_lo, exec_lo, vcc_lo'), ('s_cbranch_execnz', '', -4),
+                     ('s_or_b32', 'exec_lo, exec_lo, s6'), ('global_store_b32', 'v2, v7, s[0:1]'), ('s_endpgm',))
+        self.assertEqual(sev(f), [('v7', 'review')])
+
+    def test_divergent_loop_exit_execz(self):
+        # LLVM's rotated divergent loop (clang 18 -O1 `lastset`): flow block, s_cbranch_execz to the exit,
+        # header, an if inside whose execz goes BACK to the flow block, back edge s_branch to the flow
+        # block. The if-skip edge stays a no-lane edge (v5 read in the flow block is clean); the exit edge
+        # carries the loop's state (v7, never written, is reported).
+        spec = [('s_mov_b32', 's6, exec_lo'), ('s_branch', '', 3),
+                ('v_add_nc_u32', 'v6, v5, 1'), ('s_and_b32', 'exec_lo, exec_lo, vcc_lo'), ('s_cbranch_execz', '', 5),
+                ('v_cmp_gt_u32', 'vcc_lo, 5, v0'), ('s_and_saveexec_b32', 's10, vcc_lo'), ('s_cbranch_execz', '', -6),
+                ('v_mov_b32', 'v5, v0'), ('s_branch', '', -8),
+                ('s_or_b32', 'exec_lo, exec_lo, s6'), ('global_store_b32', 'v0, v7, s[0:1]'), ('s_endpgm',)]
+        self.assertEqual(sev(run_pass(*spec)), [('v7', 'review')])
+
+    def test_divergent_if_inside_loop(self):
+        body = [('v_cmp_gt_u32', 'vcc_lo, 64, v0'), ('s_and_saveexec_b32', 's9, vcc_lo'),
+                ('s_xor_b32', 's9, exec_lo, s9'), ('s_cbranch_execz', '', 1), ('v_mov_b32', 'v6, 2.0'),
+                ('s_and_not1_saveexec_b32', 's9, s9'), ('s_cbranch_execz', '', 1), ('v_mov_b32', 'v6, 1.0'),
+                ('s_or_b32', 'exec_lo, exec_lo, s9'), ('v_add_f32', 'v7, v6, v0')]
+        spec = [('s_mov_b32', 's8, 4'), *body, ('s_add_co_i32', 's8, s8, -1'), ('s_cmp_lg_u32', 's8, 0'),
+                ('s_cbranch_scc1', '', -13), ('s_endpgm',)]
+        self.assertEqual(run_pass(*spec), [])
+
+    def test_tuple_excuse_not_for_addresses(self):
+        cases = [
+            ([('v_lshlrev_b32', 'v2, 2, v0'), ('global_load_b32', 'v1, v[2:3], off')], ['v3']),
+            ([('v_mov_b32', 'v2, v0'), ('global_load_b64', 'v[2:3], v[2:3], off')], ['v3']),
+            ([('v_mov_b32', 'v4, v0'), ('v_mov_b32', 'v5, v0'), ('v_mov_b32', 'v2, v0'),
+              ('global_store_b64', 'v[2:3], v[4:5], off')], ['v3']),
+            ([('s_mov_b32', 's6, s0'), ('s_load_b32', 's8, s[6:7], 0x0')], ['s7']),
+            ([('s_mov_b32', 's12, s0'), ('buffer_load_b32', 'v1, v0, s[12:15], 0 offen')], ['s13', 's14', 's15']),
+            ([('v_cvt_f32_u32', 'v2, v0'), ('v_add_f64', 'v[4:5], v[2:3], v[2:3]')], ['v3']),
+            # Data operands keep the excuse: a 64-bit integer shift of an any-extended value.
+            ([('v_mov_b32', 'v2, v0'), ('v_lshlrev_b64', 'v[4:5], 2, v[2:3]')], []),
+        ]
+        for spec, want in cases:
+            with self.subTest(spec=spec):
+                self.assertEqual(sev(run_pass(*spec, ('s_endpgm',))), [(r, 'review') for r in want])
+
+    def test_same_source_not_with_lane_modifiers(self):
+        self.assertEqual(regs(run_pass(('v_xor_b32_dpp', 'v1, v5, v5 row_shl:1 row_mask:0xf bank_mask:0xf'),
+                                       ('s_endpgm',))), ['v5'])
+        self.assertEqual(regs(run_pass(('v_xor_b16', 'v1, v2, v2 op_sel:[0,1,0]'), ('s_endpgm',))), ['v2'])
+        self.assertEqual(run_pass(('v_xor_b16', 'v1, v2, v2'), ('s_endpgm',)), [])
+
+    def test_cmov_reads_destination(self):
+        f = run_pass(('s_cmp_eq_u32', 's2, 0'), ('s_cmov_b32', 's5, s2'), ('s_add_co_u32', 's6, s5, 1'),
+                     ('s_endpgm',))
+        self.assertEqual((sev(f), f[0]['pc']), ([('s5', 'review')], 4))
+        self.assertEqual(run_pass(('s_mov_b32', 's5, 0'), ('s_cmp_eq_u32', 's2, 0'), ('s_cmov_b32', 's5, s2'),
+                                  ('s_add_co_u32', 's6, s5, 1'), ('s_endpgm',)), [])
+
+    def test_many_reads_capped(self):
+        n = 3000
+        f = run_pass(*[('v_add_nc_u32', 'v3, v7, v0')] * n, ('s_endpgm',))
+        self.assertEqual(regs(f), ['v7'])
+        self.assertEqual((f[0]['later_use_count'], len(f[0]['later_uses'])), (n - 1, liveness.MAX_LATER))
+        self.assertNotIn('_later', f[0])
+
+
 class CheckIntegrationTests(unittest.TestCase):
     @needs_minimal_kernel
     def test_uninit_kernel(self):
@@ -173,9 +269,10 @@ class CheckIntegrationTests(unittest.TestCase):
             code, r = run_check(CHECK_FIX / 'liveness_uninit.s')
             strict, _ = run_check(CHECK_FIX / 'liveness_uninit.s', '--strict')
         f = [x for x in all_findings(r) if x['rule'] == 'UNINITIALIZED_READ']
-        self.assertEqual(sorted((x['instruction'], tuple(x['registers'])) for x in f),
-                         [('s_add_co_u32 s6, s7, s2', ('s7',)), ('v_add_f32_e32 v5, v4, v3', ('v4',)),
-                          ('v_add_nc_u32_e32 v3, v1, v2', ('v1',))])
+        self.assertEqual(sorted((x['instruction'], tuple(x['registers']), x['severity']) for x in f),
+                         [('s_add_co_u32 s6, s7, s2', ('s7',), 'review'),
+                          ('v_add_f32_e32 v5, v4, v3', ('v4',), 'info'),
+                          ('v_add_nc_u32_e32 v3, v1, v2', ('v1',), 'review')])
         self.assertEqual((code, r['status'], strict), (0, 'PASS', 1))
 
     @needs_minimal_kernel
@@ -246,6 +343,34 @@ extern "C" __global__ void priv(float* o, const float* a, int k) {
   for (int i = 0; i < 64; ++i) arr[i] = a[t + i];
   o[t] = arr[k & 63] + arr[(k + t) & 63];
 }
+// Values set under a condition inside a loop and read only when set: LLVM carries them as
+// phi(implicit-def, x) and selects, merges (SILowerI1Copies lane masks) or computes speculatively
+// with them (clang 18 -O1..-O3: v_cndmask, s_cselect, s_and_not1 with EXEC, v_cmp_lt_f64, v_add_co_u32).
+extern "C" __global__ void found(int* o, const int* a, int n) {
+  int t = T; int last; bool f = false;
+  for (int i = 0; i < n; ++i) { int v = a[i * 64 + t]; if (v > 0) { last = v; f = true; } }
+  o[t] = f ? last : -1;
+}
+extern "C" __global__ void found_u(int* o, const int* a, int n) {
+  int t = T; int last; bool f = false;
+  for (int i = 0; i < n; ++i) { int v = a[i]; if (v > 0) { last = v * 3; f = true; } }
+  o[t] = f ? last : -1;
+}
+extern "C" __global__ void lastset(long* o, const long* a, int n) {
+  int t = T; long x; int got = 0;
+  for (int i = t; i < n; i += 64) { if (a[i] & 1) { x = a[i]; got = 1; break; } }
+  if (got) o[t] = x;
+}
+extern "C" __global__ void best(double* o, const double* a, int n) {
+  int t = T; double b; int bi = -1;
+  for (int i = 0; i < n; ++i) { double v = a[i * 64 + t]; if (bi < 0 || v < b) { b = v; bi = i; } }
+  o[t] = bi >= 0 ? b + bi : 0.0;
+}
+extern "C" __global__ void accum(long* o, const long* a, int n) {
+  int t = T; long x; int got = 0; int i = t;
+  while (i < n) { long v = a[i]; if (v < 0) { x = v; got = 1; } else if (got) { x += v; } i += 64; }
+  if (got) o[t] = x;
+}
 '''
 
 
@@ -257,7 +382,8 @@ def _cxx():
 
 
 class CompilerOutputTests(unittest.TestCase):
-    """clang -O0, -O1, -O3 output of HIP: no UNINITIALIZED_READ (with clang 18 checked: 0 of 10 kernels at each level)."""
+    """clang -O0..-O3 output of HIP: no 'review' UNINITIALIZED_READ (clang 18: none in 15 kernels at each
+    level); the loop-carried implicit-def kernels give 'info' notes (maybe undefined) only."""
 
     @classmethod
     def setUpClass(cls):
@@ -273,13 +399,15 @@ class CompilerOutputTests(unittest.TestCase):
     def test_no_finding_on_compiler_output(self):
         if self.why and not require_llvm():
             self.skipTest(f'needs a clang that compiles HIP for gfx1201: {self.why}')
-        for opt in ('-O0', '-O1', '-O3'):
+        for opt in ('-O0', '-O1', '-O2', '-O3'):
             with self.subTest(opt=opt), Registered():
                 code, r = run_check(self.src, '--no-incremental', '--flag', f'-nogpuinc -nogpulib {opt}')
                 kernels = [k for k in r['kernels'] if not k.get('callee')]   # noinline helpers are checked too
-                self.assertEqual(len(kernels), 10, [f['message'] for f in r['findings']])
-                self.assertEqual([(f.get('instruction'), f['registers']) for f in all_findings(r)
-                                  if f['rule'] == 'UNINITIALIZED_READ'], [])
+                self.assertEqual(len(kernels), 15, [f['message'] for f in r['findings']])
+                found = [f for f in all_findings(r) if f['rule'] == 'UNINITIALIZED_READ']
+                self.assertEqual([(f.get('instruction'), f['registers']) for f in found if f['severity'] != 'info'],
+                                 [])
+                self.assertTrue(all(f['undefined_on'] == 'some paths' for f in found))
 
 
 if __name__ == '__main__':

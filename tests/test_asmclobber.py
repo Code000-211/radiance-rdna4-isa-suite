@@ -3,6 +3,7 @@ spellings/macros of hipsrc.source_checks.
 
 The IR tests use hand-written IR in the shape clang emits (checked against clang 18.1.3 output);
 the HIP tests compile fixtures/check/asm_clobber.hip with the clang found here."""
+import json
 import os
 from pathlib import Path
 import shutil
@@ -154,6 +155,71 @@ class ClobberTests(unittest.TestCase):
         self.assertEqual(len(r[0]['findings']), 1)
 
 
+class ReviewRegressionTests(unittest.TestCase):
+    """Issues of the adversarial review (scratchpad review-asmclobber/issues.md)."""
+
+    def test_copies_of_one_statement_give_one_finding(self):
+        c = call(r'v_mov_b32 v7, $1\0Av_mov_b32 $0, v7', '=v,v')
+        fs = findings(module(*[c.replace('%r', f'%u{i}r') for i in range(8)]))
+        self.assertEqual([(f['registers'], f['copies']) for f in fs], [(['v7'], 8)])
+        # Different source locations stay apart.
+        other = c.replace('%r', '%x').replace('!dbg !7', '!dbg !8')
+        fs = findings(module(c, other, extra='!8 = !DILocation(line: 9, column: 3, scope: !6)'))
+        self.assertEqual(sorted(f['loc']['line'] for f in fs), [4, 9])
+
+    def test_exec_saved_and_restored_is_not_reported(self):
+        save = r's_mov_b32 $1, exec_lo\0As_mov_b32 exec_lo, -1\0Av_mov_b32 $0, $2\0As_mov_b32 exec_lo, $1'
+        self.assertEqual(regs(module(call(save, '=&v,=&s,v', ret='{ i32, i32 }'))), [])
+        saveexec = r's_or_saveexec_b32 $1, -1\0Av_mov_b32 $0, $2\0As_mov_b32 exec_lo, $1'
+        self.assertEqual(regs(module(call(saveexec, '=&v,=&s,v,~{scc}', ret='{ i32, i32 }'))), [])
+        self.assertEqual(regs(module(call(r's_mov_b32 $0, m0\0As_mov_b32 m0, 0\0As_mov_b32 m0, $0', '=&s', args=''))), [])
+        # Not restored: overwritten save slot, or restored from somewhere else.
+        bad = r's_mov_b32 $1, exec_lo\0As_mov_b32 exec_lo, -1\0As_mov_b32 $1, 0\0As_mov_b32 exec_lo, $1'
+        self.assertEqual(regs(module(call(bad, '=&v,=&s,v', ret='{ i32, i32 }'))), ['exec_lo'])
+        self.assertEqual(regs(module(call(r's_mov_b32 exec_lo, -1\0As_mov_b32 exec_lo, s5', '=v', args=''))),
+                         ['exec_lo'])
+
+    def test_numeric_and_uid_labels(self):
+        for t in (r's_cbranch_scc0 1f\0A1: v_mov_b32 v7, 0\0Av_mov_b32 $0, 0',
+                  r'L${:uid}: v_mov_b32 v7, 0\0Av_mov_b32 $0, 0'):
+            [f] = findings(module(call(t, '=v', args='')))
+            self.assertEqual((f['severity'], f['registers']), ('review', ['v7']))
+        self.assertEqual(asmclobber.template_lines('1: s_nop 0\nL${:uid}:\nv_dual_mov_b32 v1, 0 :: v_dual_mov_b32 v2, 0'),
+                         [(0, 's_nop 0'), (2, 'v_dual_mov_b32 v1, 0 :: v_dual_mov_b32 v2, 0')])
+
+    def test_single_register_in_brackets(self):
+        self.assertEqual(regs(module(call(r'v_mov_b32 v[7], 0\0Av_mov_b32 $0, 0', '=v', args=''))), ['v7'])
+        self.assertEqual(regs(module(call(r's_mov_b32 s[7], 0\0Av_mov_b32 $0, 0', '=v', args=''))), ['s7'])
+        self.assertEqual(regs(module(call(r'v_mov_b32 v[7], 0\0Av_mov_b32 $0, 0', '=v,~{v7}', args=''))), [])
+
+    def test_vopd_halves_and_no_return_atomics(self):
+        self.assertEqual(findings(module(call('v_dual_mov_b32 $0, v7 :: v_dual_mov_b32 $1, 0', '=v,=v',
+                                              ret='{ i32, i32 }', args=''))), [])
+        [f] = findings(module(call('v_dual_mov_b32 $0, v8 :: v_dual_mov_b32 v7, 0', '=v', args='')))
+        self.assertEqual((f['severity'], f['registers']), ('review', ['v7']))
+        for t, a in (('image_atomic_add_uint $0, $1, s[0:7] dmask:0x1 dim:SQ_RSRC_IMG_1D', 'i32 %a, i32 %a'),
+                     ('buffer_atomic_add_u32 v7, v9, s[0:3], null offen', ''),
+                     ('buffer_atomic_cmpswap_b32 v[7:8], v9, s[0:3], null offen', '')):
+            self.assertEqual(findings(module(call(t, 'v,v' if a else '', ret='void', args=a))), [], t)
+        # The returning form writes its VDATA register.
+        self.assertEqual(regs(module(call('buffer_atomic_add_u32 v7, v9, s[0:3], null offen th:TH_ATOMIC_RETURN',
+                                          '', ret='void', args=''))), ['v7'])
+        [f] = findings(module(call('v_frobnicate v9, $1', '=v,v')))
+        self.assertIn('v_frobnicate is not in the AMD ISA table', f['message'])
+
+    def test_clobber_named_like_a_stand_in(self):
+        self.assertEqual(regs(module(call('v_mov_b32 $0, 0', 'v,~{v192}', ret='void'))), ['$0'])
+        self.assertEqual(regs(module(call('s_mov_b32 $0, 0', 's,~{s40}', ret='void'))), ['$0'])
+        self.assertEqual(regs(module(call('v_mov_b32 $0, 0', 'v,{v192}', ret='void', args='i32 %a, i32 %a'))), ['$0'])
+
+    def test_callbr_location_on_continuation_line(self):
+        line = ('callbr void asm sideeffect "s_cmp_eq_u32 $0, 0\\0A s_mov_b32 s9, 0\\0A s_cbranch_scc1 ${1:l}", '
+                '"s,!i,~{scc}"(i32 %a) #1\n          to label %4 [label %3], !dbg !7')
+        [f] = findings(module(line), 'k.hip')
+        self.assertEqual((f['registers'], f['loc']['line']), (['s9'], 4))
+        self.assertNotIn('no debug location', f['message'])
+
+
 class IncrementalWiringTests(unittest.TestCase):
     def test_kernel_findings_from_parsed_module(self):
         mod = incremental.parse_module(module(call('v_mov_b32 v7, 0', '=v', args='')))
@@ -162,7 +228,7 @@ class IncrementalWiringTests(unittest.TestCase):
 
     def test_schema_bumped(self):
         # Results cached before the rule existed lack its findings.
-        self.assertEqual(incremental.SCHEMA, 'radisa-incremental-v3')
+        self.assertEqual(incremental.SCHEMA, 'radisa-incremental-v4')
 
 
 class LexicalAsmTests(unittest.TestCase):
@@ -210,6 +276,80 @@ class LexicalAsmTests(unittest.TestCase):
         self.assertEqual([f['loc']['line'] for f in self.lex(probe)], [3, 4, 5])
 
 
+class LexicalReviewTests(unittest.TestCase):
+    lex = LexicalAsmTests.lex
+
+    def test_asm_labels_of_declarations(self):
+        text = ('extern __device__ int buffer_count __asm__("buffer_count");\n'
+                'extern __device__ int ds_count asm("ds_load_b32");\n'
+                '__device__ int g(int) __asm__("global_load_b32");\n'
+                'int h(int a) __attribute__((used)) asm("buffer_load_b32");\n'
+                'void f(float &v, int a, int c) {\n'
+                '  if (c) asm volatile("ds_load_b32 %0, %1" : "=v"(v) : "v"(a));\n'
+                '  else asm volatile("ds_load_b32 %0, %1" : "=v"(v) : "v"(a));\n'
+                '  while (c--) __asm__("ds_load_b32 v1, v2");\n}\n')
+        self.assertEqual([f['loc']['line'] for f in self.lex(text)], [6, 7, 8])
+
+    def test_uses_in_directives_and_strings(self):
+        text = ('#define PREFETCH_ASM asm volatile("global_load_b32 v1, v[2:3], off")\n'
+                '#ifdef PREFETCH_ASM\n#undef PREFETCH_ASM\n#endif\n'
+                '#define LDS_LOAD(v, a) __asm__ __volatile__("ds_load_b32 %0, %1" : "=v"(v) : "v"(a))\n'
+                'void h() { const char *m = "do not call LDS_LOAD(x, y) or asm(\\"ds_load_b32\\") here"; }\n'
+                'void g(float &v, int a) { LDS_LOAD(v, a); }\n')
+        self.assertEqual([f['loc']['line'] for f in self.lex(text)], [7])
+
+    def test_conditional_definitions(self):
+        text = ('#ifdef OLD_TOOLCHAIN\n'
+                '#define LDS_LOAD(v, a) __asm__ __volatile__("ds_load_b32 %0, %1" : "=v"(v) : "v"(a))\n'
+                '#else\n#define LDS_LOAD(v, a) do { v = lds[a]; } while (0)\n#endif\n'
+                'void g(float &v, int a) { LDS_LOAD(v, a); }\n')
+        [f] = self.lex(text)
+        self.assertEqual((f['severity'], f['loc']['line']), ('info', 6))
+        self.assertIn('only 1 of the 2 definitions', f['message'])
+        # `#if 0` code is never compiled: its definitions and statements do not count.
+        text = ('#if 0\n#define LDS_LOAD(v, a) __asm__("ds_load_b32 %0, %1" : "=v"(v) : "v"(a))\n'
+                'void old(float &v) { asm("ds_load_b32 v1, v2"); }\n'
+                '#else\n#define LDS_LOAD(v, a) __asm__("ds_load_b32 %0, %1\\n s_wait_dscnt 0" : "=v"(v) : "v"(a))\n'
+                '#endif\nvoid g(float &v, int a) { LDS_LOAD(v, a); }\n')
+        self.assertEqual(self.lex(text), [])
+        text = text.replace('\\n s_wait_dscnt 0', '')
+        self.assertEqual([(f['severity'], f['loc']['line']) for f in self.lex(text)], [('review', 7)])
+
+    def test_comment_marker_inside_asm_string(self):
+        text = ('void f(float &v, unsigned long long p) {\n'
+                '  asm volatile("global_load_b32 %0, %1, off // fetch\\n s_wait_loadcnt 0" : "=v"(v) : "v"(p));\n'
+                '  asm volatile("global_load_b32 %0, %1, off /* x */" : "=v"(v) : "v"(p)); // s_wait_loadcnt 0\n}\n')
+        self.assertEqual([f['loc']['line'] for f in self.lex(text)], [3])
+
+    def test_many_macros_linear(self):
+        import time
+        lines = [f'#define ASM{i}(v) asm volatile("v_mov_b32 %0, {i}" : "=v"(v))' for i in range(600)]
+        lines += [f'#define CONST{i} {i}' for i in range(3000)]
+        lines += ['#define LOAD(v) asm volatile("ds_load_b32 %0, v1" : "=v"(v))', 'void f(int v) {']
+        lines += [f'  ASM{i % 600}(v); v += CONST{i};' for i in range(3000)] + ['  LOAD(v);', '}']
+        t = time.monotonic()
+        got = self.lex('\n'.join(lines) + '\n')
+        self.assertLess(time.monotonic() - t, 10)
+        self.assertEqual([f['loc']['line'] for f in got], [len(lines) - 1])
+
+
+class ParseAsmTests(unittest.TestCase):
+    def test_block_comments_and_own_lines(self):
+        text = ('\t.text\nk:\n/* a comment line */\n\tv_mov_b32 v0, 0 /* inline */\n'
+                '/* a block\n   over two lines */\n\ts_endpgm\n')
+        fns = hipsrc.parse_asm(text)
+        self.assertEqual([i['mnemonic'] for i in fns['k']], ['v_mov_b32', 's_endpgm'])
+        self.assertEqual([i['loc'] for i in fns['k']], [None, None])
+        fns = hipsrc.parse_asm(text, asm_file='k.s')
+        self.assertEqual([i['loc'] for i in fns['k']], [{'file': 'k.s', 'line': 4, 'column': 1},
+                                                         {'file': 'k.s', 'line': 7, 'column': 1}])
+        fns = hipsrc.parse_asm('radisa_snippet:\n' + text.split('k:\n', 1)[1], asm_file='s.s', line_offset=-1)
+        self.assertEqual([i['loc']['line'] for i in fns['radisa_snippet']], [2, 5])
+        # A .loc still wins over the .s line.
+        fns = hipsrc.parse_asm('\t.file\t0 "/src" "k.hip"\nk:\n\t.loc\t0 7 3\n\ts_nop 0\n', asm_file='k.s')
+        self.assertEqual(fns['k'][0]['loc'], {'file': '/src/k.hip', 'line': 7, 'column': 3})
+
+
 def hip_compiler():
     for c in (os.environ.get('RADISA_TEST_CXX'), '/opt/rocm/llvm/bin/clang++', shutil.which('clang++')):
         if c and Path(c).exists() and not hip_compiles(c, str(CHECK_FIX / 'asm_clobber.hip')):
@@ -255,6 +395,39 @@ class HipTests(unittest.TestCase):
             moved = self.run_on(src)
             self.assertEqual((moved['incremental']['compiled'], moved['incremental']['reused']), (0, 2))
             self.assertEqual(asm_findings(moved), {(k, line + 2, r) for k, line, r in EXPECTED})
+
+    def test_old_schema_cache_is_recompiled_with_asm_findings(self):
+        with tempfile.TemporaryDirectory() as d:
+            src = Path(d, 'asm_clobber.hip')
+            src.write_text((CHECK_FIX / 'asm_clobber.hip').read_text())
+            self.run_on(src)
+            [cache] = list(Path(self.cache.name).glob('*/cache.json'))
+            data = json.loads(cache.read_text())
+            # What a v2 run stored (no ASM_UNDECLARED_CLOBBER findings) must be discarded, not reused.
+            data['schema'] = 'radisa-incremental-v2'
+            for e in data['kernels'].values():
+                e['result']['findings'] = [f for f in e['result']['findings'] if f['rule'] != 'ASM_UNDECLARED_CLOBBER']
+            cache.write_text(json.dumps(data))
+            again = self.run_on(src)
+            self.assertEqual((again['incremental']['compiled'], again['incremental']['reused']), (2, 0))
+            self.assertEqual(asm_findings(again), EXPECTED)
+
+    def test_unrolled_helper_reported_once(self):
+        with tempfile.TemporaryDirectory() as d:
+            src = Path(d, 'dup.hip')
+            src.write_text('#define __global__ __attribute__((global))\n'
+                           '#define __device__ __attribute__((device))\n'
+                           '__device__ __attribute__((always_inline)) inline int bump(int a) {\n'
+                           '  int r;\n'
+                           '  asm volatile("v_mov_b32 v7, %1\\n v_mov_b32 %0, v7" : "=v"(r) : "v"(a));\n'
+                           '  return r;\n}\n'
+                           'extern "C" __global__ void d1(int* o, int a) {\n'
+                           '  int s = 0;\n#pragma unroll\n'
+                           '  for (int i = 0; i < 8; ++i) s += bump(a + i);\n  o[0] = s;\n}\n')
+            r = self.run_on(src)
+        fs = [f for k in r['kernels'] for f in k['findings'] if f['rule'] == 'ASM_UNDECLARED_CLOBBER']
+        self.assertEqual([(f['loc']['line'], f['registers']) for f in fs], [(5, ['v7'])])
+        self.assertEqual(fs[0].get('copies'), 8)
 
     def test_whole_module_mode_keeps_helper_findings(self):
         with tempfile.TemporaryDirectory() as d:

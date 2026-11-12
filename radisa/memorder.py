@@ -21,7 +21,6 @@ a store is reported as well.
 """
 from __future__ import annotations
 
-from pathlib import Path
 import re
 
 from . import waits
@@ -62,17 +61,13 @@ def kernel_pass(ctx: dict) -> list[dict]:
     origin = ctx.get('origin') or {}
     out = []
     for i in stores:
-        st = state_in.get(i['pc'], {})
+        st = state_in[i['pc']] if i['pc'] in state_in else {}
         pending = {d: sorted(st[d]) for d in COUNTERS if st.get(d)}
         if not pending:
             continue
-
-        def where(p):
-            if p != waits.ENTRY and origin.get(p, {}).get('line'):
-                return f"{Path(origin[p]['file']).name}:{origin[p]['line']}"
-            return 'issued before the call' if p == waits.ENTRY else f'pc {p:#x}'
-        what = '; '.join(f"{waits.WAIT_NAME[d].removeprefix('s_wait_')}: " +
-                         ', '.join(f'{waits.producer_op(p, by_pc)} ({where(p)})' for p in ps)
+        # waits.describe lists the last producers (by pc) of a counter and counts the rest:
+        # thousands of stores may be outstanding at once.
+        what = '; '.join(f"{waits.WAIT_NAME[d].removeprefix('s_wait_')}: {waits.describe(ps, by_pc, origin)}"
                          for d, ps in pending.items())
         need = [f'{waits.WAIT_NAME[d]} 0' for d in pending]
         out.append({'rule': RULE, 'severity': 'review', 'pc': i['pc'], 'unconfirmed': True,

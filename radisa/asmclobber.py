@@ -201,7 +201,9 @@ def template_lines(tmpl: str) -> list[tuple[int, str]]:
     out = []
     for i, line in enumerate(text.split('\n')):
         line = re.split(r';|//|\$\{:comment\}', line, maxsplit=1)[0].strip()
-        while (m := re.match(r'[A-Za-z_.$][\w.$]*:', line)):   # labels (a mnemonic is followed by a space)
+        # Labels, also numeric local labels ("1:") and ones holding ${:uid}; a mnemonic is
+        # followed by a space and VOPD's "::" by nothing that is part of a label.
+        while (m := re.match(r'(?:\$\{:\w+\}|[\w.$])+:(?!:)', line)):
             line = line[m.end():].strip()
         if line and not line.startswith('.'):
             out.append((i, line))
@@ -262,6 +264,76 @@ def substitute(line: str, texts: list[str]) -> str:
         n = int(m[1] if m[1] is not None else m[3])
         return texts[n] if n < len(texts) else '0'
     return PLACEHOLDER.sub(rep, line)
+
+
+def normalise(text: str) -> str:
+    """`v[7]`/`s[7]`/`ttmp[7]` (one register in brackets, accepted by llvm-mc, printed as v7) as `v7`:
+    isadb.registers reads only `x[a:b]` ranges and single `xN` names."""
+    return re.sub(r'(?<![\w])(ttmp|[vsa])\[\s*(\d+)\s*\]', r'\1\2', text)
+
+
+def _first_operand(args: str) -> set:
+    ops = isadb.split_operands(args)
+    try:
+        return isadb.registers(ops[0]) if ops else set()
+    except FormatError:
+        return set()
+
+
+def model_line(table: dict, text: str, wave: int) -> dict:
+    """isadb.operand_model of one substituted template line, with what it lacks for inline asm:
+    a VOPD pair ("X :: Y": two VALU operations in one instruction word, printed with their
+    V_DUAL_* names, which the table holds) is modelled as its two halves; a non-returning MUBUF/MIMG atomic (no th:TH_ATOMIC_RETURN) is
+    modelled as its returning form minus the VDATA register, which it then only reads.
+    Raises FormatError like operand_model. Adds 'op' and, when not known, 'why'."""
+    halves = [h.strip() for h in text.split('::')] if '::' in text else [text]
+    known, writes, why = True, set(), None
+    for h in halves:
+        parts = h.split(None, 1)
+        op, args = parts[0].lower(), (parts[1] if len(parts) > 1 else '')
+        m = isadb.operand_model(table, op, args, wave)
+        if not m['known'] and re.match(r'(buffer|image)_atomic_', op) and 'TH_ATOMIC_RETURN' not in args.upper():
+            r = isadb.operand_model(table, op, args + ' th:TH_ATOMIC_RETURN', wave)
+            if r['known']:
+                m = {**r, 'writes': r['writes'] - _first_operand(args)}
+        if not m['known']:
+            known = False
+            why = why or (f'{op} is not in the AMD ISA table' if m.get('name') is None else
+                          f'radisa could not model this operand form of {op}')
+        writes |= m['writes']
+    return {'known': known, 'writes': writes, 'why': why, 'op': text.split(None, 1)[0].lower()}
+
+
+SAVE_EXEC = re.compile(r's_\w+_saveexec_b(32|64)$')
+
+
+def restored(steps: list[tuple[str, dict]], wave: int) -> set:
+    """SGPRs (EXEC, M0, VCC, sN) the asm writes but gives back their entry value before it ends:
+    saved with S_MOV_B32/B64 or S_*_SAVEEXEC (SDST = old EXEC) into a register no later line
+    overwrites, and moved back from it with S_MOV. Scalar moves do not depend on EXEC, so the
+    register holds its entry value when the statement ends and the compiler's assumption holds."""
+    holds: dict = {}            # register -> entry register whose value it now holds (None: unknown)
+    written: set = set()
+    for text, model in steps:
+        parts = text.split(None, 1)
+        op, ops = parts[0].lower(), isadb.split_operands(parts[1]) if len(parts) > 1 else []
+        new: dict = {}
+        try:
+            if op in ('s_mov_b32', 's_mov_b64') and len(ops) == 2:
+                d, src = sorted(isadb.registers(ops[0])), sorted(isadb.registers(ops[1]))
+                if d and len(d) == len(src):
+                    new = {a: holds.get(b, b) for a, b in zip(d, src)}
+            elif (m := SAVE_EXEC.match(op)) and ops:
+                d = sorted(isadb.registers(ops[0]))
+                ex = [('s', 126)] if m[1] == '32' else [('s', 126), ('s', 127)]
+                if len(d) == len(ex):
+                    new = {a: holds.get(b, b) for a, b in zip(d, ex)}
+        except FormatError:
+            new = {}
+        for w in model['writes']:
+            holds[w] = new.get(w)
+        written |= model['writes']
+    return {w for w in written if w[0] == 's' and holds.get(w, w) == w}
 
 
 # ------------------------------------------------------------------ locations
@@ -348,22 +420,30 @@ def check_call(line: str, table: dict, wave: int, locs: Locations | None = None)
     tmpl, cons = ir_unescape(m['tmpl']), ir_unescape(m['cons'])
     operands, clobbers = parse_constraints(cons)
     args = _call_args(m['rest'])
-    plain = PLACEHOLDER.sub(' 0 ', tmpl)
+    plain = normalise(PLACEHOLDER.sub(' 0 ', tmpl))
     try:
         literal = isadb.registers(plain)
     except FormatError:
         literal = set()
-    try:
-        texts = bind_operands(operands, ret, args, literal)
-    except FormatError:
-        return []
     declared: set = set()
     for c in clobbers:
         declared |= clobber_regs(c)
+    explicit: set = set()
+    for op in operands:
+        if op['kind'] == 'reg':
+            try:
+                explicit |= isadb.registers(normalise(op['reg']))
+            except FormatError:
+                pass
+    try:
+        # A stand-in must not alias a clobber or an explicit register: its write would look declared.
+        texts = bind_operands(operands, ret, args, literal | declared | explicit)
+    except FormatError:
+        return []
     stand_in: dict = {}   # register -> operand number, for placeholders bound to reserved registers
     for i, (op, t) in enumerate(zip(operands, texts)):
         try:
-            regs = isadb.registers(t)
+            regs = isadb.registers(normalise(t))
         except FormatError:
             regs = set()
         if op.get('output') and not op.get('indirect') or op['kind'] == 'tied':
@@ -373,15 +453,17 @@ def check_call(line: str, table: dict, wave: int, locs: Locations | None = None)
                 stand_in[r] = i
     loc = locs.of(line) if locs else None
     srclocs = locs.srclocs(line) if locs else []
-    out, seen = [], set()
+    steps = []
     for index, stmt in template_lines(tmpl):
-        text = substitute(stmt, texts)
-        parts = text.split(None, 1)
-        op = parts[0].lower()
+        text = normalise(substitute(stmt, texts))
         try:
-            model = isadb.operand_model(table, op, parts[1] if len(parts) > 1 else '', wave)
+            steps.append((index, stmt, text, model_line(table, text, wave)))
         except FormatError:
             continue
+    seen = restored([(t, m) for _, _, t, m in steps], wave)
+    out = []
+    for index, stmt, text, model in steps:
+        op = model['op']
         bad = sorted(r for r in model['writes'] - declared if r not in seen)
         if not bad:
             continue
@@ -403,7 +485,7 @@ def check_call(line: str, table: dict, wave: int, locs: Locations | None = None)
             what.append('writes input operand ' + ', '.join(f'${n}' for n in inputs) +
                         ' (inputs must not be modified unless tied to an output: use "+" or a tied constraint)')
         assumed = '' if model['known'] else (
-            f' ({op} is outside the AMD operand table: every register it names is assumed written)')
+            f" ({model['why']}: every register it names is assumed written)")
         f = {'rule': RULE, 'severity': 'review' if model['known'] else 'info', 'pc': None,
              'message': f'inline asm line "{stmt}" ' + '; '.join(what) + assumed +
                         '. The compiler assumes the register keeps its value across the asm statement; a '
@@ -432,10 +514,26 @@ def check_function_ir(body: str, metadata: dict[str, str], attributes: dict[str,
     groups = re.findall(r'#(\d+)', head.split('(', 1)[-1])
     wave = _wave(' '.join(attributes.get(g, '') for g in groups))
     locs = Locations(metadata)
-    out = []
+    lines: list[str] = []
     for line in body.split('\n'):
-        if ' asm ' in line:
-            out += check_call(line, table, wave, locs)
+        if lines and line.lstrip().startswith('to label') and 'callbr' in lines[-1]:
+            lines[-1] += ' ' + line.strip()   # callbr prints `to label ...`, !dbg, !srcloc on a 2nd line
+        else:
+            lines.append(line)
+    out: list[dict] = []
+    first: dict = {}
+    for line in lines:
+        if ' asm ' not in line:
+            continue
+        for f in check_call(line, table, wave, locs):
+            # Unrolling and inlining at several sites copy one asm statement: one finding per
+            # (source location, asm line, registers), with the number of copies.
+            key = (tuple(sorted((f.get('loc') or {}).items())), f['asm_line'], tuple(f['registers']), f['severity'])
+            if key in first:
+                first[key]['copies'] = first[key].get('copies', 1) + 1
+            else:
+                first[key] = f
+                out.append(f)
     return out
 
 

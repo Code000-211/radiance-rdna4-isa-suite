@@ -23,7 +23,9 @@ SARIF_SCHEMA = 'https://json.schemastore.org/sarif-2.1.0.json'
 SARIF_LEVEL = {'error': 'error', 'review': 'warning', 'incomplete': 'note', 'info': 'note'}
 GITHUB_LEVEL = {'error': 'error', 'review': 'warning', 'incomplete': 'notice', 'info': 'notice'}
 FORMATS = ('text', 'json', 'sarif', 'github')
-FINGERPRINT_KEY = 'radisaFinding/v1'
+# v2: the input is keyed by its base-relative path (v1: its basename, which collided across
+# directories), so the values differ from v1 ones; a new key, not changed values under the old.
+FINGERPRINT_KEY = 'radisaFinding/v2'
 
 
 def iter_findings(report: dict):
@@ -35,26 +37,43 @@ def iter_findings(report: dict):
             yield k, f
 
 
+def _relpath(file: str, base: Path | None) -> str | None:
+    """`file` as a POSIX path relative to `base`, or None when it does not lie under `base`."""
+    if base is None:
+        return None
+    p = Path(file)
+    try:
+        return (p if p.is_absolute() else (Path.cwd() / p)).resolve().relative_to(base.resolve()).as_posix()
+    except (ValueError, OSError):
+        return None
+
+
 def _uri(file: str, base: Path | None) -> str:
     """Repository-relative POSIX path when `file` lies under `base`, else a file:// URI (absolute)
     or the path as given (relative)."""
+    rel = _relpath(file, base)
+    if rel is not None:
+        return rel
     p = Path(file)
-    if base is not None:
-        try:
-            return (p if p.is_absolute() else (Path.cwd() / p)).resolve().relative_to(base.resolve()).as_posix()
-        except (ValueError, OSError):
-            pass
     return p.resolve().as_uri() if p.is_absolute() else p.as_posix()
+
+
+def _path(file: str, base: Path | None) -> str:
+    """A file path for workflow commands (they take a path, not a URI): relative to `base` when
+    under it, else the path as given."""
+    rel = _relpath(file, base)
+    return rel if rel is not None else Path(file).as_posix()
 
 
 _LINE_REF = re.compile(r'(:\d+)+\b|\b0x[0-9a-f]+\b|\bpc \d+\b', re.I)
 
 
-def fingerprint(report: dict, kernel: dict | None, f: dict) -> str:
-    """Stable across line moves: rule, input name, kernel, instruction text and the message with
-    line numbers / pcs removed. pc and loc.line are deliberately left out."""
+def fingerprint(report: dict, kernel: dict | None, f: dict, where: str | None = None) -> str:
+    """Stable across line moves: rule, the input (`where`: its base-relative path, as in the
+    SARIF artifact URI; default its name), kernel, instruction text and the message with line
+    numbers / pcs removed. pc and loc.line are deliberately left out."""
     msg = _LINE_REF.sub('', f.get('message', ''))
-    key = json.dumps([f.get('rule'), Path(str(report.get('input', ''))).name,
+    key = json.dumps([f.get('rule'), where if where is not None else Path(str(report.get('input', ''))).name,
                       (kernel or {}).get('name'), f.get('instruction', ''), msg])
     return hashlib.sha256(key.encode()).hexdigest()[:32]
 
@@ -121,7 +140,7 @@ def to_sarif(reports: list[dict], base: str | Path | None = None) -> dict:
                 location['logicalLocations'] = [{'name': name, 'fullyQualifiedName': full, 'kind': 'function'}]
             if location:
                 res['locations'] = [location]
-            fp = fingerprint(r, k, f)
+            fp = fingerprint(r, k, f, input_uri)
             seen[fp] += 1
             res['partialFingerprints'] = {FINGERPRINT_KEY: f'{fp}:{seen[fp]}'}
             props = {'severity': f['severity']}
@@ -172,13 +191,13 @@ def to_github(reports: list[dict], base: str | Path | None = None) -> str:
             loc = f.get('loc') or {}
             props = []
             if loc.get('file'):
-                props.append(f"file={gh_prop(_uri(loc['file'], base))}")
+                props.append(f"file={gh_prop(_path(loc['file'], base))}")
                 if loc.get('line'):
                     props.append(f"line={int(loc['line'])}")
                 if loc.get('column'):
                     props.append(f"col={int(loc['column'])}")
             elif r.get('input'):
-                props.append(f"file={gh_prop(_uri(str(r['input']), base))}")
+                props.append(f"file={gh_prop(_path(str(r['input']), base))}")
             props.append(f"title={gh_prop(f['rule'])}")
             msg = f.get('message') or f['rule']
             if k is not None:
@@ -195,11 +214,14 @@ def to_github(reports: list[dict], base: str | Path | None = None) -> str:
 
 
 def emit(reports: list[dict], fmt: str, strict: bool = False, base: str | Path | None = None) -> str:
-    """`reports` rendered as `fmt` (one of FORMATS). text: check.render per report; json: the
-    report itself for one report, else a list."""
+    """`reports` rendered as `fmt` (one of FORMATS). text: check.render per report, each under a
+    `==> INPUT: STATUS <==` header when there is more than one; json: the report itself for one
+    report, else a list."""
     if fmt == 'text':
         from .check import render
-        return '\n'.join(render(r, strict) for r in reports) + '\n'
+        if len(reports) == 1:
+            return render(reports[0], strict) + '\n'
+        return '\n'.join(f"==> {r.get('input')}: {r.get('status')} <==\n{render(r, strict)}" for r in reports) + '\n'
     if fmt == 'json':
         value = reports[0] if len(reports) == 1 else reports
         return json.dumps(value, indent=2, sort_keys=True, default=_plain) + '\n'

@@ -9,7 +9,16 @@ becomes an INCOMPLETE entry for that file; the run itself continues.
 
 Exit status (the same meaning as `radisa check`): 1 if any file FAILs, else 3 if any file is
 INCOMPLETE, else 0. `--fail-on warning` makes warnings fail (`--strict` for every file);
-`--fail-on incomplete` additionally turns INCOMPLETE files into exit 1.
+`--fail-on incomplete` additionally turns INCOMPLETE files into exit 1. An invalid option,
+configuration or missing `--baseline` is checked once, before any file, and exits 2 as in `check`.
+SIGINT / SIGTERM stop every running check (its whole process group) and exit 130 / 143.
+
+Baselines: `--write-baseline B` writes ONE file covering every checked file; each entry carries
+its file (`input`, relative to B's directory). Entries of files not checked in this run (not
+selected, or crashed) are kept. `--baseline B` (or a configuration's baseline) gives each file
+only its own entries, so a finding is hidden only in the file it was recorded for and
+BASELINE_STALE names only that file's entries. A single-file baseline written by `radisa check`
+applies to the file named in its `input` (or to the only file checked).
 """
 from __future__ import annotations
 
@@ -22,13 +31,16 @@ from multiprocessing.connection import wait as mp_wait
 import os
 from pathlib import Path
 import re
+import shutil
 import signal
 import subprocess
 import sys
+import tempfile
+import threading
 import time
 import traceback
 
-from . import check, formats, hipsrc
+from . import __version__, check, formats, hipsrc, suppress
 from .formats import emit  # noqa: F401  (re-exported: batch.emit(reports, fmt))
 
 SCHEMA = 'radisa-check-all-v1'
@@ -94,27 +106,31 @@ def file_namespace(path: Path, args, compile_commands: str | None = None,
 
 # ------------------------------------------------------------------ input selection
 
-def _git(cwd: Path, *argv: str) -> str:
-    p = subprocess.run(['git', '-C', str(cwd), *argv], capture_output=True, text=True, check=False)
+def _git(cwd: Path, *argv: str) -> bytes:
+    p = subprocess.run(['git', '-C', str(cwd), *argv], capture_output=True, check=False)
     if p.returncode:
-        raise ValueError(f"git {' '.join(argv)} failed in {cwd}: {p.stderr.strip()}")
+        err = p.stderr.decode('utf-8', 'replace').strip()
+        raise ValueError(f"git {' '.join(argv)} failed in {cwd}: {err}")
     return p.stdout
+
+
+def _z(out: bytes) -> list[str]:
+    """NUL-separated `git ... -z` output as file-system names (no C quoting, any byte allowed)."""
+    return [os.fsdecode(x) for x in out.split(b'\0') if x]
 
 
 def changed_files(paths: list[Path], ref: str) -> set[Path]:
     """Files changed relative to `ref` (git diff --name-only, working tree) plus untracked files,
-    for every git repository the `paths` live in; resolved absolute paths."""
-    roots, out = {}, set()
-    for p in paths:
-        d = p if p.is_dir() else p.parent
-        roots.setdefault(d, None)
-    tops = set()
-    for d in roots:
-        tops.add(Path(_git(d, 'rev-parse', '--show-toplevel').strip()).resolve())
+    for every git repository the `paths` (the selected files) live in; resolved absolute paths.
+    `-z`: names with non-ASCII or special characters come back verbatim (core.quotePath would
+    C-quote them otherwise, git-config(1))."""
+    dirs = {p if p.is_dir() else p.parent for p in paths}
+    tops = {Path(os.fsdecode(_git(d, 'rev-parse', '--show-toplevel')).strip()).resolve() for d in dirs}
+    out = set()
     for top in tops:
-        names = _git(top, 'diff', '--name-only', ref, '--').splitlines()
-        names += _git(top, 'ls-files', '--others', '--exclude-standard').splitlines()
-        out |= {(top / n).resolve() for n in names if n}
+        names = _z(_git(top, 'diff', '--name-only', '-z', ref, '--'))
+        names += _z(_git(top, 'ls-files', '-z', '--others', '--exclude-standard'))
+        out |= {(top / n).resolve() for n in names}
     return out
 
 
@@ -157,10 +173,9 @@ def select(args) -> tuple[list[Path], dict[Path, str]]:
                     files[f] = None
     sel = [f for f in files if not (exc and exc.search(str(f)))]
     if args.changed_since:
-        anchors = [Path(x).resolve() for x in args.paths] + list(sel)
-        if args.compile_commands:
-            anchors.append(Path(args.compile_commands).resolve())
-        changed = changed_files(anchors, args.changed_since) if anchors else set()
+        # The git roots come from the selected files only: a compile db or a directory argument
+        # may live outside the repository (an out-of-tree build directory).
+        changed = changed_files(sel, args.changed_since) if sel else set()
         sel = [f for f in sel if f in changed]
     return sel, {f: ccmap[f] for f in sel if f in ccmap and f.suffix in hipsrc.SOURCE_SUFFIXES}
 
@@ -177,24 +192,35 @@ def synthetic_report(path: str, rule: str, message: str, strict: bool, **extra) 
     return check.finalize(report, strict)
 
 
-def count_kernels(path: Path, ns) -> int | None:
-    """Kernels in the unit before any code generation; None if it cannot be told cheaply.
-    .s: `.amdhsa_kernel` directives; objects: the code-object metadata; HIP: kernels of the
-    optimised IR (one `clang -emit-llvm` run, only done with --max-kernels-per-file)."""
+def kernel_names(path: Path, ns) -> list[tuple[str, str]] | None:
+    """(name, symbol) of every kernel in the unit before any code generation; None if it cannot
+    be told cheaply. .s: `.amdhsa_kernel` directives (a snippet without one is one kernel);
+    objects: the code-object metadata; HIP: kernels of the optimised IR (one `clang -emit-llvm`
+    run, only done with --max-kernels-per-file)."""
     from .binary import ELF, kernel_inventory
     from .incremental import parse_module
-    import tempfile
     if path.suffix in ('.s', '.S', '.asm'):
         text = path.read_text(encoding='utf-8', errors='replace')
-        return max(1, len(re.findall(r'^\s*\.amdhsa_kernel\s', text, re.M)))
+        names = re.findall(r'^\s*\.amdhsa_kernel\s+(\S+)', text, re.M)
+        return [(n, n + '.kd') for n in names] or [('<snippet>', '<snippet>')]
     if path.suffix in hipsrc.SOURCE_SUFFIXES:
         flags = [x for f in (ns.flag or []) for x in f.split()]
         with tempfile.TemporaryDirectory(prefix='radisa-count-') as tmp:
             r = hipsrc.compile_ir(path, Path(tmp), ns.cxx, flags,
                                   Path(ns.compile_commands) if ns.compile_commands else None,
                                   timeout=ns.timeout)
-        return len(parse_module(r['ir'])['kernels']) if r.get('ir') else None
-    return sum(len(kernel_inventory(ELF(d))[0]) for d in check._objects(path))
+        return [(n, n) for n in parse_module(r['ir'])['kernels']] if r.get('ir') else None
+    return [(k['name'], k['symbol']) for d in check._objects(path) for k in kernel_inventory(ELF(d))[0]]
+
+
+def count_kernels(path: Path, ns) -> int | None:
+    """Kernels the check of `ns` analyses: with `--kernel S` only those whose name or symbol
+    contains S, as check.check_object_bytes filters them."""
+    names = kernel_names(path, ns)
+    if names is None:
+        return None
+    sub = getattr(ns, 'kernel', None)
+    return len([1 for n, s in names if not sub or sub in n or sub in s])
 
 
 def check_one(path: Path, ns, max_kernels: int | None) -> dict:
@@ -205,8 +231,9 @@ def check_one(path: Path, ns, max_kernels: int | None) -> dict:
         except Exception:  # the real analysis reports why
             n = None
         if n is not None and n > max_kernels:
+            sel = f' matching --kernel {ns.kernel}' if getattr(ns, 'kernel', None) else ''
             return synthetic_report(str(path), 'SKIPPED_TOO_MANY_KERNELS',
-                                    f'not checked: {n} kernels exceed --max-kernels-per-file {max_kernels}; '
+                                    f'not checked: {n} kernels{sel} exceed --max-kernels-per-file {max_kernels}; '
                                     f'check this unit on its own (radisa check {path.name}, optionally --kernel NAME)',
                                     ns.strict, kernels=n)
     return check.analyze(ns)
@@ -214,8 +241,12 @@ def check_one(path: Path, ns, max_kernels: int | None) -> dict:
 
 def _child(conn, path: Path, ns, max_kernels: int | None) -> None:
     try:
-        os.setsid()
-    except OSError:
+        os.setsid()   # its own process group: _kill stops the compilers it starts too
+    except (OSError, AttributeError):  # AttributeError: no os.setsid (Windows)
+        pass
+    try:  # the parent's SIGTERM handler (run) is inherited by fork; the worker just dies
+        signal.signal(signal.SIGTERM, signal.SIG_DFL)
+    except (OSError, ValueError, AttributeError):
         pass
     try:
         report = check_one(path, ns, max_kernels)
@@ -255,14 +286,25 @@ def run_files(jobs: list[tuple[Path, argparse.Namespace]], n: int, timeout: floa
         if progress:
             progress(done, len(jobs), report)
 
+    try:
+        _loop(ctx, todo, running, n, timeout, max_kernels, finish)
+    finally:  # normal end: nothing left; KeyboardInterrupt / SIGTERM: stop every running check
+        for r, (proc, *_) in list(running.items()):
+            _kill(proc)
+            r.close()
+        running.clear()
+    return reports  # type: ignore[return-value]
+
+
+def _loop(ctx, todo: list, running: dict, n: int, timeout: float | None, max_kernels: int | None, finish) -> None:
     while todo or running:
         while todo and len(running) < max(1, n):
             i, (path, ns) = todo.pop(0)
             r, w = ctx.Pipe(duplex=False)
             proc = ctx.Process(target=_child, args=(w, path, ns, max_kernels), daemon=False)
             proc.start()
-            w.close()
             running[r] = (proc, i, time.monotonic(), path, ns)
+            w.close()
         now = time.monotonic()
         wait_for = 1.0
         if timeout:
@@ -288,7 +330,142 @@ def run_files(jobs: list[tuple[Path, argparse.Namespace]], n: int, timeout: floa
                 finish(i, synthetic_report(str(path), 'CHECK_TIMEOUT',
                                            f'not finished after --timeout-per-file {timeout:g} s; the file was not '
                                            'checked (its compiler and checker processes were stopped)', ns.strict), t0)
-    return reports  # type: ignore[return-value]
+
+
+# ------------------------------------------------------------------ validation and baselines
+
+def validate(jobs: list[tuple[Path, argparse.Namespace]]) -> None:
+    """What `check.analyze` validates first (configuration, --severity, a missing --baseline),
+    for every file, in the parent: ValueError -> exit 2 as in `radisa check`, not one
+    CHECK_CRASHED per file. Runs on copies (suppress.settings caches on the Namespace)."""
+    for _, ns in jobs:
+        if hasattr(ns, 'enable') or hasattr(ns, 'config'):
+            suppress.validate(copy.copy(ns))
+
+
+def _read_baseline_doc(path: Path) -> dict:
+    try:
+        doc = json.loads(path.read_text(encoding='utf-8'))
+    except (OSError, ValueError) as ex:
+        raise ValueError(f'baseline {path}: {ex}') from ex
+    if not isinstance(doc, dict) or doc.get('schema') != suppress.SCHEMA or not isinstance(doc.get('entries'), list):
+        raise ValueError(f'baseline {path}: not a {suppress.SCHEMA} file')
+    return doc
+
+
+def _rel(f: Path, bdir: Path) -> str:
+    try:
+        return Path(os.path.relpath(f, bdir.resolve())).as_posix()
+    except ValueError:  # another drive (Windows)
+        return Path(f).as_posix()
+
+
+def baseline_entries(path: Path, files: list[Path]) -> dict[Path | None, list[dict]]:
+    """The entries of baseline `path` per checked file (resolved); None: entries of no file in
+    `files`. Per-entry `input` is relative to the baseline's directory (check-all baselines);
+    a `radisa check` baseline names one file in its top-level `input` (as given on that command
+    line: tried against the current and the baseline's directory); with one file checked it
+    applies to that file, as `radisa check FILE --baseline B` does."""
+    doc = _read_baseline_doc(path)
+    bdir = path.resolve().parent
+    known = set(files)
+    out: dict[Path | None, list[dict]] = {}
+    for e in doc['entries']:
+        if not isinstance(e, dict) or 'fingerprint' not in e:
+            continue
+        if e.get('input'):
+            cands = [bdir / e['input']]
+        elif doc.get('input'):
+            cands = [Path.cwd() / doc['input'], bdir / doc['input']]
+        else:
+            cands = []
+        hit = next((c.resolve() for c in cands if c.resolve() in known), None)
+        if hit is None and not e.get('input') and len(files) == 1:
+            hit = files[0]
+        out.setdefault(hit, []).append(e)
+    return out
+
+
+def _write_json(path: Path, value: dict) -> None:
+    tmp = path.with_name(f'.{path.name}.{os.getpid()}.tmp')
+    tmp.write_text(json.dumps(value, indent=2, sort_keys=True) + '\n')
+    os.replace(tmp, path)
+
+
+def prepare_baselines(jobs: list[tuple[Path, argparse.Namespace]], tmp: Path) -> dict:
+    """Point every per-file Namespace at a baseline of its own under `tmp` (see the module
+    docstring). Returns {'write': B or None, 'files': {i: per-file temp to write},
+    'retarget': {temp path: user path}} for finish_baselines and the reports."""
+    plan: dict = {'write': None, 'files': {}, 'retarget': {}}
+    files = [f for f, _ in jobs]
+    loaded: dict[Path, dict] = {}
+    for i, (f, ns) in enumerate(jobs):
+        if getattr(ns, 'write_baseline', None):
+            plan['write'] = Path(ns.write_baseline)
+            t = tmp / f'write-{i}.json'
+            plan['files'][i] = t
+            plan['retarget'][str(t)] = str(ns.write_baseline)
+            ns.write_baseline = str(t)
+            continue
+        b = suppress.settings(copy.copy(ns))['baseline'] if hasattr(ns, 'baseline') else None
+        if b is None:
+            continue
+        key = b.resolve()
+        if key not in loaded:
+            loaded[key] = baseline_entries(b, files)
+        t = tmp / f'baseline-{i}.json'
+        # Per-entry 'input' is relative to B's directory, not tmp's: drop it, the top-level
+        # 'input' names the file these entries belong to (suppress.read_baseline).
+        _write_json(t, {'schema': suppress.SCHEMA, 'radisa': __version__, 'input': str(f),
+                        'entries': [{k: v for k, v in e.items() if k != 'input'}
+                                    for e in loaded[key].get(f, [])]})
+        plan['retarget'][str(t)] = str(b)
+        ns.baseline = str(t)
+    return plan
+
+
+def finish_baselines(plan: dict, jobs: list[tuple[Path, argparse.Namespace]]) -> int:
+    """Merge the per-file baselines written by the workers into the one `--write-baseline` file;
+    the entries of files without a new per-file baseline (not checked, crashed) are kept from the
+    existing file. Returns the number of entries written."""
+    target: Path | None = plan['write']
+    if target is None:
+        return 0
+    bdir = target.resolve().parent
+    rows, written = [], set()
+    for i, t in plan['files'].items():
+        if not t.is_file():
+            continue
+        f = jobs[i][0]
+        written.add(f)
+        for e in _read_baseline_doc(t)['entries']:
+            rows.append({**e, 'input': _rel(f, bdir)})
+    if target.is_file():
+        try:
+            old = baseline_entries(target, [f for f, _ in jobs])
+        except ValueError:
+            old = {}
+        for f, es in old.items():
+            if f is None or f not in written:
+                rows += [e if e.get('input') or f is None else {**e, 'input': _rel(f, bdir)} for e in es]
+    rows.sort(key=lambda r: (str(r.get('input', '')), r.get('rule', ''), r.get('kernel', ''), r['fingerprint']))
+    _write_json(target, {'schema': suppress.SCHEMA, 'radisa': __version__, 'input': None,
+                         'inputs': sorted({r['input'] for r in rows if r.get('input')}), 'entries': rows})
+    return len(rows)
+
+
+def retarget(value, paths: dict[str, str]):
+    """`value` with every per-file temporary baseline path replaced by the user's path."""
+    if isinstance(value, str):
+        for a, b in paths.items():
+            if a in value:
+                value = value.replace(a, b)
+        return value
+    if isinstance(value, dict):
+        return {k: retarget(v, paths) for k, v in value.items()}
+    if isinstance(value, list):
+        return [retarget(v, paths) for v in value]
+    return value
 
 
 # ------------------------------------------------------------------ summary and exit status
@@ -365,12 +542,40 @@ def run(args) -> int:
         raise ValueError('check-all needs paths and/or --compile-commands')
     files, ccmap = select(args)
     jobs = [(f, file_namespace(f, args, ccmap.get(f), i)) for i, f in enumerate(files)]
+    validate(jobs)
 
     def progress(i, n, r):
         if not args.quiet:
             print(f"[{i}/{n}] {r['status']:<10} {r.get('elapsed_s', 0):7.2f} s  {r['input']}", file=sys.stderr)
 
-    reports = run_files(jobs, args.jobs, args.timeout_per_file, args.max_kernels_per_file, progress)
+    got: list[int] = []
+
+    def on_signal(signum, frame):
+        got.append(signum)
+        raise KeyboardInterrupt
+
+    handlers = {}
+    if threading.current_thread() is threading.main_thread():
+        for sig in (signal.SIGTERM,):
+            try:
+                handlers[sig] = signal.signal(sig, on_signal)
+            except (OSError, ValueError):
+                pass
+    tmp = Path(tempfile.mkdtemp(prefix='radisa-check-all-'))
+    try:
+        plan = prepare_baselines(jobs, tmp)
+        reports = run_files(jobs, args.jobs, args.timeout_per_file, args.max_kernels_per_file, progress)
+        finish_baselines(plan, jobs)
+        reports = [retarget(r, plan['retarget']) for r in reports]
+    except KeyboardInterrupt:
+        signum = got[0] if got else signal.SIGINT
+        print(f'radisa check-all: interrupted by signal {int(signum)}; every running check was stopped',
+              file=sys.stderr)
+        return 128 + int(signum)
+    finally:
+        for sig, h in handlers.items():
+            signal.signal(sig, h)
+        shutil.rmtree(tmp, ignore_errors=True)
     s = summary(reports, args.fail_on)
     strict = args.fail_on != 'error'
     if args.format == 'json':

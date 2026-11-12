@@ -88,9 +88,14 @@ Environment variables:
 * `ROCM_PATH` (default `/opt/rocm`).
 * `HWPROBE_CLANG`: the device compiler, default `$ROCM_PATH/llvm/bin/clang++`.
 * `HIPCC`: the host compiler, default `$ROCM_PATH/bin/hipcc`.
-* `HWPROBE_ITERATIONS`, `HWPROBE_GRID`.
-* `HWPROBE_CASE`: run only the cases whose name contains this substring.
-* `HWPROBE_ANY_GPU=1`: run on a device that is not gfx1201.
+* `HWPROBE_ITERATIONS`, `HWPROBE_GRID`: positive integers (anything else is exit 2).
+* `HWPROBE_CASE`: run only the cases whose name contains this substring. A substring that matches
+  no case is exit 2, not an empty success.
+
+There is no way to run on a device that is not gfx1201: the code objects are raw gfx1201 ELFs, and
+the runner stops with exit 2 when `gcnArchName` does not start with `gfx1201`. (An earlier
+`HWPROBE_ANY_GPU` option only skipped that name check; the HIP runtime's `hipModuleLoad` is
+expected to refuse a code object of another ISA anyway. Not checked here: no ROCm.)
 
 Steps:
 
@@ -99,20 +104,29 @@ Steps:
    `clang++ -x hip --offload-arch=gfx1201 --offload-device-only --no-gpu-bundle-output -nogpuinc
    -nogpulib -O3`.
 3. `radisa check` runs on those exact code objects and writes `OUT_DIR/lint/<case>.json`, so the
-   linter's verdict refers to the bytes that ran.
+   linter's verdict refers to the bytes that ran. `generate.py --verify-lint OUT_DIR/lint` then
+   checks every kernel against the manifest: `_hazard` reports exactly the expected rule and
+   severity, `_fixed` reports no error and not the rule, and neither has an `incomplete` finding.
+   The exit code of `radisa check` cannot show this, since `_hazard` alone makes it 1. On a
+   mismatch (for example a newer compiler changed the code around the asm) nothing runs and the
+   script exits 2, because the results would be filed under a rule the bytes do not have.
 4. `generate.py --data OUT_DIR/data` writes the inputs (`<case>.in.bin`), the expected outputs
    (`<case>.expect.bin`) and `cases.tsv`.
 5. `hipcc host_runner.cpp` builds the runner, which loads each code object with `hipModuleLoad`
    and launches it with `hipModuleLaunchKernel`. It needs only the HIP runtime.
 6. Results go to `OUT_DIR/results.json`. Each entry has the case, variant, kernel, `expect_rule`,
    `launches`, `mismatched_words`, `mismatching_launches`, `first_mismatch` and a `verdict`:
-   `hazard_observed` or `not_observed` for `_hazard`, `ok` or `FIXED_VARIANT_MISMATCH` for `_fixed`.
+   `hazard_observed` or `not_observed` for `_hazard`, `ok` or `FIXED_VARIANT_MISMATCH` for `_fixed`,
+   `incomplete` for a kernel whose launches an error cut short. The file is rewritten after every
+   kernel and on every error, so a fault or timeout in one probe keeps the counts collected before
+   it. `complete` is `false` (and `error` says why, `fixed_variants_ok` is `null`) until the whole
+   run has finished.
 
 | exit | meaning |
 |---|---|
 | 0 | every `_fixed` variant matched in every launch (`_hazard` results are information only) |
 | 1 | a `_fixed` variant mismatched |
-| 2 | stale cases, build failure, missing toolchain, wrong device, HIP runtime error, or `radisa check` could not analyse a code object |
+| 2 | stale cases, build failure, missing toolchain, bad `HWPROBE_ITERATIONS`/`HWPROBE_GRID`, no case matching `HWPROBE_CASE`, a lint verdict that does not match the manifest, `radisa check` could not analyse a code object, wrong device, or HIP runtime error |
 
 Regenerate after editing `generate.py`: `python3 hwprobe/generate.py`. `cases/*.hip` and
 `cases/manifest.json` are generated and never edited by hand.
@@ -130,7 +144,10 @@ Verified (Ubuntu LLVM/clang 18.1.3, no GPU; `tests/test_hwprobe.py`):
   with `RAD_ISA_REQUIRE_LLVM=1`).
 * `host_runner.cpp` builds with `g++ -Wall -Wextra -Werror` against `mock/hip/hip_runtime.h`, a
   host-only stand-in that copies prepared words into the output buffer. Under the mock, its
-  parsing, mismatch counting, JSON and exit codes 0/1/2 behave as described.
+  parsing, mismatch counting, JSON and exit codes 0/1/2 behave as described, including the partial
+  `results.json` after a load error, and exit 2 for an empty selection or zero iterations.
+* `generate.py --verify-lint` on real `radisa check` reports of the compiled cases, and on reports
+  edited to drop the expected rule or add an error to `_fixed` (both caught).
 * Once, by hand: `run_probes.sh` end to end, with clang 18 as `HWPROBE_CLANG` and a `g++ -I
   hwprobe/mock` wrapper as `HIPCC`. The code objects built, `lint/*.json` showed the expected rule
   per kernel, and the runner ran under the mock.

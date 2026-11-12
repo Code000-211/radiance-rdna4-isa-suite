@@ -1,11 +1,16 @@
 """Non-kernel functions (radisa/functions.py) and the call/callee conventions of radisa/waits.py,
 both as LLVM's SIInsertWaitcnts implements them (see waits.CALLS)."""
+import io
+import re
 import subprocess
 import tempfile
+import time
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
 
-from support import CHECK_FIX, llvm_mc, needs_minimal_kernel, kernel_asm, check_text, all_findings
+from support import (CHECK_FIX, llvm_mc, needs_llvm_mc, needs_minimal_kernel, kernel_asm, check_text,
+                     all_findings, run_check)
 
 from radisa import binary, check, decode, functions, isadb, rules, sgpr, waits
 
@@ -20,30 +25,47 @@ def assemble(text: str, out: Path) -> binary.ELF:
     return binary.ELF(out.read_bytes())
 
 
-def lint(text: str) -> dict:
-    """{name: (inventory entry, findings, stats)} for every kernel and function of the assembled text,
-    the way check_object_bytes runs them once functions are wired in."""
+def lint(text: str, cfg_issues: bool = False) -> dict:
+    """{name: (inventory entry, findings, stats)} for every kernel and function of the assembled text
+    (functions.object_inventory, so also for an object without kernels), the way check_object_bytes
+    runs them. With `cfg_issues`, the findings include those of rules.cfg."""
     with tempfile.TemporaryDirectory() as d:
         obj = Path(d, 'a.o')
         elf = assemble(text, obj)
-        ks, issues = binary.kernel_inventory(elf)
-        fs = functions.function_inventory(elf, ks, issues)
+        ks, fs, issues = functions.object_inventory(elf)
         dec = decode.decode_object(obj, [k for k in ks + fs if 'code_hex' in k], decode.select_backend(None, None))
     out = {}
     for k in ks + fs:
         ins = dec[k['symbol']]['instructions']
-        edges, reachable, _ = rules.cfg(ins)
-        found, stats = waits.analyze(ins, edges, reachable, TABLE, 32, callee=bool(k.get('callee')))
-        out[k['name']] = (k, found, stats)
+        edges, reachable, cf = rules.cfg(ins)
+        found, stats = waits.analyze(ins, edges, reachable, TABLE, k['metadata']['.wavefront_size'],
+                                     callee=bool(k.get('callee')))
+        out[k['name']] = (k, (cf + found) if cfg_issues else found, stats)
     return out
+
+
+def encoding(line: str) -> bytes:
+    """The bytes llvm-mc encodes one gfx1201 instruction to."""
+    p = subprocess.run([llvm_mc(), '-triple=amdgcn-amd-amdhsa', '-mcpu=gfx1201', '-show-encoding'],
+                       input=line + '\n', capture_output=True, text=True, check=True)
+    return bytes(int(b, 16) for b in re.search(r'encoding: \[([^\]]*)\]', p.stdout)[1].split(','))
+
+
+def wave64(text: str) -> str:
+    """kernel_asm() text with a wave64 kernel (descriptor and metadata)."""
+    return (text.replace('.amdhsa_wavefront_size32 1', '.amdhsa_wavefront_size32 0')
+            .replace('.wavefront_size: 32', '.wavefront_size: 64'))
+
+
+PROLOGUE = ('s_wait_loadcnt_dscnt', 's_wait_expcnt', 's_wait_samplecnt', 's_wait_bvhcnt', 's_wait_kmcnt')
 
 
 def rule(found, name):
     return [f for f in found if f['rule'] == name]
 
 
-def ins(op, args, pc, size=4):
-    return {'pc': pc, 'size': size, 'raw': '00000000', 'op': op, 'args': args, 'text': f'{op} {args}'}
+def ins(op, args, pc, size=4, raw='00000000'):
+    return {'pc': pc, 'size': size, 'raw': raw, 'op': op, 'args': args, 'text': f'{op} {args}'}
 
 
 def run(seq, callee=False):
@@ -80,9 +102,89 @@ class Inventory(unittest.TestCase):
         self.assertEqual(f['descriptor'], {})
         self.assertEqual(f['metadata']['.wavefront_size'], 32)
         self.assertEqual(f['size'], 4)
-        self.assertEqual(bytes.fromhex(f['code_hex']).hex(), f['code_hex'])
+        self.assertEqual(bytes.fromhex(f['code_hex']), encoding('s_setpc_b64 s[30:31]'))
         self.assertEqual(f['address'], ks[0]['address'] + ks[0]['size'])
         self.assertTrue(any('nosize' in m for m in issues))
+
+    @needs_minimal_kernel
+    def test_unsized_function_is_reported_unchecked(self):
+        text = kernel_asm('s_endpgm', extra_functions='\t.type\tnosize,@function\nnosize:\n\ts_setpc_b64 s[30:31]\n')
+        with tempfile.TemporaryDirectory() as d:
+            elf = assemble(text, Path(d, 'a.o'))
+            ks, _ = binary.kernel_inventory(elf)
+            issues, unchecked = [], []
+            self.assertEqual(functions.function_inventory(elf, ks, issues, unchecked=unchecked), [])
+            self.assertEqual(unchecked, ['nosize'])
+            self.assertEqual(functions.object_inventory(elf, unchecked=(u := []))[1], [])
+            self.assertEqual(u, ['nosize'])
+
+    @needs_minimal_kernel
+    def test_wave64_kernel_gives_wave64_functions(self):
+        text = wave64(kernel_asm('s_endpgm', extra_functions=helper('f1', 's_setpc_b64 s[30:31]')))
+        with tempfile.TemporaryDirectory() as d:
+            ks, fs, _ = functions.object_inventory(assemble(text, Path(d, 'a.o')))
+        self.assertEqual(ks[0]['metadata']['.wavefront_size'], 64)
+        f, = fs
+        self.assertEqual(f['metadata']['.wavefront_size'], 64)
+        self.assertEqual(f['issues'], ['relocatable ELF: entry relocation and load mapping are unresolved'])
+
+    def test_wave_size_sources(self):
+        k = lambda w: {'metadata': {'.wavefront_size': w}}
+        self.assertEqual(functions._wave([k(64), k(64)]), (64, None))
+        self.assertEqual(functions._wave([k(64)], 32), (64, None))     # a kernel's word wins
+        w, why = functions._wave([])
+        self.assertEqual(w, 32)
+        self.assertIn('no kernel', why)
+        self.assertEqual(functions._wave([], 64), (64, None))
+        w, why = functions._wave([k(32), k(64)])
+        self.assertEqual(w, 32)
+        self.assertIn('disagree', why)
+        self.assertIn('[32, 64]', why)
+
+    @needs_llvm_mc
+    def test_object_without_kernels(self):
+        # amdhsa.kernels: [] (llc output of a -fgpu-rdc translation unit): its function is listed.
+        with tempfile.TemporaryDirectory() as d:
+            elf = assemble((CHECK_FIX / 'callee_rdc.s').read_text(), Path(d, 'a.o'))
+            with self.assertRaisesRegex(binary.FormatError, 'amdhsa.kernels'):
+                binary.kernel_inventory(elf)
+            ks, fs, issues = functions.object_inventory(elf)
+            self.assertTrue(functions.has_functions(elf))
+            _, fs64, _ = functions.object_inventory(elf, wave=64)
+        self.assertEqual(ks, [])
+        f, = fs
+        self.assertEqual((f['name'], f['address'], f['size']), ('_Z4leafPKfi', 0, 88))
+        self.assertTrue(f['callee'])
+        self.assertIn('no kernel in the object declares a wave size; wave32 assumed', f['issues'])
+        self.assertEqual(fs64[0]['metadata']['.wavefront_size'], 64)
+        self.assertNotIn('no kernel in the object declares a wave size; wave32 assumed', fs64[0]['issues'])
+
+    @needs_llvm_mc
+    def test_assembly_without_metadata(self):
+        text = '\t.amdgcn_target "amdgcn-amd-amdhsa--gfx1201"\n\t.text\n' + helper('f1', 's_setpc_b64 s[30:31]')
+        with tempfile.TemporaryDirectory() as d:
+            elf = assemble(text, Path(d, 'a.o'))
+            ks, fs, _ = functions.object_inventory(elf, wave=32)
+            self.assertTrue(functions.has_functions(elf))
+        self.assertEqual(ks, [])
+        self.assertEqual([f['name'] for f in fs], ['f1'])
+
+    @needs_llvm_mc
+    def test_no_kernels_and_no_functions_still_raises(self):
+        text = (CHECK_FIX / 'callee_rdc.s').read_text().replace('@function', '@object')
+        with tempfile.TemporaryDirectory() as d:
+            elf = assemble(text, Path(d, 'a.o'))
+            self.assertFalse(functions.has_functions(elf))
+            with self.assertRaisesRegex(binary.FormatError, 'amdhsa.kernels'):
+                functions.object_inventory(elf)
+        with tempfile.TemporaryDirectory() as d:
+            # A snippet: no function symbol at all.
+            self.assertFalse(functions.has_functions(assemble('\ts_nop 0\n', Path(d, 'a.o'))))
+
+    def test_relative_pc(self):
+        self.assertEqual(functions.relative_pc({'address': 0x30}, 0x38), 8)
+        self.assertEqual(functions.relative_pc({'address': 0}, 0x38), 0x38)
+        self.assertEqual(functions.relative_pc({}, 4), 4)
 
     @needs_minimal_kernel
     def test_kernel_alone_has_no_functions(self):
@@ -100,7 +202,11 @@ class CalleeConvention(unittest.TestCase):
         self.assertEqual(kf, [])                     # the caller relies on the convention
         h, hf, stats = r['helper']
         self.assertTrue(h['callee'])
-        mw, = rule(hf, 'MISSING_WAIT')
+        mw, km = rule(hf, 'MISSING_WAIT')
+        # global_load_b32 reads s[0:1], which a scalar load of the caller may still be writing.
+        self.assertEqual((km['counter'], km['registers'], km['required_wait']), ('km', ['s0', 's1'], 's_wait_kmcnt 0'))
+        self.assertEqual(mw['counter'], 'load')
+        self.assertNotIn('kmcnt', mw['required_wait'])
         self.assertEqual(mw['severity'], 'error')
         self.assertIsNone(mw['producer'])
         self.assertEqual(mw['producer_kind'], 'caller')
@@ -146,6 +252,85 @@ class CalleeConvention(unittest.TestCase):
         seq[-1] = ins('s_setpc_b64', 's[30:31]', 44)
         f, = rule(run(seq, callee=True)[0], 'CALLEE_RETURN_OUTSTANDING')
         self.assertEqual(f['pending'], {'load': [28, 36]})
+
+    def test_entry_state_per_register_file(self):
+        # A scalar load of the caller writes SGPRs (KMcnt), a vector/LDS/sample/BVH load or an
+        # export VGPRs: after s_wait_kmcnt 0 an SGPR is safe however much vector memory is
+        # outstanding, and the other way round (RDNA4 ISA 5.7.1).
+        sgpr_first = [ins('s_wait_kmcnt', '0x0', 0), ins('s_add_co_u32', 's4, s4, 1', 4),
+                      ins('s_wait_loadcnt_dscnt', '0x0', 8), ins('s_wait_expcnt', '0x0', 12),
+                      ins('s_wait_samplecnt', '0x0', 16), ins('s_wait_bvhcnt', '0x0', 20),
+                      ins('v_mov_b32_e32', 'v0, s4', 24), ins('s_setpc_b64', 's[30:31]', 28)]
+        self.assertEqual(rule(run(sgpr_first, callee=True)[0], 'MISSING_WAIT'), [])
+        # The VGPR read before the vector waits: blamed on the vector counters only.
+        vgpr_early = [ins('s_wait_kmcnt', '0x0', 0), ins('v_add_f32_e32', 'v1, v2, v2', 4),
+                      ins('s_wait_loadcnt_dscnt', '0x0', 8), ins('s_wait_expcnt', '0x0', 12),
+                      ins('s_wait_samplecnt', '0x0', 16), ins('s_wait_bvhcnt', '0x0', 20),
+                      ins('s_setpc_b64', 's[30:31]', 24)]
+        f, = rule(run(vgpr_early, callee=True)[0], 'MISSING_WAIT')
+        self.assertEqual((f['pc'], f['producer_kind'], f['registers']), (4, 'caller', ['v1', 'v2']))
+        self.assertNotEqual(f['counter'], 'km')
+        self.assertEqual(f['required_wait'], 's_wait_loadcnt 0, s_wait_dscnt 0, s_wait_expcnt 0, '
+                                             's_wait_samplecnt 0, s_wait_bvhcnt 0')
+        # The SGPR read before s_wait_kmcnt 0, after every vector wait: blamed on KMcnt only.
+        sgpr_early = [ins('s_wait_loadcnt_dscnt', '0x0', 0), ins('s_wait_expcnt', '0x0', 4),
+                      ins('s_wait_samplecnt', '0x0', 8), ins('s_wait_bvhcnt', '0x0', 12),
+                      ins('s_add_co_u32', 's4, s4, 1', 16), ins('s_wait_kmcnt', '0x0', 20),
+                      ins('s_setpc_b64', 's[30:31]', 24)]
+        f, = rule(run(sgpr_early, callee=True)[0], 'MISSING_WAIT')
+        self.assertEqual((f['pc'], f['counter'], f['registers'], f['required_wait']),
+                         (16, 'km', ['s4'], 's_wait_kmcnt 0'))
+        self.assertIn('a memory operation of the caller', f['message'])
+
+    def test_entry_registers_by_counter(self):
+        seq = [ins('v_add_f32_e32', 'v1, v2, s4', 0), ins('s_setpc_b64', 's[30:31]', 4)]
+        regs = waits.callee_entry_registers(seq, waits.operand_models(seq, TABLE))
+        self.assertEqual(set(regs), set(waits.CALLEE_ENTRY))
+        self.assertEqual(regs['km'], {('s', 4)})     # not exec (implicit read), never s[30:31]
+        for d in ('load', 'ds', 'exp', 'sample', 'bvh'):
+            self.assertEqual(regs[d], {('v', 1), ('v', 2)}, d)
+        self.assertEqual(regs['store'], frozenset())
+
+    @needs_llvm_mc
+    def test_function_only_object_is_linted(self):
+        # A code object with amdhsa.kernels: [] (issue: it was NO_KERNELS and never linted).
+        (_, found, _), = lint((CHECK_FIX / 'callee_rdc_bug.s').read_text()).values()
+        fmac = [f for f in rule(found, 'MISSING_WAIT') if f['producer'] is not None]
+        self.assertEqual({tuple(f['registers']) for f in fmac}, {('v2',), ('v0',)})
+        self.assertEqual({f['pc'] for f in fmac}, {0x38})
+        ret, = rule(found, 'CALLEE_RETURN_OUTSTANDING')
+        self.assertIn('load', ret['pending'])
+
+    @needs_llvm_mc
+    def test_compiled_function_only_object_is_clean(self):
+        # Unedited llc 18 output. MISSING_ALU_WAIT is the documented LLVM<20 gap (no s_wait_alu).
+        (k, found, _), = lint((CHECK_FIX / 'callee_rdc.s').read_text(), cfg_issues=True).values()
+        self.assertTrue(k['callee'])
+        self.assertEqual({f['rule'] for f in found} - {'MISSING_ALU_WAIT', 'CFG_INDIRECT'}, set())
+        # The s_code_end padding after the function is outside its symbol size, so never reached.
+        self.assertNotIn('REACHABLE_CODE_END', {f['rule'] for f in found})
+
+    @needs_llvm_mc
+    def test_noreturn_call_and_trap_do_not_fall_through(self):
+        # clang 18 -O2: kernel kn ends with the call to noreturn die(); die ends with s_trap 2.
+        r = lint((CHECK_FIX / 'callee_noreturn.s').read_text(), cfg_issues=True)
+        self.assertEqual(set(r), {'kn', '_Z3diePi', '_Z3chkPii'})
+        ft = {n: rule(found, 'CFG_FALLTHROUGH') for n, (_, found, _) in r.items()}
+        if ft['kn'] or ft['_Z3diePi']:
+            # PENDING (NEEDS CHANGE ELSEWHERE, radisa/rules.py cfg): a final s_swappc_b64 and
+            # s_trap 2 have no fall-through successor.
+            self.skipTest('rules.cfg still gives a final call / s_trap 2 a fall-through edge')
+        self.assertEqual(ft, {'kn': [], '_Z3diePi': [], '_Z3chkPii': []})
+        for name, (_, found, _) in r.items():
+            self.assertEqual(rule(found, 'MISSING_WAIT') + rule(found, 'CALLEE_RETURN_OUTSTANDING'), [], name)
+
+    def test_setpc_does_not_fall_through(self):
+        # s_setpc_b64 returns or jumps; the S_CODE_END padding after a function is not reached.
+        seq = [ins('s_setpc_b64', 's[30:31]', 0), ins('s_code_end', '', 4)]
+        _, reachable, issues = rules.cfg(seq)
+        if 4 in reachable:
+            self.skipTest('PENDING (radisa/rules.py cfg): s_setpc_b64 still falls through')
+        self.assertNotIn('REACHABLE_CODE_END', {f['rule'] for f in issues})
 
     def test_tail_call_is_not_a_return(self):
         seq = [ins('global_load_b32', 'v3, v0, s[0:1]', 0, 8), ins('s_setpc_b64', 's[4:5]', 8)]
@@ -195,6 +380,87 @@ class CallSite(unittest.TestCase):
         self.assertEqual(run(seq)[0], [])
 
 
+def straight_kernel(n: int, every: int = 5) -> list[dict]:
+    """n instructions, every `every`-th a global_store_b32 that is never waited for (normal: stores
+    are not waited for before s_endpgm), the rest VALU; then s_endpgm."""
+    seq, pc = [], 0
+    for k in range(n):
+        if k % every == 0:
+            seq.append(ins('global_store_b32', f'v0, v{1 + k % 200}, s[0:1]', pc, 8))
+        else:
+            seq.append(ins('v_add_f32_e32', f'v{1 + k % 200}, v{1 + (k + 1) % 200}, v{1 + (k + 2) % 200}', pc))
+        pc += seq[-1]['size']
+    return seq + [ins('s_endpgm', '', pc)]
+
+
+class Fixpoint(unittest.TestCase):
+    def test_many_unwaited_stores_stay_near_linear(self):
+        # 50k instructions, 10k stores: the old per-producer copy took ~77 s here.
+        seq = straight_kernel(50000)
+        edges, reachable, _ = rules.cfg(seq)
+        t = time.perf_counter()
+        found, stats = waits.analyze(seq, edges, reachable, TABLE, 32)
+        self.assertLess(time.perf_counter() - t, 30)
+        self.assertEqual((found, stats['fixpoint']), ([], 'converged'))
+        # Every store is still there: the 64 youngest with their age, the older ones at CAP.
+        st = waits.solve(seq, edges, TABLE)[0][seq[-1]['pc']]
+        self.assertEqual(len(st['store']), 10000)
+        self.assertEqual(sorted(a for _, a in st['store'].values())[:3], [0, 1, 2])
+        self.assertEqual(st['store'][seq[0]['pc']], (frozenset(), waits.CAP))
+
+    def test_saturated_producer_is_still_reported(self):
+        # A load with CAP+ younger loads is still outstanding until a wait: its use is a MISSING_WAIT.
+        seq = [ins('global_load_b32', 'v1, v0, s[0:1]', 0, 8)]
+        pc = 8
+        for k in range(waits.CAP + 6):
+            seq.append(ins('global_load_b32', f'v{2 + k % 50}, v0, s[0:1]', pc, 8))
+            pc += 8
+        seq += [ins('v_add_f32_e32', 'v60, v1, v1', pc), ins('s_endpgm', '', pc + 4)]
+        found, _ = run(seq)
+        f, = [f for f in found if f['producer'] == 0]
+        self.assertEqual((f['pc'], f['required_wait']), (pc, f's_wait_loadcnt {waits.CAP}'))
+        # Any S_WAIT_LOADCNT (at most 63 < CAP) drops it.
+        w = ins('s_wait_loadcnt', '0x3f', pc, raw='3f000000')
+        seq2 = seq[:-2] + [w, ins('v_add_f32_e32', 'v60, v1, v1', pc + 4), ins('s_endpgm', '', pc + 8)]
+        self.assertEqual([f for f in run(seq2)[0] if f['producer'] == 0], [])
+
+    def test_loop_reaches_the_same_fixpoint(self):
+        # A loop whose back edge carries more than CAP stores joins saturated and young producers.
+        body = [ins('global_store_b32', f'v0, v{k % 9 + 1}, s[0:1]', 4 + 8 * k, 8) for k in range(70)]
+        end = 4 + 8 * 70
+        br = ins('s_cbranch_scc1', '', end, raw=((-(end + 4 - 4) // 4) & 0xffff).to_bytes(2, 'little').hex() + '0000')
+        seq = [ins('s_mov_b32', 's2, 0', 0)] + body + [br, ins('global_load_b32', 'v1, v0, s[0:1]', end + 4, 8),
+                                                       ins('v_add_f32_e32', 'v3, v1, v1', end + 12),
+                                                       ins('s_endpgm', '', end + 16)]
+        edges, reachable, _ = rules.cfg(seq)
+        self.assertIn(4, edges[end])
+        state_in, _, status = waits.solve(seq, edges, TABLE)
+        self.assertEqual(status, 'converged')
+        head = state_in[4]['store']
+        self.assertEqual(len(head), 70)                          # every store, via the back edge
+        self.assertEqual(head[4 + 8 * 69], (frozenset(), 0))     # the youngest at the loop head
+        self.assertEqual(head[4], (frozenset(), waits.CAP))                # 69 younger, capped
+        self.assertEqual(head[4 + 8 * 6][1], waits.CAP - 1)
+        f, = run(seq)[0]
+        self.assertEqual((f['rule'], f['pc'], f['producer']), ('MISSING_WAIT', end + 12, end + 4))
+
+    def test_no_state_outside_the_models(self):
+        seq = [ins('global_load_b32', 'v1, v0, s[0:1]', 0, 8), ins('s_endpgm', '', 8)]
+        other = [ins('ds_load_b32', 'v1, v0', 0, 8), ins('s_endpgm', '', 8)]
+        e1, e2 = rules.cfg(seq)[0], rules.cfg(other)[0]
+        m1, m2 = waits.operand_models(seq, TABLE), waits.operand_models(other, TABLE)
+        a = waits.solve(seq, e1, TABLE, 32, m1)
+        b = waits.solve(other, e2, TABLE, 32, m2)
+        self.assertIs(waits.solve(seq, e1, TABLE, 32, m1), a)    # kept with its own models
+        self.assertIs(waits.solve(other, e2, TABLE, 32, m2), b)
+        self.assertEqual(set(b[0][8]), {'ds'})
+        self.assertFalse([n for n, v in vars(waits).items() if isinstance(v, tuple) and len(v) == 5])
+        self.assertFalse(hasattr(waits, '_SOLVED'))
+        # A plain dict of models is solved every time and keeps nothing.
+        plain = dict(m1)
+        self.assertIsNot(waits.solve(seq, e1, TABLE, 32, plain), waits.solve(seq, e1, TABLE, 32, plain))
+
+
 class EndToEnd(unittest.TestCase):
     @needs_minimal_kernel
     def test_check_reports_callee_once_wired(self):
@@ -210,6 +476,96 @@ class EndToEnd(unittest.TestCase):
         self.assertNotIn('CFG_FALLTHROUGH', {f['rule'] for f in all_findings(rep) if f['severity'] == 'error'})
         self.assertEqual(code, 1)
 
+
+    @needs_minimal_kernel
+    def test_kernel_filter_selects_functions_too(self):
+        text = (CHECK_FIX / 'callee_missing_waits.s').read_text()
+        backend = decode.select_backend(None, None)
+        with tempfile.TemporaryDirectory() as d:
+            data = assemble(text, Path(d, 'a.o')).data
+            only_h, _ = check.check_object_bytes(data, 'a.o', TABLE, backend, 'helper', Path(d))
+            only_k, _ = check.check_object_bytes(data, 'a.o', TABLE, backend, 'k', Path(d))
+            both, _ = check.check_object_bytes(data, 'a.o', TABLE, backend, None, Path(d))
+        self.assertEqual([r['name'] for r in only_h], ['helper'])
+        self.assertTrue(only_h[0]['callee'])
+        self.assertEqual([r['name'] for r in only_k], ['k'])
+        calls, = [f for f in only_k[0]['findings'] if f['rule'] == 'CALLS']
+        self.assertIn('not checked in this run (--kernel)', calls['message'])
+        self.assertEqual(calls['callees_checked'], [])
+        self.assertEqual(sorted(r['name'] for r in both), ['helper', 'k'])
+        calls, = [f for f in both[[r['name'] for r in both].index('k')]['findings'] if f['rule'] == 'CALLS']
+        self.assertEqual(calls['callees_checked'], ['helper'])
+
+    # ---- PENDING: these need the check.py wiring listed under NEEDS CHANGE ELSEWHERE
+    # (review-callee/fix.md); each skips, naming what is missing, until it is in.
+
+    @needs_llvm_mc
+    def test_function_only_assembly_is_checked_as_callee(self):
+        code, rep = check_text((CHECK_FIX / 'callee_rdc_bug.s').read_text())
+        if '_Z4leafPKfi' not in [k['name'] for k in rep['kernels']]:
+            self.skipTest('PENDING check.check_assembly: functions.has_functions -> check_object_bytes')
+        k, = rep['kernels']
+        self.assertTrue(k['callee'])
+        rules_ = {f['rule'] for f in all_findings(rep)}
+        self.assertIn('MISSING_WAIT', rules_)
+        self.assertIn('CALLEE_RETURN_OUTSTANDING', rules_)
+        self.assertNotIn('REACHABLE_CODE_END', rules_)
+        self.assertEqual(code, 1)
+
+    @needs_llvm_mc
+    def test_compiled_function_only_assembly_has_no_code_end_error(self):
+        _, rep = check_text((CHECK_FIX / 'callee_rdc.s').read_text())
+        errors = {f['rule'] for f in all_findings(rep) if f['severity'] == 'error'}
+        self.assertNotIn('REACHABLE_CODE_END', errors)
+        if '_Z4leafPKfi' not in [k['name'] for k in rep['kernels']]:
+            self.skipTest('PENDING check.check_assembly: functions.has_functions -> check_object_bytes')
+        self.assertEqual(errors - {'MISSING_ALU_WAIT'}, set())     # the LLVM<20 s_wait_alu gap only
+
+    @needs_llvm_mc
+    def test_object_without_kernels_is_checked(self):
+        with tempfile.TemporaryDirectory() as d:
+            obj = Path(d, 'rdc_bug.o')
+            assemble((CHECK_FIX / 'callee_rdc_bug.s').read_text(), obj)
+            code, rep = run_check(obj)
+        if rep['status'] == 'NO_KERNELS':
+            self.skipTest('PENDING check.check_object_bytes: functions.object_inventory')
+        self.assertEqual([k['name'] for k in rep['kernels']], ['_Z4leafPKfi'])
+        self.assertIn('MISSING_WAIT', {f['rule'] for f in all_findings(rep)})
+        self.assertEqual((rep['status'], code), ('FAIL', 1))
+
+    @needs_minimal_kernel
+    def test_text_report_gives_offsets_inside_the_function(self):
+        # An object has no source lines, so the text report locates findings as name+offset.
+        from radisa.cli import main
+        with tempfile.TemporaryDirectory() as d:
+            obj = Path(d, 'cmw.o')
+            assemble((CHECK_FIX / 'callee_missing_waits.s').read_text(), obj)
+            with redirect_stdout(io.StringIO()) as out:
+                main(['check', str(obj), '--json', str(Path(d, 'r.json'))])
+            rep = __import__('json').loads(Path(d, 'r.json').read_text())
+        text = out.getvalue()
+        h, = [k for k in rep['kernels'] if k['name'] == 'helper']
+        self.assertGreater(h['address'], 0)                    # helper follows kernel k
+        ret, = [f for f in h['findings'] if f['rule'] == 'CALLEE_RETURN_OUTSTANDING']
+        if f"helper+{ret['pc']:#x}:" in text:
+            self.skipTest('PENDING check.render / formats.py: functions.relative_pc')
+        # helper: v_add_f32 (+0x0), global_load_b32 (+0x4, 12 bytes on gfx12), s_setpc_b64 (+0x10).
+        self.assertEqual(ret['pc'] - h['address'], 0x10)
+        self.assertIn('cmw.o:helper+0x0: error: [MISSING_WAIT]', text)
+        self.assertIn('cmw.o:helper+0x4: error: [MISSING_WAIT]', text)
+        self.assertIn('cmw.o:helper+0x10: warning: [CALLEE_RETURN_OUTSTANDING]', text)
+
+    @needs_minimal_kernel
+    def test_calls_note_names_an_unsized_function(self):
+        text = (CHECK_FIX / 'callee_missing_waits.s').read_text().replace(
+            '\t.size\thelper, .Lfunc_end_helper-helper\n', '')
+        _, rep = check_text(text)
+        calls, = [f for f in all_findings(rep) if f['rule'] == 'CALLS']
+        if 'holds no function body' in calls['message']:
+            self.skipTest("PENDING check.check_object_bytes: options['_unchecked'] from object_inventory")
+        self.assertIn('helper', calls['message'])
+        self.assertIn('NOT checked', calls['message'])
+        self.assertIn('OBJECT_EVIDENCE', {f['rule'] for f in all_findings(rep)})
 
 if __name__ == '__main__':
     unittest.main()

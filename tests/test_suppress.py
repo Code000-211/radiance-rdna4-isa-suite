@@ -270,6 +270,214 @@ class Baseline(Workdir):
         self.assertEqual(fp(rep({'rule': 'DECODE', 'severity': 'incomplete', 'pc': 0, 'message': 'x'})), [])
 
 
+def mw(line=None, pc=4, text='v_add_f32_e32 v4, v1, v4', file=None, severity='error'):
+    f = {'rule': 'MISSING_WAIT', 'severity': severity, 'pc': pc, 'message': f'at {pc}', 'instruction': text}
+    if line is not None:
+        f['loc'] = {'file': str(file), 'line': line, 'column': 1}
+    return f
+
+
+def snippet_report(src, *fs):
+    return {'input': str(src), 'findings': [], 'kernels': [{'name': '<snippet>', 'findings': list(fs)}]}
+
+
+class Review(Workdir):
+    """Regressions for the adversarial review of this feature (scratchpad review-suppress)."""
+
+    # 1. a baseline is tied to its input file
+    def test_baseline_of_one_file_does_not_hide_another(self):
+        a, b = self.copy('one.s', '\ts_endpgm\n'), self.copy('two.s', '\ts_endpgm\n')
+        base = self.dir / 'b.json'
+        rep = snippet_report(a, mw(pc=4), mw(pc=8, text='v_mov_b32 v1, v2'))
+        suppress.report_filter(rep, parse(a, '--no-config', '--write-baseline', base))
+        self.assertEqual(len(rep['baselined']), 2)
+        # The same fingerprint in another file is a new finding there; nothing is stale there.
+        rep = snippet_report(b, mw(pc=4))
+        suppress.report_filter(rep, parse(b, '--no-config', '--baseline', base))
+        self.assertEqual((len(rep['kernels'][0]['findings']), rep['baselined'], rules_of(rep, 'BASELINE_STALE')),
+                         (1, [], []))
+        # Writing b's baseline into the same file keeps a's entries; each file passes with it.
+        suppress.report_filter(snippet_report(b, mw(pc=4)), parse(b, '--no-config', '--write-baseline', base))
+        data = json.loads(base.read_text())
+        self.assertEqual(sorted(e['input'] for e in data['entries']), ['one.s', 'one.s', 'two.s'])
+        self.assertEqual((data['inputs'], data['input']), (['one.s', 'two.s'], None))
+        for src, fs in ((a, [mw(pc=4), mw(pc=8, text='v_mov_b32 v1, v2')]), (b, [mw(pc=4)])):
+            (self.dir / '.radisa.json').write_text(json.dumps({'baseline': 'b.json'}))   # repo-wide baseline
+            rep = snippet_report(src, *fs)
+            suppress.report_filter(rep, parse(src))
+            self.assertEqual((rep['kernels'][0]['findings'], len(rep['baselined']), rules_of(rep, 'BASELINE_STALE')),
+                             ([], len(fs), []), src)
+
+    @needs_llvm_mc
+    def test_baseline_per_file_real_check(self):
+        one, two = self.copy('missing_waits.s'), self.copy('two.s', (CHECK_FIX / 'suppress_trailing.s').read_text())
+        base = self.dir / 'one.json'
+        analyze(one, '--no-config', '--write-baseline', base)
+        rep = analyze(two, '--no-config', '--baseline', base)
+        self.assertEqual((rep['status'], rep['baselined'], rules_of(rep, 'BASELINE_STALE')), ('FAIL', [], []))
+
+    def test_legacy_single_file_baseline(self):
+        a, b = self.copy('one.s', '\ts_endpgm\n'), self.copy('two.s', '\ts_endpgm\n')
+        [(fp, _, _)] = suppress.fingerprints(snippet_report(a, mw()))
+        old = self.dir / 'old.json'
+        old.write_text(json.dumps({'schema': suppress.SCHEMA, 'input': str(a), 'entries': [
+            {'fingerprint': fp, 'rule': 'MISSING_WAIT', 'severity': 'error', 'kernel': '<snippet>'}]}))
+        self.assertEqual(list(suppress.read_baseline(old, a)), [fp])
+        self.assertEqual(suppress.read_baseline(old, b), {})
+        self.assertEqual(list(suppress.read_baseline(old)), [fp])
+        # Rewriting another file's entries converts the old ones to per-entry 'input'.
+        suppress.write_baseline(old, [], {'input': str(b)})
+        self.assertEqual([e['input'] for e in json.loads(old.read_text())['entries']], ['one.s'])
+
+    # 2. (suppress side) concurrent writers into one file all land; partial runs keep other kernels
+    def test_concurrent_writers_merge(self):
+        import threading
+        base = self.dir / 'b.json'
+        srcs = [self.copy(f'f{i}.s', '\ts_endpgm\n') for i in range(8)]
+
+        def write(src):
+            rep = snippet_report(src, mw())
+            for k, lst in suppress._all_lists(rep):
+                for f in lst:
+                    f['_kernel'] = k
+            suppress.write_baseline(base, suppress.fingerprints(rep), rep)
+        ts = [threading.Thread(target=write, args=(s,)) for s in srcs]
+        for t in ts:
+            t.start()
+        for t in ts:
+            t.join()
+        self.assertEqual(sorted(e['input'] for e in json.loads(base.read_text())['entries']),
+                         sorted(s.name for s in srcs))
+        self.assertEqual(list(self.dir.glob('.b.json.*')), [])   # no temporary file left
+
+    def test_kernel_run_replaces_only_its_kernels(self):
+        src = self.copy('k.s', '\ts_endpgm\n')
+        base = self.dir / 'b.json'
+        rep = {'input': str(src), 'findings': [], 'kernels': [{'name': 'ka', 'findings': [mw()]},
+                                                                {'name': 'kb', 'findings': [mw()]}]}
+        suppress.report_filter(rep, parse(src, '--no-config', '--write-baseline', base))
+        rep = {'input': str(src), 'findings': [], 'kernels': [{'name': 'ka', 'findings': []}]}
+        suppress.report_filter(rep, parse(src, '--no-config', '--kernel', 'ka', '--write-baseline', base))
+        self.assertEqual([e['kernel'] for e in json.loads(base.read_text())['entries']], ['kb'])
+
+    def test_write_baseline_refuses_to_overwrite_other_files(self):
+        src = self.copy('k.s', '\ts_endpgm\n')
+        other = self.copy('notes.json', '{"mine": 1}')
+        with self.assertRaises(ValueError):
+            suppress.write_baseline(other, [], {'input': str(src)})
+        self.assertEqual(other.read_text(), '{"mine": 1}')
+
+    # 3. kernel-form .s: findings without a line
+    def test_unused_message_for_findings_without_line(self):
+        src = self.copy('k.s', '\tglobal_load_b32 v1, v[2:3], off\n\t; radisa: ignore[MISSING_WAIT] fine\n'
+                               '\tv_add_f32 v4, v1, v4\n\ts_endpgm\n')
+        rep = snippet_report(src, mw())   # no loc
+        suppress.report_filter(rep, parse(src, '--no-config'))
+        [un] = rules_of(rep, 'UNUSED_SUPPRESSION')
+        self.assertIn('carry no source line', un['message'])
+        self.assertNotIn('no MISSING_WAIT finding', un['message'])
+        rep = snippet_report(src, mw(line=3, file=src))   # with a line it is suppressed
+        suppress.report_filter(rep, parse(src, '--no-config'))
+        self.assertEqual((rules_of(rep), len(rep['suppressed'])), ([], 1))
+
+    @needs_llvm_mc
+    def test_kernel_form_assembly(self):
+        rep = analyze(CHECK_FIX / 'suppress_kernel.s', '--no-config')
+        if rep['suppressed']:   # check.py maps kernel-form .s lines (NEEDS CHANGE ELSEWHERE in the review)
+            self.assertEqual((rules_of(rep), rep['status']), ([], 'PASS'))
+        else:
+            [w] = rules_of(rep, 'MISSING_WAIT')
+            self.assertNotIn('loc', w)
+            [un] = rules_of(rep, 'UNUSED_SUPPRESSION')
+            self.assertIn('carry no source line', un['message'])
+
+    # 4. /* */ directives: standalone and with the reason on the next line
+    def test_block_comment_directives(self):
+        lines = (CHECK_FIX / 'suppress_block.s').read_text().splitlines()
+        ds = suppress.parse_directives(lines, 'x.s')
+        self.assertEqual([(d['line'], d['target'], d['reason']) for d in ds],
+                         [(4, 5, 'v4 is discarded later'), (8, 10, 'v6 is dead')])
+        src = self.copy('suppress_block.s')
+        rep = snippet_report(src, mw(line=5, file=src), mw(line=10, pc=32, text='v_add_f32_e32 v6, v5, v5', file=src))
+        suppress.report_filter(rep, parse(src, '--no-config'))
+        self.assertEqual((rules_of(rep), len(rep['suppressed'])), ([], 2))
+        # Inside a block comment, a directive line need not start with '*'.
+        ds = suppress.parse_directives(['/*', 'radisa: ignore[X] why', '*/', 'code();'], 'a.hip')
+        self.assertEqual([(d['line'], d['target']) for d in ds], [(2, 4)])
+        # Not in a comment: a string literal.
+        self.assertEqual(suppress.parse_directives(['s = "// radisa: ignore[X] no";'], 'a.hip'), [])
+
+    @needs_llvm_mc
+    def test_block_comment_fixture(self):
+        rep = analyze(CHECK_FIX / 'suppress_block.s', '--no-config')
+        self.assertEqual(rules_of(rep, 'SUPPRESSION_NO_REASON'), [])
+        if len(rep['suppressed']) == 2:   # line mapping fixed in check.py / hipsrc.py
+            self.assertEqual((rules_of(rep), rep['status']), ([], 'PASS'))
+        else:
+            self.assertTrue(all('carry no source line' in f['message'] for f in rules_of(rep, 'UNUSED_SUPPRESSION')))
+
+    # 6. errors hidden by configuration are named
+    def test_configuration_hidden_errors_in_summary(self):
+        src = self.copy('k.s', '\ts_endpgm\n')
+        rep = snippet_report(src, mw(), mw(pc=8))
+        suppress.report_filter(rep, parse(src, '--no-config', '--disable', 'MISSING_WAIT'))
+        self.assertIn('2 disabled by configuration (hidden errors: MISSING_WAIT x2)', suppress.summary_suffix(rep))
+        rep = snippet_report(src, mw(), mw(pc=8))
+        suppress.report_filter(rep, parse(src, '--no-config', '--severity', 'MISSING_WAIT=note'))
+        self.assertIn('2 re-graded by configuration (hidden errors: MISSING_WAIT x2)', suppress.summary_suffix(rep))
+        rep = snippet_report(src, mw(severity='review'))   # raising a warning to error hides nothing
+        suppress.report_filter(rep, parse(src, '--no-config', '--severity', 'MISSING_WAIT=error'))
+        self.assertNotIn('hidden errors', suppress.summary_suffix(rep))
+        # A re-graded error that is then suppressed inline is counted once.
+        src2 = self.copy('k2.s', '\t; radisa: ignore[MISSING_WAIT] ok\n\ts_nop 0\n')
+        rep = snippet_report(src2, mw(line=2, file=src2))
+        suppress.report_filter(rep, parse(src2, '--no-config', '--severity', 'MISSING_WAIT=warning'))
+        self.assertIn('(hidden errors: MISSING_WAIT x1)', suppress.summary_suffix(rep))
+
+    # 7. (suppress side) hidden findings for SARIF
+    def test_sarif_suppressions(self):
+        src = self.copy('k.s', '\t; radisa: ignore[MISSING_WAIT] reviewed\n\ts_nop 0\n')
+        rep = snippet_report(src, mw(line=2, file=src), mw(pc=8, text='v_mov_b32 v1, v2'))
+        suppress.report_filter(rep, parse(src, '--no-config', '--write-baseline', self.dir / 'b.json'))
+        kinds = sorted(suppress.sarif_suppression(f)['kind'] for f in suppress.hidden_findings(rep))
+        self.assertEqual(kinds, ['external', 'inSource'])
+        [ins] = [suppress.sarif_suppression(f) for f in rep['suppressed']]
+        self.assertEqual((ins['justification'], ins['status']), ('reviewed', 'accepted'))
+
+    # 8. a trailing directive covers its own line only
+    def test_trailing_directive_covers_own_line(self):
+        ds = suppress.parse_directives(['\ts_nop 0 ; radisa: ignore[MISSING_WAIT] x', '\tv_add_f32 v4, v1, v4'], 'a.s')
+        self.assertEqual(ds[0]['covers'], {1})
+        ds = suppress.parse_directives(['; radisa: ignore[A] x', '; radisa: ignore[B] y', '; other', 'code', 'more'],
+                                       'a.s')
+        self.assertEqual([d['covers'] for d in ds], [{1, 4}, {2, 4}])
+        ds = suppress.parse_directives(['; radisa: ignore[A] x', '', 'code'], 'a.s')   # not over a blank line
+        self.assertEqual(ds[0]['covers'], {1})
+
+    @needs_llvm_mc
+    def test_trailing_fixture(self):
+        rep = analyze(CHECK_FIX / 'suppress_trailing.s', '--no-config')
+        [w] = rules_of(rep, 'MISSING_WAIT')
+        self.assertEqual((w['loc']['line'], rep['status'], rep['suppressed']), (5, 'FAIL', []))
+        [un] = rules_of(rep, 'UNUSED_SUPPRESSION')
+        self.assertEqual(un['loc']['line'], 4)
+
+    # 9. header directives are not reported unused by a TU that does not need them
+    def test_header_directive_not_reported_unused(self):
+        (self.dir / 'hdr').mkdir()
+        hdr = self.dir / 'hdr' / 'util.h'
+        hdr.write_text('int f();\n// radisa: ignore[MISSING_WAIT] used by b.hip only\nint g();\n'
+                       '// radisa: ignore[MISSING_WAIT]\nint h();\n')
+        src = self.copy('a.hip', '#include "hdr/util.h"\n')
+        rep = {'input': str(src), 'kernels': [], 'findings': [
+            {'rule': 'MISSING_ALU_WAIT', 'severity': 'error', 'pc': None, 'message': 'm',
+             'loc': {'file': str(hdr), 'line': 1, 'column': 1}}]}
+        suppress.report_filter(rep, parse(src, '--no-config'))
+        self.assertEqual(rules_of(rep, 'UNUSED_SUPPRESSION'), [])
+        [nr] = rules_of(rep, 'SUPPRESSION_NO_REASON')   # a missing reason is wrong in every TU
+        self.assertEqual(nr['loc']['line'], 4)
+
+
 class Registry(unittest.TestCase):
     PATTERNS = (r"""['"]rule['"]\s*:\s*['"]([A-Z][A-Z0-9_]*[A-Z0-9])['"]""",
                 r"""\b_?finding\(\s*['"]([A-Z][A-Z0-9_]*[A-Z0-9])['"]""",

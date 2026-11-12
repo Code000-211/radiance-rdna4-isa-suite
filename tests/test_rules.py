@@ -37,8 +37,9 @@ class FlowTests(unittest.TestCase):
     def test_missing_terminator(self):
         e,r,f=cfg(seq(('v_mov_b32','v0, 1')));self.assertEqual(f[0]['rule'],'CFG_FALLTHROUGH')
         self.assertEqual(f[0]['severity'],'error')
-        # A conditional branch or a call as the last instruction falls through as well.
-        for last in (('s_cbranch_scc1','0',0),('s_swappc_b64','s[30:31], s[0:1]')):
+        # A conditional branch as the last instruction falls through as well. A final call is taken as
+        # a call to a noreturn function (rules.cfg docstring; see tests/test_hazards.py CfgTests).
+        for last in (('s_cbranch_scc1','0',0),):
             e,r,f=cfg(seq(('v_mov_b32','v0, 1'),last));self.assertIn(('CFG_FALLTHROUGH','error'),[(x['rule'],x['severity'])for x in f],last)
         # Not reached by direct branches: the path cannot be decided.
         e,r,f=cfg(seq(('s_endpgm',),('v_mov_b32','v0, 1')));self.assertEqual([(x['rule'],x['severity'])for x in f],[('CFG_FALLTHROUGH','incomplete')])

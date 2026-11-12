@@ -139,12 +139,12 @@ class Extractors(unittest.TestCase):
         toks = drift.tokenize(CPP)
         a, b = drift.extract_cxx_function(toks, 'Rec::fixThing')
         text = drift.normalize(toks[a:b + 1])
-        self.assertTrue(text.startswith('Rec::fixThing(MachineInstr*MI){'), text)
+        self.assertTrue(text.startswith('bool Rec::fixThing(MachineInstr*MI){'), text)  # return type kept
         self.assertTrue(text.endswith('return L(2);}'), text)       # lambda braces matched
         a, b = drift.extract_cxx_function(toks, 'fixThing')          # unqualified: still the one definition
         self.assertIn('return L(2);}', drift.normalize(toks[a:b + 1]))
         a, b = drift.extract_cxx_function(toks, 'Rec::trailing')
-        self.assertEqual(drift.normalize(toks[a:b + 1]), 'Rec::trailing(int A)const->int{return A;}')
+        self.assertEqual(drift.normalize(toks[a:b + 1]), 'auto Rec::trailing(int A)const->int{return A;}')
         with self.assertRaisesRegex(drift.AnchorError, 'no definition'):
             drift.extract_cxx_function(drift.tokenize(HEADER), 'hasBaz')
 
@@ -163,6 +163,60 @@ class Extractors(unittest.TestCase):
         text = drift.normalize(toks[a:b + 1])
         self.assertTrue(text.endswith('else{emit(3);}'), text)
         self.assertNotIn('after', text)
+
+    def stmt(self, src, anchor):
+        toks = drift.tokenize(src)
+        a, b = drift.extract_statement(toks, anchor)
+        return drift.normalize(toks[a:b + 1])
+
+    def test_statement_unbraced_do_while_lambda(self):
+        """Review issue 4: the statement extractor stopped at the first ';' or '}'."""
+        self.assertEqual(self.stmt('void g(){ if (A) x(); else y(); z(); }', 'if (A)'), 'if(A)x();else y();')
+        self.assertEqual(self.stmt('void g(){ if (A) x(); else if (B) { y(); } else w(); z(); }', 'if (A)'),
+                         'if(A)x();else if(B){y();}else w();')
+        self.assertEqual(self.stmt('void g(){ do { x(); } while (A); z(); }', 'do'), 'do{x();}while(A);')
+        self.assertEqual(self.stmt('void g(){ if (c) v = [&]{ return 1; }(); z(); }', 'if (c)'),
+                         'if(c)v=[&]{return 1;}();')
+        self.assertEqual(self.stmt('void g(){ for (int i = 0; i < 3; ++i) if (i) x(); z(); }', 'for'),
+                         'for(int i=0;i<3;++i)if(i)x();')
+        self.assertEqual(self.stmt('void g(){ while (A) { x(); } z(); }', 'while (A)'), 'while(A){x();}')
+        with self.assertRaises(drift.AnchorError):
+            self.stmt('void g(){ do { x(); } z(); }', 'do')
+
+    def test_normalize_is_token_faithful(self):
+        """Review issue 5b: multi-character operators are tokens; distinct token sequences never
+        normalise to the same text."""
+        n = lambda s: drift.normalize(drift.tokenize(s))
+        self.assertEqual(self.tok('a->b::c && d-- <<= e'), ['a', '->', 'b', '::', 'c', '&&', 'd', '--', '<<=', 'e'])
+        for a, b in (('a - -b', 'a--b'), ('a & &b', 'a&&b'), ('a > > b', 'a>>b'), ('x - > y', 'x->y'),
+                     ('a . . . b', 'a...b'), ('a + +b', 'a++b'), ('a < = b', 'a<=b')):
+            self.assertNotEqual(n(a), n(b), (a, b))
+            self.assertEqual(self.tok(n(a)), self.tok(a))       # the text re-lexes to the same tokens
+        self.assertEqual(n('x ->  y'), 'x->y')
+
+    def test_function_text_includes_specifiers_and_return_type(self):
+        """Review issue 5a: the return type and specifiers are part of the hashed definition."""
+        def text(src, anchor='hasX'):
+            toks = drift.tokenize(src)
+            a, b = drift.extract_cxx_function(toks, anchor)
+            return drift.normalize(toks[a:b + 1])
+        self.assertEqual(text('bool hasX() const {return A;}'), 'bool hasX()const{return A;}')
+        self.assertNotEqual(text('bool hasX() const {return A;}'), text('int hasX() const {return A;}'))
+        self.assertNotEqual(text('static bool hasX() {return A;}'), text('bool hasX() {return A;}'))
+        self.assertEqual(text('class C { public: [[nodiscard]] int hasX() const {return A;} };'),
+                         '[[nodiscard]]int hasX()const{return A;}')
+        self.assertEqual(text('#include "a"\ntemplate <typename T> std::vector<T> C::f(T a) { return {}; }', 'C::f'),
+                         'template<typename T>std::vector<T>C::f(T a){return{};}')
+        self.assertEqual(text('void g() { p->f(1); } int f(int a) { return a; }', 'f'), 'int f(int a){return a;}')
+
+    def test_apostrophe_in_preprocessor_directive(self):
+        """Review issue 5c: `#error don't` is one directive token, not an unterminated literal."""
+        self.assertEqual(self.tok("#error don't\n  #  include \"x\" // c\nint y;"),
+                         ["#error don't", '#include"x"', 'int', 'y', ';'])
+        self.assertEqual(self.tok('#define F(a) \\\n  (a + 1)\nint y;'), ['#define F(a)(a+1)', 'int', 'y', ';'])
+        self.assertEqual(self.tok('x # y', tablegen=True), ['x', '#', 'y'])    # TableGen paste operator
+        with self.assertRaises(drift.AnchorError):
+            drift.tokenize("int c = 'x;")
 
     def test_ambiguous_anchor(self):
         toks = drift.tokenize('int f() { return 1; }\nint f() { return 2; }')
@@ -253,6 +307,22 @@ class DriftCommand(unittest.TestCase):
         self.assertEqual(pins['provenance']['revision'], 'rev-B')
         self.assertEqual(self.compare()['status'], 'PASS')
 
+    def test_update_replaces_provenance_note(self):
+        """Review issue 3: --update must not keep a note that describes the old hashes."""
+        pins = drift.load_pins(self.pins_path)
+        pins['provenance']['note'] = 'these pins are NOT from rev-B'
+        drift.write_pins(pins, self.pins_path)
+        self.tree.edit('Sub.h', 'return Gen == 12;', 'return Gen >= 12;')
+        code, out = cli('--llvm-src', self.tree.top, '--pins', self.pins_path, '--update', '--revision', 'rev-B')
+        self.assertEqual(code, 0, out)
+        prov = drift.load_pins(self.pins_path)['provenance']
+        self.assertNotIn('NOT from', prov['note'])
+        self.assertIn('rev-B', prov['note'])
+        self.assertIn('bar', prov['note'])                         # names the facts that changed
+        code, out = cli('--llvm-src', self.tree.top, '--pins', self.pins_path, '--update', '--revision', 'rev-C',
+                        '--note', 'reviewed by hand')
+        self.assertEqual((code, drift.load_pins(self.pins_path)['provenance']['note']), (0, 'reviewed by hand'))
+
     def test_update_refuses_with_missing_anchor(self):
         before = self.pins_path.read_text()
         self.tree.edit('Rec.cpp', 'void Rec::fixAll(', 'void Rec::fixEverything(')
@@ -269,6 +339,47 @@ class DriftCommand(unittest.TestCase):
         self.assertEqual((code, r['status'], r['pinned_revision']), (1, 'DRIFT', 'rev-A'))
         bar = next(f for f in r['facts'] if f['id'] == 'bar')
         self.assertEqual((bar['state'], bar['rules'], bar['line']), ('changed', ['RULE_BAR'], 5))
+
+    def test_helper_function_drift(self):
+        """Review issue 2: a static helper the pinned caller uses is its own fact."""
+        self.tree.edit('Rec.cpp', 'void Rec::run() {', 'static bool isPerm(int O) {\n  return O == 1 || O == 2;\n}\nvoid Rec::run() {')
+        pins = drift.load_pins(self.pins_path)
+        pins['facts'].append({'id': 'helper', 'family': 'haz', 'file': 'Rec.cpp', 'anchor': 'isPerm',
+                              'extractor': 'cxx_function', 'sha256': '', 'rules': ['RULE_HELPER'], 'note': ''})
+        drift.write_pins(pins, self.pins_path)
+        self.assertEqual(cli('--llvm-src', self.tree.top, '--pins', self.pins_path, '--update')[0], 0)
+        self.tree.edit('Rec.cpp', 'return O == 1 || O == 2;', 'return O == 3 || O == 2;')
+        r = self.compare()
+        self.assertEqual({f['id'] for f in r['facts'] if f['state'] == 'changed'}, {'helper'})
+
+    def test_alt_files_fallback(self):
+        """Review issue 1: a TableGen def that moved between files (GCNFeatures.td upstream,
+        AMDGPU.td in ROCm d6f6cb69) is found through alt_files, with the same hash."""
+        pins = drift.load_pins(self.pins_path)
+        feat = next(f for f in pins['facts'] if f['id'] == 'feat')
+        feat['file'], feat['alt_files'] = 'GCNFeatures.td', ['F.td']
+        drift.write_pins(pins, self.pins_path)
+        r = self.compare()                                   # GCNFeatures.td does not exist: F.td is used
+        self.assertEqual(r['status'], 'PASS', drift.render(r))
+        self.assertEqual(next(f for f in r['facts'] if f['id'] == 'feat')['found_in'], 'F.td')
+        (self.tree.amdgpu / 'GCNFeatures.td').write_text('404: Not Found')     # present but without the def
+        self.assertEqual(self.compare()['status'], 'PASS')
+        (self.tree.amdgpu / 'GCNFeatures.td').write_text('def FeatureX12 : FeatureSet<[FeatureA]>;')
+        r = self.compare()                                   # in both files: ambiguous, not silently one
+        feat = next(f for f in r['facts'] if f['id'] == 'feat')
+        self.assertEqual((r['status'], feat['state']), ('INCOMPLETE', 'missing'))
+        self.assertIn('found in 2 files', feat['reason'])
+        (self.tree.amdgpu / 'GCNFeatures.td').unlink(); (self.tree.amdgpu / 'F.td').unlink()
+        feat = next(f for f in self.compare()['facts'] if f['id'] == 'feat')
+        self.assertIn('GCNFeatures.td not found', feat['reason'])
+        self.assertIn('F.td not found', feat['reason'])
+
+    def test_bad_alt_files(self):
+        bad = pins_for()
+        bad['facts'][0]['alt_files'] = 'F.td'
+        drift.write_pins(bad, self.pins_path)
+        with self.assertRaisesRegex(ValueError, 'alt_files'):
+            drift.load_pins(self.pins_path)
 
     def test_bad_pin_file(self):
         bad = pins_for()
@@ -290,6 +401,9 @@ REQUIRED = {  # (file, anchor) the task requires pinned
     ('AMDGPUWaitSGPRHazards.cpp', 'AMDGPUWaitSGPRHazards.cpp'),
     ('SIInsertWaitcnts.cpp', 'WaitcntBrackets::determineVGPR16Dependency'),
     ('SIInsertHardClauses.cpp', 'SIInsertHardClauses.cpp'),
+    # helpers whose content the rules restate (review issue 2)
+    ('GCNHazardRecognizer.cpp', 'isPermlane'), ('GCNHazardRecognizer.cpp', 'isVCmpXWritesExec'),
+    ('SIMemoryLegalizer.cpp', 'SIGfx12CacheControl::insertWaitsBeforeSystemScopeStore'),
 }
 
 
@@ -309,6 +423,13 @@ class ShippedPins(unittest.TestCase):
         self.assertIn('commit unknown', prov['revision'])
         self.assertIn('d6f6cb69', prov['note'])
         self.assertIn('--update', prov['note'])
+
+    def test_feature_defs_fall_back_to_amdgpu_td(self):
+        """ROCm d6f6cb69 (the documented --update target) defines FeatureISAVersion12 and
+        FeatureGFX12 in AMDGPU.td, not GCNFeatures.td."""
+        for f in self.pins['facts']:
+            if f['file'] == 'GCNFeatures.td':
+                self.assertIn('AMDGPU.td', f.get('alt_files', []), f['id'])
 
     def test_rule_names_exist(self):
         """Each pinned rule name is a rule radisa can report ('*' = all; 'X_*' = a family)."""

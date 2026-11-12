@@ -8,9 +8,15 @@
 // Kernels have the signature (unsigned *out, const unsigned *in); the code object is a raw gfx1201
 // ELF loaded with hipModuleLoad. Before every launch `out` is filled with the fill byte.
 //
+// ITERATIONS must be a positive integer, and CASE_SUBSTRING (if given) must select at least one row.
+// RESULTS_JSON is written at start, rewritten after every kernel and on every error after the
+// arguments are parsed, with "complete": false (and "error") until the whole run has finished, so a
+// fault or timeout in one probe keeps the counts of the kernels before it.
+//
 // Exit: 0 every fixed variant matched the host-computed result in every launch (hazard variants are
 // informational), 1 some fixed variant mismatched (a harness bug, or for d16_other_half evidence
-// against the linter's relaxation), 2 setup or HIP runtime error.
+// against the linter's relaxation), 2 bad arguments, empty selection, not a gfx1201 device, setup or
+// HIP runtime error.
 #include <hip/hip_runtime.h>
 
 #include <cstdint>
@@ -23,13 +29,11 @@
 #include <string>
 #include <vector>
 
-#define HIP_OK(x)                                                                             \
-  do {                                                                                        \
-    hipError_t e_ = (x);                                                                      \
-    if (e_ != hipSuccess) {                                                                   \
-      std::fprintf(stderr, "%s:%d: %s: %s\n", __FILE__, __LINE__, #x, hipGetErrorString(e_)); \
-      std::exit(2);                                                                           \
-    }                                                                                         \
+#define HIP_OK(x)                                                                                    \
+  do {                                                                                               \
+    hipError_t e_ = (x);                                                                             \
+    if (e_ != hipSuccess)                                                                            \
+      die(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": " + #x + ": " + hipGetErrorString(e_)); \
   } while (0)
 
 struct Row {
@@ -45,8 +49,19 @@ struct Result {
   unsigned first_launch = 0, first_index = 0, first_got = 0, first_want = 0;
 };
 
-static void die(const std::string &why) {
+// What results.json reports; filled as the run goes, written by write_results().
+static struct {
+  std::string path, device, arch, current;  // current: the kernel being run when an error happens
+  unsigned iterations = 0;
+  std::vector<Result> results;
+  bool fixed_failed = false;
+} g;
+
+static void write_results(bool complete, const std::string &error);
+
+[[noreturn]] static void die(const std::string &why) {
   std::fprintf(stderr, "host_runner: %s\n", why.c_str());
+  if (!g.path.empty()) write_results(false, g.current.empty() ? why : g.current + ": " + why);
   std::exit(2);
 }
 
@@ -95,27 +110,80 @@ static std::string json_str(const std::string &s) {
 }
 
 static const char *verdict(const Result &r) {
+  if (r.launches < g.iterations) return "incomplete";  // an error stopped this kernel's launches
   if (r.row.variant == "fixed") return r.mismatched_words ? "FIXED_VARIANT_MISMATCH" : "ok";
   return r.mismatched_words ? "hazard_observed" : "not_observed";
 }
 
+// Written to PATH.tmp, then renamed over PATH, so a crash never leaves a truncated file.
+static void write_results(bool complete, const std::string &error) {
+  const std::string tmp = g.path + ".tmp";
+  {
+    std::ofstream o(tmp);
+    if (!o) {
+      std::fprintf(stderr, "host_runner: cannot write %s\n", tmp.c_str());
+      std::exit(2);
+    }
+    o << "{\n  \"schema\": \"radisa-hwprobe-results-1\",\n  \"device\": " << json_str(g.device)
+      << ",\n  \"arch\": " << json_str(g.arch) << ",\n  \"iterations\": " << g.iterations
+      << ",\n  \"complete\": " << (complete ? "true" : "false")
+      << ",\n  \"error\": " << (error.empty() ? std::string("null") : json_str(error)) << ",\n  \"results\": [";
+    for (size_t i = 0; i < g.results.size(); ++i) {
+      const Result &r = g.results[i];
+      o << (i ? "," : "") << "\n    {\"case\": " << json_str(r.row.name) << ", \"variant\": " << json_str(r.row.variant)
+        << ", \"kernel\": " << json_str(r.row.kernel) << ", \"expect_rule\": " << json_str(r.row.rule)
+        << ", \"launches\": " << r.launches << ", \"words_per_launch\": " << r.row.out_words
+        << ", \"mismatched_words\": " << r.mismatched_words << ", \"mismatching_launches\": " << r.mismatching_launches
+        << ", \"verdict\": " << json_str(verdict(r)) << ", \"first_mismatch\": ";
+      if (r.has_first)
+        o << "{\"launch\": " << r.first_launch << ", \"index\": " << r.first_index << ", \"got\": " << r.first_got
+          << ", \"want\": " << r.first_want << "}";
+      else
+        o << "null";
+      o << "}";
+    }
+    // Only a finished run says that every fixed variant matched; an unfinished one says null.
+    o << "\n  ],\n  \"fixed_variants_ok\": " << (!complete ? "null" : g.fixed_failed ? "false" : "true") << "\n}\n";
+    if (!o.flush()) {
+      std::fprintf(stderr, "host_runner: cannot write %s\n", tmp.c_str());
+      std::exit(2);
+    }
+  }
+  if (std::rename(tmp.c_str(), g.path.c_str()) != 0) {
+    std::fprintf(stderr, "host_runner: cannot rename %s to %s\n", tmp.c_str(), g.path.c_str());
+    std::exit(2);
+  }
+}
+
+static unsigned positive(const char *s, const char *what) {
+  char *end = nullptr;
+  const unsigned long v = std::strtoul(s, &end, 10);
+  if (!*s || *end || s[0] == '-' || v == 0 || v > 0xFFFFFFFFul)
+    die(std::string(what) + " must be a positive integer, not '" + s + "'");
+  return unsigned(v);
+}
+
 int main(int argc, char **argv) {
-  if (argc < 4) die("usage: host_runner CASES_TSV ITERATIONS RESULTS_JSON [CASE_SUBSTRING]");
-  const unsigned iterations = unsigned(std::stoul(argv[2]));
+  if (argc < 4 || argc > 5) die("usage: host_runner CASES_TSV ITERATIONS RESULTS_JSON [CASE_SUBSTRING]");
+  g.path = argv[3];
+  g.iterations = positive(argv[2], "ITERATIONS");
   const std::string filter = argc > 4 ? argv[4] : "";
-  std::vector<Row> rows = read_cases(argv[1]);
+  write_results(false, "");  // replaces any results.json of an earlier run before anything can fail
+  std::vector<Row> rows;
+  for (const Row &row : read_cases(argv[1]))
+    if (filter.empty() || row.name.find(filter) != std::string::npos) rows.push_back(row);
+  if (rows.empty()) die("no case in " + std::string(argv[1]) + " matches '" + filter + "'");
 
   hipDeviceProp_t prop;
   HIP_OK(hipGetDeviceProperties(&prop, 0));
-  const std::string arch = prop.gcnArchName;
-  if (arch.rfind("gfx1201", 0) != 0 && !std::getenv("HWPROBE_ANY_GPU"))
-    die("device 0 is " + arch + ", not gfx1201 (set HWPROBE_ANY_GPU=1 to run anyway)");
+  g.device = prop.name;
+  g.arch = prop.gcnArchName;
+  // The code objects are raw gfx1201 ELFs; the HIP loader rejects them on a device of another ISA.
+  if (g.arch.rfind("gfx1201", 0) != 0) die("device 0 is " + g.arch + ", not gfx1201");
 
   std::map<std::string, hipModule_t> modules;
-  std::vector<Result> results;
-  bool fixed_failed = false;
   for (const Row &row : rows) {
-    if (!filter.empty() && row.name.find(filter) == std::string::npos) continue;
+    g.current = row.kernel;
     if (!modules.count(row.hsaco)) {
       hipModule_t m;
       HIP_OK(hipModuleLoad(&m, row.hsaco.c_str()));
@@ -133,9 +201,10 @@ int main(int argc, char **argv) {
     HIP_OK(hipMemcpy(d_in, in.data(), in.size() * 4, hipMemcpyHostToDevice));
     std::vector<uint32_t> got(want.size());
 
-    Result res;
+    g.results.emplace_back();  // recorded before the first launch: an error keeps the launches so far
+    Result &res = g.results.back();
     res.row = row;
-    for (unsigned it = 0; it < iterations; ++it) {
+    for (unsigned it = 0; it < g.iterations; ++it) {
       HIP_OK(hipMemset(d_out, int(row.fill), want.size() * 4));
       void *params[] = {&d_out, &d_in};
       HIP_OK(hipModuleLaunchKernel(fn, row.grid, 1, 1, row.block, 1, 1, 0, nullptr, params, nullptr));
@@ -156,31 +225,13 @@ int main(int argc, char **argv) {
     }
     HIP_OK(hipFree(d_in));
     HIP_OK(hipFree(d_out));
-    if (row.variant == "fixed" && res.mismatched_words) fixed_failed = true;
+    if (row.variant == "fixed" && res.mismatched_words) g.fixed_failed = true;
     std::printf("%-20s %-6s %-24s launches %u  mismatched words %llu  (%s)\n", row.name.c_str(), row.variant.c_str(),
                 row.rule.c_str(), res.launches, res.mismatched_words, verdict(res));
-    results.push_back(res);
+    write_results(false, "");
   }
+  g.current.clear();
   for (auto &m : modules) HIP_OK(hipModuleUnload(m.second));
-
-  std::ofstream o(argv[3]);
-  if (!o) die(std::string("cannot write ") + argv[3]);
-  o << "{\n  \"schema\": \"radisa-hwprobe-results-1\",\n  \"device\": " << json_str(prop.name)
-    << ",\n  \"arch\": " << json_str(arch) << ",\n  \"iterations\": " << iterations << ",\n  \"results\": [";
-  for (size_t i = 0; i < results.size(); ++i) {
-    const Result &r = results[i];
-    o << (i ? "," : "") << "\n    {\"case\": " << json_str(r.row.name) << ", \"variant\": " << json_str(r.row.variant)
-      << ", \"kernel\": " << json_str(r.row.kernel) << ", \"expect_rule\": " << json_str(r.row.rule)
-      << ", \"launches\": " << r.launches << ", \"words_per_launch\": " << r.row.out_words
-      << ", \"mismatched_words\": " << r.mismatched_words << ", \"mismatching_launches\": " << r.mismatching_launches
-      << ", \"verdict\": " << json_str(verdict(r)) << ", \"first_mismatch\": ";
-    if (r.has_first)
-      o << "{\"launch\": " << r.first_launch << ", \"index\": " << r.first_index << ", \"got\": " << r.first_got
-        << ", \"want\": " << r.first_want << "}";
-    else
-      o << "null";
-    o << "}";
-  }
-  o << "\n  ],\n  \"fixed_variants_ok\": " << (fixed_failed ? "false" : "true") << "\n}\n";
-  return fixed_failed ? 1 : 0;
+  write_results(true, "");
+  return g.fixed_failed ? 1 : 0;
 }

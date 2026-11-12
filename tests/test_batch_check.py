@@ -6,7 +6,9 @@ import json
 import os
 from pathlib import Path
 import shutil
+import signal
 import subprocess
+import sys
 import tempfile
 import time
 import unittest
@@ -101,6 +103,36 @@ class SelectionTest(Tmp):
         self.assertEqual(files, [b.resolve(), new.resolve()])
         with self.assertRaises(ValueError):
             batch.select(parse(str(self.d), '--include', r'\.s$', '--changed-since', 'no-such-ref'))
+
+
+    def _repo(self):
+        g = ['git', '-C', str(self.d), '-c', 'user.email=t@t', '-c', 'user.name=t']
+        subprocess.run(['git', 'init', '-q', str(self.d)], check=True)
+        subprocess.run([*g, 'commit', '-q', '--allow-empty', '-m', 'base'], check=True)
+
+    @unittest.skipUnless(shutil.which('git'), 'git not installed')
+    def test_changed_since_non_ascii_names(self):
+        """Regression: without -z git C-quotes such names (core.quotePath) and they were dropped."""
+        self._repo()
+        try:
+            odd = self.touch('\u00e9.s', 'with space, "q".s')
+        except (UnicodeEncodeError, OSError):
+            self.skipTest('file system cannot hold the names')
+        plain = self.touch('plain.s')[0]
+        files, _ = batch.select(parse(str(self.d), '--include', r'\.s$', '--changed-since', 'HEAD'))
+        self.assertEqual(sorted(files), sorted(f.resolve() for f in [*odd, plain]))
+
+    @unittest.skipUnless(shutil.which('git'), 'git not installed')
+    def test_changed_since_with_out_of_tree_compile_db(self):
+        """Regression: the compile db's directory (outside the repository) was used as a git root."""
+        self._repo()
+        src = self.touch('plain.s')[0]
+        build = Path(tempfile.mkdtemp(prefix='radisa-batch-build-'))
+        self.addCleanup(shutil.rmtree, build, True)
+        db = build / 'compile_commands.json'
+        db.write_text(json.dumps([{'directory': str(build), 'file': str(src), 'command': 'clang -c plain.s'}]))
+        files, _ = batch.select(parse('--compile-commands', str(db), '--include', r'\.s$', '--changed-since', 'HEAD'))
+        self.assertEqual(files, [src.resolve()])
 
 
 class NamespaceTest(Tmp):
@@ -217,6 +249,125 @@ class IsolationTest(Tmp):
         self.assertEqual(files[1]['status'], 'PASS')
         self.assertEqual(run(str(two), '--max-kernels-per-file', '2')[0], 0)
 
+    def test_max_kernels_counts_only_kernel_filter_matches(self):
+        """Regression: --kernel restricts the analysis, so the limit applies to the matching kernels."""
+        many = self.touch('many.s', text=''.join(f'.amdhsa_kernel kx{i}\n.end_amdhsa_kernel\n' for i in range(5))
+                          + '.amdhsa_kernel gemm\n.end_amdhsa_kernel\n')[0]
+        self.assertEqual(run(str(many), '--kernel', 'gemm', '--max-kernels-per-file', '1', '--quiet')[0], 0)
+        code, out, _ = run(str(many), '--kernel', 'kx', '--max-kernels-per-file', '1', '--format', 'json')
+        f = json.loads(out)['files'][0]['findings'][0]
+        self.assertEqual((code, f['rule'], f['kernels']), (3, 'SKIPPED_TOO_MANY_KERNELS', 5))
+        self.assertIn('matching --kernel kx', f['message'])
+
+    def test_text_output_names_every_file(self):
+        """Regression: with several files every text block starts with the file and its verdict."""
+        ok, bad = self.touch('ok.s', 'bad.s')
+        _, out, _ = run(str(ok), str(bad), '--quiet')
+        self.assertIn(f'==> {ok.resolve()}: PASS <==', out)
+        self.assertIn(f'==> {bad.resolve()}: FAIL <==', out)
+
+    def test_worker_without_setsid(self):
+        """Regression: no os.setsid (Windows) raised AttributeError before any report was made."""
+        import multiprocessing
+        ok = self.touch('ok.s')[0]
+        ns = batch.file_namespace(ok, parse(str(ok)))
+        r, w = multiprocessing.Pipe(duplex=False)
+        saved = getattr(os, 'setsid', None)
+        if saved is not None:
+            del os.setsid
+        try:
+            batch._child(w, ok, ns, None)
+        finally:
+            if saved is not None:
+                os.setsid = saved
+        self.assertEqual(r.recv()['status'], 'PASS')
+
+
+class ValidationTest(Tmp):
+    """Regression: a usage error is reported once and exits 2, as `radisa check` does."""
+
+    def test_bad_options_fail_before_any_file(self):
+        a, b = self.touch('a.s', 'b.s')
+        for extra in (['--baseline', str(self.d / 'missing.json')], ['--severity', 'X=loud'],
+                      ['--config', str(self.d / 'nope.json')]):
+            with self.assertRaises(ValueError):
+                run(str(a), str(b), *extra)
+        env = dict(os.environ, PYTHONPATH=str(ROOT))
+        p = subprocess.run([sys.executable, '-m', 'radisa', 'check-all', str(a), str(b), '--quiet',
+                            '--baseline', str(self.d / 'missing.json')], capture_output=True, text=True, env=env)
+        self.assertEqual(p.returncode, 2, p.stdout + p.stderr)
+        self.assertIn('baseline file not found', p.stderr)
+        self.assertNotIn('CHECK_CRASHED', p.stdout + p.stderr)
+
+
+class BaselineSplitTest(Tmp):
+    """The per-file split of a baseline, without running a check."""
+
+    def test_entries_by_file(self):
+        a, b, c = self.touch('a.s', 'sub/b.s', 'c.s')
+        bl = self.d / 'base.json'
+        bl.write_text(json.dumps({'schema': 'radisa-baseline-v1', 'input': None, 'entries': [
+            {'fingerprint': '1', 'input': 'a.s'}, {'fingerprint': '2', 'input': 'sub/b.s'},
+            {'fingerprint': '3', 'input': 'gone.s'}]}))
+        got = batch.baseline_entries(bl, [a.resolve(), b.resolve(), c.resolve()])
+        self.assertEqual({k: [e['fingerprint'] for e in v] for k, v in got.items()},
+                         {a.resolve(): ['1'], b.resolve(): ['2'], None: ['3']})
+        # a `radisa check` baseline: its top-level input, or the only file checked
+        bl.write_text(json.dumps({'schema': 'radisa-baseline-v1', 'input': str(b), 'entries': [{'fingerprint': '9'}]}))
+        self.assertEqual(list(batch.baseline_entries(bl, [a.resolve(), b.resolve()])), [b.resolve()])
+        bl.write_text(json.dumps({'schema': 'radisa-baseline-v1', 'input': 'elsewhere.s', 'entries': [{'fingerprint': '9'}]}))
+        self.assertEqual(list(batch.baseline_entries(bl, [c.resolve()])), [c.resolve()])
+        self.assertEqual(list(batch.baseline_entries(bl, [a.resolve(), c.resolve()])), [None])
+
+
+class InterruptTest(Tmp):
+    """Regression: SIGINT / SIGTERM left the parent, the workers and their compilers running."""
+
+    def _start(self):
+        pidf = self.d / 'cc.pid'
+        cc = self.d / 'slowcc'
+        cc.write_text(f'#!/bin/sh\necho $$ >> {pidf}\nexec sleep 1000\n')
+        cc.chmod(0o755)
+        src = self.touch('k.hip', text='__global__ void k(float *p) { p[0] = 1; }\n')[0]
+        env = dict(os.environ, PYTHONPATH=str(ROOT))
+        p = subprocess.Popen([sys.executable, '-m', 'radisa', 'check-all', str(src), '--cxx', str(cc), '--quiet'],
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=env)
+        self.addCleanup(lambda: p.poll() is None and (p.kill(), p.communicate()))
+        t0 = time.monotonic()
+        while not (pidf.exists() and pidf.read_text().strip()):
+            if p.poll() is not None or time.monotonic() - t0 > 30:
+                self.skipTest('the compiler was not started: ' + p.communicate()[1][-300:])
+            time.sleep(0.05)
+        return p, int(pidf.read_text().split()[0])
+
+    @staticmethod
+    def _alive(pid):
+        try:
+            os.kill(pid, 0)
+        except ProcessLookupError:
+            return False
+        try:  # a zombie is dead
+            return Path(f'/proc/{pid}/stat').read_text().split(') ')[1][0] != 'Z'
+        except OSError:
+            return True
+
+    @unittest.skipUnless(hasattr(os, 'killpg') and shutil.which('sh'), 'POSIX only')
+    def test_signals_stop_everything(self):
+        for sig, code in ((signal.SIGTERM, 143), (signal.SIGINT, 130)):
+            p, cc = self._start()
+            p.send_signal(sig)
+            try:
+                _, err = p.communicate(timeout=15)
+            except subprocess.TimeoutExpired:
+                self.fail(f'check-all still running 15 s after signal {sig}')
+            self.assertEqual(p.returncode, code)
+            self.assertIn('interrupted', err)
+            t0 = time.monotonic()
+            while self._alive(cc) and time.monotonic() - t0 < 5:
+                time.sleep(0.05)
+            self.assertFalse(self._alive(cc), f'compiler {cc} survived signal {sig}')
+            (self.d / 'cc.pid').unlink()
+
 
 class RealCheckTest(unittest.TestCase):
     """End to end with the real check.analyze on checked-in snippets (needs llvm-mc)."""
@@ -235,6 +386,33 @@ class RealCheckTest(unittest.TestCase):
         single = check.analyze(batch.check_parser().parse_args([str(CHECK_FIX / 'missing_waits.s')]))
         self.assertEqual([f['rule'] for f in formats.iter_findings(single) for f in [f[1]]],
                          [f['rule'] for _, f in formats.iter_findings(doc['files'][0])])
+
+    @needs_llvm_mc
+    def test_one_baseline_for_every_file(self):
+        """Regression: --write-baseline kept only the last file's entries (each worker overwrote it)."""
+        d = Path(tempfile.mkdtemp(prefix='radisa-batch-bl-'))
+        self.addCleanup(shutil.rmtree, d, True)
+        a, b = CHECK_FIX / 'missing_waits.s', CHECK_FIX / 'd16_missing_wait.s'
+        bl = d / 'b.json'
+        code, _, _ = run(str(a), str(b), '--write-baseline', str(bl), '--jobs', '2', '--quiet')
+        self.assertEqual(code, 0)
+        doc = json.loads(bl.read_text())
+        per = {}
+        for e in doc['entries']:
+            per.setdefault((bl.parent / e['input']).resolve(), []).append(e)
+        self.assertEqual(set(per), {a.resolve(), b.resolve()})
+        code, out, _ = run(str(a), str(b), '--baseline', str(bl), '--format', 'json')
+        self.assertEqual(code, 0, out)
+        for r in json.loads(out)['files']:
+            self.assertEqual(r['status'], 'PASS')
+            self.assertEqual(r['suppression']['baseline'], str(bl))       # the user's path, not a temporary one
+            self.assertEqual(r['suppression']['baselined'], len(per[Path(r['input']).resolve()]))
+            self.assertNotIn('BASELINE_STALE', [f['rule'] for f in r['findings']])  # no other file's entries
+        # Rewriting with one file keeps the other file's entries.
+        run(str(a), '--write-baseline', str(bl), '--quiet')
+        self.assertEqual(len(json.loads(bl.read_text())['entries']), len(doc['entries']))
+        # Without the baseline: both FAIL again.
+        self.assertEqual(run(str(a), str(b), '--quiet')[0], 1)
 
     @needs_llvm_mc
     def test_check_tree_sh(self):

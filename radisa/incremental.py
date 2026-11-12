@@ -39,7 +39,8 @@ import subprocess
 from .binary import FormatError
 from . import __version__, asmclobber, hipsrc
 
-SCHEMA = 'radisa-incremental-v3'   # v3: kernel results carry ASM_UNDECLARED_CLOBBER (asmclobber)
+SCHEMA = 'radisa-incremental-v4'   # v3: kernel results carry ASM_UNDECLARED_CLOBBER (asmclobber);
+#   v4: those findings changed (one per asm copy, restored EXEC/M0, VOPD, no-return atomics)
 LLC_OPT = {'-O0': '-O0', '-O1': '-O1', '-O2': '-O2', '-O3': '-O3', '-Os': '-O2', '-Oz': '-O2'}
 
 

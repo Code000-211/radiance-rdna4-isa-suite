@@ -1,8 +1,18 @@
 """radisa.hazards: LLVM-fixed gfx1201 hazards over the whole direct CFG, DEALLOC_NO_NOP, s_clause lint."""
-import unittest
+import os, shutil, tempfile, unittest
+from pathlib import Path
 from radisa import hazards, isadb
 from radisa.rules import cfg, local_checks
-from support import seq, CHECK_FIX, run_check, all_findings, needs_llvm_mc, needs_minimal_kernel, kernel_asm, check_text
+from support import (seq, CHECK_FIX, run_check, all_findings, needs_llvm_mc, needs_minimal_kernel, kernel_asm,
+                     check_text, needs_hip)
+
+
+def gfx1201_compiler():
+    for c in (os.environ.get('RADISA_TEST_CXX'), '/usr/lib/llvm-20/bin/clang++', '/opt/rocm/llvm/bin/clang++',
+              shutil.which('clang++')):
+        if c and Path(c).exists():
+            return c
+    return None
 
 W1 = ('v_wmma_f32_16x16x16_f16', 'v[8:15], v[0:3], v[4:7], v[8:15]')
 W_A = ('v_wmma_f32_16x16x16_f16', 'v[16:23], v[8:11], v[4:7], v[16:23]')   # A overlaps W1's D
@@ -78,6 +88,13 @@ class PermlaneTests(unittest.TestCase):
         self.assertIn('v_mov_b32 v3, v3', f[0]['message'])
         self.assertIn('v_cmpx_gt_u32 at pc 0x0', f[0]['message'])
 
+    def test_message_lists_at_most_six_producers(self):
+        f = run(*scale(10, 2))
+        self.assertEqual(len(f), 1)
+        self.assertIn('v_cmpx_gt_u32 at pc 0x28 and 4 more', f[0]['message'])
+        self.assertNotIn('pc 0x30', f[0]['message'])
+        self.assertEqual(f[0]['producers'], list(range(0, 80, 8)))
+
     def test_snop_vnop_salu_do_not_clear(self):
         self.assertIn('PERMLANE_AFTER_CMPX', rules(CMPX, ('s_nop', '0'), PERM, ('s_endpgm',)))
         self.assertIn('PERMLANE_AFTER_CMPX', rules(CMPX, ('v_nop',), PERM, ('s_endpgm',)))
@@ -97,9 +114,111 @@ class PermlaneTests(unittest.TestCase):
         self.assertEqual(rules(('v_cmp_eq_u32', 'vcc_lo, v0, v1'), PERM, ('s_endpgm',)), [])
 
     def test_other_permlanes(self):
-        for p in (('v_permlanex16_b32', 'v2, v3, s0, s1'), ('v_permlane16_var_b32', 'v2, v3'),
-                  ('v_permlanex16_var_b32', 'v2, v3')):
+        # The VAR forms take vdst, src0, src1 (llvm-mc rejects 'v2, v3': too few operands).
+        for p in (('v_permlanex16_b32', 'v2, v3, s0, s1'), ('v_permlane16_var_b32', 'v2, v3, v4'),
+                  ('v_permlanex16_var_b32', 'v2, v3, v4')):
             self.assertIn('PERMLANE_AFTER_CMPX', rules(CMPX, p, ('s_endpgm',)), p)
+
+
+def scale(p, l):
+    """p blocks `v_cmpx; s_cbranch_scc1 JOIN` converging at JOIN, then l s_nop and a permlane."""
+    spec = []
+    for k in range(p):
+        spec += [CMPX, ('s_cbranch_scc1', '', 2 * p - (2 * k + 1) - 1)]
+    return spec + [('s_nop', '0')] * l + [PERM, ('s_endpgm',)]
+
+
+class ScaleTests(unittest.TestCase):
+    def test_many_converging_producers_is_fast(self):
+        # Reviewer input shape: per-instruction producer sets took 12 s for 400 producers x 4000 s_nop
+        # (quadratic); per-block bitmasks are linear in the blocks and edges.
+        import time
+        x = seq(*scale(2000, 20000))
+        e, r, _ = cfg(x)
+        t = time.process_time()
+        f, _ = hazards.analyze(x, e, r)
+        self.assertLess(time.process_time() - t, 10)
+        self.assertEqual([(y['rule'], len(y['producers'])) for y in f], [('PERMLANE_AFTER_CMPX', 2000)])
+
+    def test_wmma_through_chained_joins(self):
+        # W1 reaches W_A along s_nop-only blocks joined by both arms of every branch.
+        spec = [W1]
+        for _ in range(50):
+            spec += [('s_cbranch_scc0', '1', 1), ('s_nop', '0')]
+        f = run(*spec, W_A, ('s_endpgm',))
+        self.assertEqual([(x['rule'], x['producer']) for x in f], [('WMMA_D_TO_AB', 0)])
+
+
+class CfgTests(unittest.TestCase):
+    """rules.cfg edges the hazard dataflow walks: no fall-through after s_setpc_b64 (as LLVM's MBB
+    predecessor lists), long branches resolved, noreturn calls and llvm.trap end the path."""
+
+    @staticmethod
+    def long_branch(offset, filler=(), reg='s[2:3]', lo='s2', hi='s3'):
+        return [('s_getpc_b64', reg), *filler, ('s_add_co_u32', f'{lo}, {lo}, {offset:#x}'),
+                ('s_add_co_ci_u32', f'{hi}, {hi}, {-1 if offset < 0 else 0}'), *filler, ('s_setpc_b64', reg)]
+
+    def test_return_does_not_fall_through(self):
+        # Reviewer reproducer q1_setpc.s: L2 is reached only from the s_cbranch_scc0.
+        x = (('s_cbranch_scc0', '2', 2), W1, ('s_setpc_b64', 's[30:31]'), W_A, ('s_setpc_b64', 's[30:31]'))
+        self.assertEqual(rules(*x), [])
+        e, _, f = cfg(seq(*x))
+        self.assertEqual(e[8], [])
+        self.assertEqual([y['rule'] for y in f], ['CFG_INDIRECT', 'CFG_INDIRECT'])
+
+    def test_long_branch_does_not_fall_through(self):
+        # Reviewer reproducer q2_longbranch.s with the target inside the code: pc 12 + 0x14 = 32.
+        x = [('s_cbranch_scc0', '5', 5), CMPX, *self.long_branch(0x14), PERM, ('s_endpgm',), ('s_endpgm',)]
+        self.assertEqual(rules(*x), [])
+        e, r, f = cfg(seq(*x))
+        self.assertEqual((e[20], f, 32 in r), ([32], [], True))
+
+    def test_long_branch_target_is_followed(self):
+        # The jump itself is a real path: the permlane at the target (pc 8 + 0x10 = 24) is reported.
+        f = run(CMPX, *self.long_branch(0x10), ('s_endpgm',), PERM, ('s_endpgm',))
+        self.assertEqual([(y['rule'], y['pc'], y['producer']) for y in f], [('PERMLANE_AFTER_CMPX', 24, 0)])
+
+    def test_long_branch_backwards_with_wait_alu(self):
+        # LLVM 20+ puts s_wait_alu after s_getpc_b64 and after the add pair (ApplyHazardWorkarounds).
+        x = seq(('s_nop', '0'), *self.long_branch(-8, filler=[('s_wait_alu', '0xfffe')]))
+        e, r, f = cfg(x)
+        self.assertEqual((e[x[-1]['pc']], f), ([0], []))
+
+    def test_unrecognised_setpc_has_no_successor(self):
+        for x in (self.long_branch(0x4, reg='s[4:5]'),             # adds to another pair
+                  self.long_branch(0x4)[1:],                        # no s_getpc_b64
+                  [('s_mov_b64', 's[2:3]', 0), ('s_setpc_b64', 's[2:3]')]):
+            e, r, f = cfg(seq(*x, ('v_mov_b32', 'v0, 1'), ('s_endpgm',)))
+            last = len(x) * 4 - 4
+            self.assertEqual((e[last], [y['rule'] for y in f]), ([], ['CFG_INDIRECT']), x)
+
+    def test_long_branch_out_of_range(self):
+        e, r, f = cfg(seq(*self.long_branch(0x100), ('s_endpgm',)))
+        self.assertEqual([(y['rule'], y['target']) for y in f], [('CFG_TARGET', 0x104)])
+
+    def test_noreturn_call_and_trap(self):
+        # clang -O2 for `[[noreturn]] die()` (store; __builtin_trap()) called last in a kernel.
+        for x in [(('v_mov_b32', 'v0, 1'), ('s_swappc_b64', 's[30:31], s[0:1]')),
+                  (('v_mov_b32', 'v0, 1'), ('s_swappc_b64', 's[30:31], s[0:1]'), ('s_code_end',)),
+                  (('v_mov_b32', 'v0, 1'), ('s_trap', '2', 2)),
+                  (('s_trap', '2', 2), ('s_code_end',))]:
+            e, r, f = cfg(seq(*x))
+            self.assertNotIn('CFG_FALLTHROUGH', [y['rule'] for y in f], x)
+            self.assertNotIn('REACHABLE_CODE_END', [y['rule'] for y in f], x)
+        f = cfg(seq(('s_swappc_b64', 's[30:31], s[0:1]')))[2]
+        self.assertEqual([(y['rule'], y.get('noreturn')) for y in f], [('CFG_INDIRECT', True)])
+
+    def test_real_fall_through_still_reported(self):
+        # llvm.debugtrap (s_trap 3) continues; a returning call returns to the next instruction;
+        # a missing s_endpgm and a conditional branch at the end still fall through.
+        for x in [(('s_trap', '3', 3),), (('s_swappc_b64', 's[30:31], s[0:1]'), ('v_mov_b32', 'v0, 1')),
+                  (('v_mov_b32', 'v0, 1'),), (('s_cbranch_scc0', '0', 0),)]:
+            f = cfg(seq(*x))[2]
+            self.assertIn(('CFG_FALLTHROUGH', 'error'), [(y['rule'], y['severity']) for y in f], x)
+        self.assertEqual(cfg(seq(('s_trap', '3', 3), ('s_code_end',)))[2][0]['rule'], 'REACHABLE_CODE_END')
+        # The hazard dataflow still follows a returning call.
+        self.assertEqual(rules(CMPX, ('s_swappc_b64', 's[30:31], s[0:1]'), PERM, ('s_endpgm',)),
+                         ['PERMLANE_AFTER_CMPX'])
 
 
 class DeallocTests(unittest.TestCase):
@@ -201,6 +320,7 @@ class FixtureTests(unittest.TestCase):
                 ('hazard_wmma_loop.s', 1, ['WMMA_D_TO_AB']),
                 ('hazard_swmmac_index.s', 1, ['WMMA_D_TO_AB']),
                 ('hazard_permlane_xblock.s', 1, ['PERMLANE_AFTER_CMPX']),
+                ('hazard_longbranch.s', 1, ['PERMLANE_AFTER_CMPX']),
                 ('hazard_dealloc.s', 0, ['DEALLOC_NO_NOP']),
                 ('hazard_clause.s', 0, ['CLAUSE_BRANCH', 'CLAUSE_MIXED', 'CLAUSE_TOO_LONG'])]:
             self.assertEqual(fixture_rules(name), (code, want), name)
@@ -208,8 +328,16 @@ class FixtureTests(unittest.TestCase):
     @needs_llvm_mc
     def test_clean_fixtures(self):
         for name in ('hazard_wmma_clean.s', 'hazard_permlane_clean.s', 'hazard_dealloc_clean.s',
-                     'hazard_clause_clean.s'):
+                     'hazard_clause_clean.s', 'hazard_longbranch_clean.s'):
             self.assertEqual(fixture_rules(name), (0, []), name)
+        # The CALLS note is the only finding: no CFG_FALLTHROUGH, no REACHABLE_CODE_END.
+        self.assertEqual(fixture_rules('hazard_noreturn_clean.s'), (0, ['CALLS']))
+
+    @needs_llvm_mc
+    def test_long_branch_finding_is_at_the_target(self):
+        _, rep = run_check(CHECK_FIX / 'hazard_longbranch.s')
+        self.assertEqual([(f['rule'], f['pc'], f['producer']) for f in all_findings(rep)],
+                         [('PERMLANE_AFTER_CMPX', 0x2c, 0x4)])
 
     @needs_llvm_mc
     def test_strict_fails_on_review(self):
@@ -231,6 +359,32 @@ class FixtureTests(unittest.TestCase):
         self.assertEqual((code, sorted(f['rule'] for f in all_findings(rep))), (1, ['PERMLANE_AFTER_CMPX']))
         code, rep = check_text(kernel_asm(body.replace('v_nop', 'v_mov_b32 v3, v3')), '--no-liveness')
         self.assertEqual((code, [f['rule'] for f in all_findings(rep)]), (0, []))
+
+
+class CompiledTests(unittest.TestCase):
+    """rules.cfg on unedited compiler output (clang 18 here; LLVM 20+ adds s_wait_alu in long branches)."""
+    def check(self, name, *flags):
+        """(report, text of the compiler's .s files)."""
+        with tempfile.TemporaryDirectory() as d:
+            rep = run_check(CHECK_FIX / name, '--cxx', gfx1201_compiler(), '--flag', '-nogpuinc -nogpulib', *flags,
+                            '--no-incremental', '--cache-dir', d, '--keep', d, '--no-liveness')[1]
+            return rep, ''.join(p.read_text() for p in Path(d).rglob('*.s'))
+
+    @needs_hip(gfx1201_compiler(), CHECK_FIX / 'hazard_noreturn.hip')
+    def test_noreturn_call_and_trap(self):
+        rep, asm = self.check('hazard_noreturn.hip')
+        self.assertIn('s_trap 2', asm)
+        self.assertEqual([k['name'] for k in rep['kernels'] if not k.get('callee')][:1], ['kn'])
+        got = {f['rule'] for f in all_findings(rep)}
+        self.assertFalse(got & {'CFG_FALLTHROUGH', 'REACHABLE_CODE_END'}, got)
+
+    @needs_hip(gfx1201_compiler(), CHECK_FIX / 'hazard_longbranch.hip')
+    def test_long_branches_resolved(self):
+        rep, asm = self.check('hazard_longbranch.hip', '--flag', '-mllvm -amdgpu-s-branch-bits=5')
+        got = {f['rule'] for f in all_findings(rep)}
+        # Every long branch is a direct edge: no CALLS note, no CFG_TARGET, no fall-through finding.
+        self.assertFalse(got & {'CALLS', 'CFG_TARGET', 'CFG_INDIRECT', 'CFG_FALLTHROUGH', 'REACHABLE_CODE_END'}, got)
+        self.assertIn('s_setpc_b64', asm, 'the compiler emitted no long branch: the test proves nothing')
 
 
 if __name__ == '__main__':

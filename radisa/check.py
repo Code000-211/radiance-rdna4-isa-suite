@@ -13,6 +13,7 @@ kernel bytes that could not be decoded: the rest of such a kernel was never anal
 """
 from __future__ import annotations
 
+import argparse
 from collections import Counter
 import functools
 import hashlib
@@ -79,7 +80,17 @@ KERNEL_PASSES: list = []   # registered at the end of this module
 # Each entry of REPORT_FILTERS is called as fn(report, args) -> None once all findings exist and
 # before finalize() computes counts and status; it may drop or re-grade findings in place.
 REPORT_FILTERS: list = []   # registered at the end of this module
-INCOMPLETE_RULES = ('CHECK_FAILED', 'ASSEMBLER', 'SOURCE_MAP')
+INCOMPLETE_RULES = ('CHECK_FAILED', 'ASSEMBLER', 'SOURCE_MAP',
+                    # Code that exists but was not analysed: a function without a symbol size, a
+                    # descriptor without metadata (OBJECT_EVIDENCE); paths behind a branch whose
+                    # target is not an instruction of the kernel (CFG_TARGET, CFG_ENCODING); a VOPD
+                    # pair or WMMA whose own rules could not run (VOPD_IDENTITY, WMMA_OPERANDS).
+                    # Not here, on purpose: KERNEL_EVIDENCE (a kernel without readable bytes already
+                    # has no instructions; the remaining message is about prefetch padding, not about
+                    # code that went unchecked), CFG_FALLTHROUGH 'incomplete' (unreached code at the
+                    # end, analysed), DYNAMIC_VGPR_MODE (every instruction is analysed; only the VGPR
+                    # range check is off), CFG_INDIRECT (callees: the CALLS note, NOT_CHECKED).
+                    'OBJECT_EVIDENCE', 'CFG_TARGET', 'CFG_ENCODING', 'VOPD_IDENTITY', 'WMMA_OPERANDS')
 # The analysis did not see the whole kernel: the rest of its bytes were never checked.
 COVERAGE_RULES = ('DECODE', 'BYTE_COVERAGE')
 
@@ -90,22 +101,25 @@ def _unknown_operand_models(ins: list[dict], models: dict, stats: dict, wave: in
     """OPERAND_MODEL_UNKNOWN, and SGPR findings that rest only on the guess for such instructions.
 
     An instruction the AMD XML table cannot model is taken to read and write every register its
-    text names (isadb.operand_model). Where a MISSING_ALU_WAIT exists only because of the assumed
-    write, the hardware facts behind it are unknown: it is re-graded to 'review'.
+    text names (isadb.operand_model). Where a MISSING_ALU_WAIT exists only because of an assumed
+    operand (the guessed write as producer, or the guessed read as consumer or as the earlier VALU
+    read the hazard needs), the hardware facts behind it are unknown: it is re-graded to 'review'.
+    LLVM computes these waits from the uses of an instruction only (AMDGPUWaitSGPRHazards.cpp,
+    processOperand on MI->all_uses()), so a guessed read is as uncertain as a guessed write.
     """
     unknown = stats.get('unknown_mnemonics') or {}
     if not unknown:
         return []
     pcs = [i['pc'] for i in ins if not models[i['pc']]['known']]
-    guessed = {pc: {**m, 'writes': set()} if not m['known'] else m for pc, m in models.items()}
+    guessed = {pc: {**m, 'reads': set(), 'writes': set()} if not m['known'] else m for pc, m in models.items()}
     without, _ = sgpr.analyze(ins, edges, reachable, guessed, wave, callee)
     certain = {f['pc'] for f in without if f['rule'] == 'MISSING_ALU_WAIT'}
     for f in findings:
         if f['rule'] == 'MISSING_ALU_WAIT' and f['pc'] not in certain:
             f.update(severity='review', operand_model='assumed',
                      message=f['message'] + '. This rests on the assumption that an instruction outside '
-                             'the AMD operand table writes the registers it names; its real effect is '
-                             'not documented in the table')
+                             'the AMD operand table reads and writes the registers it names; its real '
+                             'operands are not documented in the table')
     listed = ', '.join(f'{op} ({n}x)' for op, n in sorted(unknown.items()))
     return [{'rule': 'OPERAND_MODEL_UNKNOWN', 'severity': 'review', 'pc': pcs[0] if pcs else None,
              'message': f'{len(pcs)} instruction(s) outside the AMD RDNA4 operand table: {listed}. They are '
@@ -121,7 +135,7 @@ def check_kernel(kernel: dict, decoded: dict, table: dict, origin: dict | None =
 
     `options` reaches every KERNEL_PASSES entry as ctx['options'], without the private keys
     check_object_bytes adds for the CALLS note ('_callees': functions of the object checked in this
-    run, '_functions': all of them).
+    run, '_functions': all of them, '_unchecked': functions found without a symbol size).
     """
     callee = bool(kernel.get('callee'))
     kernel = {**kernel, 'issues': [m for m in kernel.get('issues', [])
@@ -134,12 +148,18 @@ def check_kernel(kernel: dict, decoded: dict, table: dict, origin: dict | None =
     if calls:
         checked = sorted((options or {}).get('_callees') or ())
         present = (options or {}).get('_functions') or ()
+        unchecked = sorted((options or {}).get('_unchecked') or ())
         if checked:
             where = f"the functions of this object ({', '.join(checked)}) are checked on their own; "
         elif present:
             where = 'the functions of this object are not checked in this run (--kernel); '
-        else:
+        elif not unchecked:
             where = 'the object holds no function body to check (callees elsewhere are not analysed); '
+        else:
+            where = ''
+        if unchecked:
+            where += (f"function(s) {', '.join(unchecked)} of this object are NOT checked (no symbol size, "
+                      'see OBJECT_EVIDENCE); ')
         findings.append({'rule': 'CALLS', 'severity': 'info', 'pc': calls[0]['pc'],
                          'message': f'{len(calls)} call(s)/indirect branch(es); {where}every counter but '
                                     'STOREcnt is assumed drained on return (LLVM SIInsertWaitcnts)',
@@ -174,6 +194,16 @@ def check_kernel(kernel: dict, decoded: dict, table: dict, origin: dict | None =
                          'message': f"{md.get('.vgpr_spill_count', 0)} VGPR / {md.get('.sgpr_spill_count', 0)} "
                                     f'SGPR spills to scratch ({scratch} bytes per lane)',
                          'source': 'AMDGPU code object metadata'})
+    elif scratch and not callee and any(i['op'].startswith(('s_swappc', 's_call')) for i in ins):
+        # The kernel's private segment size includes the stack of its callees (LLVM
+        # AMDGPUMCResourceInfo.cpp gatherResourceInfo: own stack + max over callees, or
+        # AssumedStackSizeForExternalCall for indirect/recursive calls), so scratch is expected.
+        findings.append({'rule': 'SCRATCH_USE', 'severity': 'info', 'pc': None,
+                         'message': f'{scratch} bytes of scratch per lane without spills; the kernel makes '
+                                    'calls, and the call stack of its callees is part of this size (a '
+                                    'private array may be too; the metadata does not split the two)',
+                         'source': 'AMDGPU code object metadata; LLVM AMDGPUMCResourceInfo.cpp '
+                                   'gatherResourceInfo, AMDGPUResourceUsageAnalysis.cpp'})
     elif scratch:
         findings.append({'rule': 'SCRATCH_USE', 'severity': 'review', 'pc': None,
                          'message': f'{scratch} bytes of scratch per lane without spills: a private '
@@ -217,19 +247,24 @@ def _objects(path: Path) -> list[bytes]:
 
 def check_object_bytes(data: bytes, label: str, table: dict, backend: dict, kernel_filter: str | None,
                        work: Path, asm_functions: dict | None = None,
-                       timeout: float = 600, options: dict | None = None) -> tuple[list[dict], list[dict]]:
+                       timeout: float = 600, options: dict | None = None,
+                       map_severity: str = 'incomplete') -> tuple[list[dict], list[dict]]:
     """Check every gfx1201 kernel of one code object, and every non-kernel function in it
-    (functions.function_inventory, checked with callee semantics)."""
+    (functions.function_inventory, checked with callee semantics). `map_severity` grades the
+    SOURCE_MAP notes for `asm_functions` that do not line up with the object."""
     elf = ELF(data)
     ks, issues = kernel_inventory(elf)
     fs = functions.function_inventory(elf, ks, issues)
     notes = [{'rule': 'OBJECT_EVIDENCE', 'severity': 'incomplete', 'message': m, 'pc': None}
              for m in issues]
+    # Functions found but not checked (functions.function_inventory reports them in `issues`).
+    unchecked = tuple(m[1] for m in (re.match(r'function (\S+) has no symbol size', i) for i in issues) if m)
     present = tuple(f['name'] for f in fs)
     if kernel_filter:
         ks = [k for k in ks if kernel_filter in k['name'] or kernel_filter in k['symbol']]
         fs = [f for f in fs if kernel_filter in f['name']]
-    options = {**(options or {}), '_callees': tuple(f['name'] for f in fs), '_functions': present}
+    options = {**(options or {}), '_callees': tuple(f['name'] for f in fs), '_functions': present,
+               '_unchecked': unchecked}
     ks = ks + fs
     usable = [k for k in ks if 'code_hex' in k]
     tmp = work / 'object.co'
@@ -242,12 +277,12 @@ def check_object_bytes(data: bytes, label: str, table: dict, backend: dict, kern
         if asm_functions is not None:
             fn = asm_functions.get(k['name'])
             if fn is None:
-                notes.append({'rule': 'SOURCE_MAP', 'severity': 'incomplete', 'pc': None,
-                              'message': f"{k['name']}: no matching function in compiler assembly"})
+                notes.append({'rule': 'SOURCE_MAP', 'severity': map_severity, 'pc': None,
+                              'message': f"{k['name']}: no matching function in the assembly"})
             else:
                 origin, why = hipsrc.source_map(d['instructions'], fn)
                 if why:
-                    notes.append({'rule': 'SOURCE_MAP', 'severity': 'incomplete', 'pc': None,
+                    notes.append({'rule': 'SOURCE_MAP', 'severity': map_severity, 'pc': None,
                                   'message': f"{k['name']}: {why}; findings carry pcs only"})
                     origin = None
         r = check_kernel(k, d, table, origin, options)
@@ -268,7 +303,99 @@ def snippet_kernel(obj: Path, wave: int) -> tuple[dict, bytes]:
             'size': len(code), 'code_hex': code.hex(), 'descriptor': {}}, code
 
 
+def _code_lines(text: str) -> list[str]:
+    """The lines of an assembly file with every comment blanked (`;` and `//` to the end of the
+    line, `/* ... */` across lines) and string literals kept, so columns and line numbers stay."""
+    out, cur, i, n, block = [], [], 0, len(text), False
+    while i < n:
+        c = text[i]
+        if c == '\n':
+            out.append(''.join(cur))
+            cur = []
+        elif block:
+            if text.startswith('*/', i):
+                block = False
+                cur.append('  ')
+                i += 2
+                continue
+            cur.append(' ')
+        elif text.startswith('/*', i):
+            block = True
+            cur.append('  ')
+            i += 2
+            continue
+        elif c == ';' or text.startswith('//', i):
+            j = text.find('\n', i)
+            i = n if j < 0 else j
+            continue
+        elif c == '"':
+            j = i + 1
+            while j < n and text[j] not in '"\n':
+                j += 2 if text[j] == '\\' else 1
+            cur.append(text[i:j + 1] if j < n and text[j] == '"' else text[i:j])
+            i = j + 1 if j < n and text[j] == '"' else j
+            continue
+        else:
+            cur.append(c)
+        i += 1
+    out.append(''.join(cur))
+    return out
+
+
+def asm_line_map(text: str, path: str, snippet: bool) -> dict:
+    """Instructions of a hand-written .s file per function, in the shape of hipsrc.parse_asm, with
+    `loc` = the line of the instruction in the .s file itself (column 1, as for every .s line).
+
+    Labels are skipped wherever they stand (also before an instruction on the same line). A
+    function starts at the label of a symbol declared `.type name,@function` or `.amdhsa_kernel
+    name`; other labels (`loop:`, `.L...`) stay inside it. In a snippet every instruction of the
+    text sections belongs to the one function '<snippet>'. Instructions that llvm-mc expands
+    (macros, .rept) do not line up with the object: source_map then reports the divergence.
+    """
+    code = _code_lines(text)
+    names = set() if snippet else (
+        set(re.findall(r'^\s*\.type\s+([^\s,]+)\s*,\s*[@%]function\b', '\n'.join(code), re.M))
+        | set(re.findall(r'^\s*\.amdhsa_kernel\s+(\S+)', '\n'.join(code), re.M)))
+    out: dict[str, list[dict]] = {'<snippet>': []} if snippet else {}
+    current = '<snippet>' if snippet else None
+    in_text, in_metadata, in_macro = True, False, False
+    for no, raw in enumerate(code, 1):
+        line = raw.strip()
+        if in_macro or re.match(r'\.macro\b', line):   # a body is code where it is invoked
+            in_macro = not re.match(r'\.endm\b', line)
+            continue
+        if in_metadata:
+            in_metadata = not line.startswith('.end_amdgpu_metadata')
+            continue
+        if line.startswith('.amdgpu_metadata'):
+            in_metadata = True
+            continue
+        if re.match(r'\.(text\b|section\s+\.text)', line):
+            in_text = True
+            continue
+        if re.match(r'\.(section|data|bss|rodata)\b', line):
+            in_text = False
+            continue
+        while True:
+            m = hipsrc.LABEL.match(line)
+            if not m:
+                break
+            if m[1] in names and in_text:
+                current = m[1]
+                out.setdefault(current, [])
+            line = line[m.end():].lstrip()
+        if not line or line.startswith('.') or not in_text or current is None:
+            continue
+        out[current].append({'mnemonic': line.split()[0], 'text': line, 'inline_asm': False,
+                              'loc': {'file': path, 'line': no, 'column': 1}})
+    return out
+
+
 def check_assembly(path: Path, table: dict, backend: dict, args, work: Path):
+    """A .s file. Compiler output with `.loc` directives maps findings to the HIP lines named
+    there (hipsrc.parse_asm); hand-written assembly maps them to its own lines (asm_line_map), so
+    `; radisa: ignore[...]` comments in the .s file apply. Where that mapping fails, a SOURCE_MAP
+    note says so ('info': the analysis itself is complete; findings carry pcs only)."""
     text = path.read_text(encoding='utf-8', errors='replace')
     mc = hipsrc.find_tool('llvm-mc', args.llvm_mc)
     obj = work / 'asm.o'
@@ -279,25 +406,24 @@ def check_assembly(path: Path, table: dict, backend: dict, args, work: Path):
         return [], [{'rule': 'ASSEMBLER', 'severity': 'error', 'pc': None,
                      'message': p.stderr.strip() or 'llvm-mc failed'}]
     if '.amdhsa_kernel' in text:
-        functions = hipsrc.parse_asm(text)
-        return check_object_bytes(obj.read_bytes(), str(path), table, backend, args.kernel, work, functions,
-                                  args.timeout, pass_options(args))
+        if re.search(r'^\s*\.loc\s', text, re.M):
+            return check_object_bytes(obj.read_bytes(), str(path), table, backend, args.kernel, work,
+                                      hipsrc.parse_asm(text), args.timeout, pass_options(args))
+        return check_object_bytes(obj.read_bytes(), str(path), table, backend, args.kernel, work,
+                                  asm_line_map(text, str(path), False), args.timeout, pass_options(args),
+                                  map_severity='info')
     k, _ = snippet_kernel(obj, args.wave)
     decoded = decode_object(obj, [k], backend)
     d = decoded[k['symbol']]
-    lines = [ln for ln in hipsrc.parse_asm('radisa_snippet:\n' + text).get('radisa_snippet', [])]
-    origin, _ = hipsrc.source_map(d['instructions'], lines)
-    # Snippet lines have no .loc; use the line numbers of the .s file itself.
-    numbered = [i + 1 for i, ln in enumerate(text.splitlines())
-                if ln.split(';', 1)[0].split('//', 1)[0].strip()
-                and not ln.strip().startswith('.') and not hipsrc.LABEL.match(ln.strip())]
-    if origin and len(numbered) == len(lines):
-        it = iter(numbered)
-        for pc in sorted(origin):
-            origin[pc] = {'file': str(path), 'line': next(it), 'column': 1, 'inline_asm': False}
+    origin, why = hipsrc.source_map(d['instructions'], asm_line_map(text, str(path), True)['<snippet>'])
+    notes = []
+    if why:
+        notes.append({'rule': 'SOURCE_MAP', 'severity': 'info', 'pc': None,
+                      'message': f'{why}; findings carry pcs only, so line-scoped `radisa: ignore[...]` '
+                                 'comments of this file cannot match them'})
     r = check_kernel(k, d, table, origin or None, pass_options(args))
     r['object'] = str(path)
-    return [r], []
+    return [r], notes
 
 
 def check_hip(path: Path, table: dict, backend: dict, args, work: Path):
@@ -387,6 +513,24 @@ NOT_CHECKED = ['numerical correctness',
                'global memory safety', 'performance beyond the listed resource notes']
 
 
+def register_list(text: str) -> list[str]:
+    """The registers of one --liveness-entry value ("s[0:1], v0, exec"): each comma-separated
+    token must be one register or range as isadb.registers reads it; ValueError otherwise (the
+    argparse type of --liveness-entry, so a typo is a usage error instead of defining nothing)."""
+    out = []
+    for tok in (t.strip() for t in re.split(r',\s*(?![^\[]*\])', text)):
+        if not tok:
+            continue
+        try:
+            ok = isadb.REG_TOKEN.fullmatch(tok) and isadb.registers(tok)
+        except FormatError:
+            ok = False
+        if not ok:
+            raise ValueError(f'{tok!r} is not a register or register range (e.g. s[0:1], v0, ttmp2, vcc)')
+        out.append(tok)
+    return out
+
+
 def pass_options(args) -> dict:
     """The `options` every KERNEL_PASSES entry receives: `args.pass_options` (a dict) if set,
     then --liveness-entry / --no-liveness, then the rule selection of `suppress.options_from`
@@ -394,7 +538,7 @@ def pass_options(args) -> dict:
     opts = dict(getattr(args, 'pass_options', None) or {})
     entry = getattr(args, 'liveness_entry', None)
     if entry:
-        opts['liveness_entry'] = [r.strip() for e in entry for r in re.split(r',\s*(?![^\[]*\])', e) if r.strip()]
+        opts['liveness_entry'] = [r for e in entry for r in register_list(e)]
     if getattr(args, 'no_liveness', False):
         opts['liveness'] = False
     if hasattr(args, 'enable') or hasattr(args, 'config'):
@@ -431,8 +575,9 @@ def finalize(report: dict, strict: bool) -> dict:
 
     FAIL (1): a finding at a failing severity ('error'; 'review' too with `strict`).
     NO_KERNELS (0): the input has no gfx1201 kernel. INCOMPLETE (3): nothing or not everything
-    was analysed (no kernel, a kernel without instructions, a toolchain/source-map failure, or bytes
-    that were not decoded: DECODE / BYTE_COVERAGE). PASS (0) otherwise.
+    was analysed (no kernel, a kernel without instructions, a toolchain/source-map failure, code
+    that was found but not checked (INCOMPLETE_RULES at severity 'incomplete'), or bytes that were
+    not decoded: DECODE / BYTE_COVERAGE). PASS (0) otherwise.
     """
     allf = all_findings(report)
     kernels = report['kernels']
@@ -529,6 +674,14 @@ def _jsonable(x):
     return str(x)
 
 
+def _liveness_entry(text: str) -> str:
+    try:
+        register_list(text)
+    except ValueError as ex:
+        raise argparse.ArgumentTypeError(str(ex)) from None
+    return text
+
+
 def add_parser(sub) -> None:
     c = sub.add_parser('check', help='lint one HIP source, assembly file or code object for gfx1201')
     c.add_argument('input')
@@ -551,7 +704,7 @@ def add_parser(sub) -> None:
     c.add_argument('--cache-dir', help='per-kernel result cache for this unit (default: $RADISA_CACHE or ~/.cache/radisa/<unit>)')
     c.add_argument('--format', choices=formats.FORMATS, default='text',
                    help='stdout format: text (default), json (the report), sarif (2.1.0) or github (workflow commands)')
-    c.add_argument('--liveness-entry', action='append', metavar='REGS',
+    c.add_argument('--liveness-entry', action='append', metavar='REGS', type=_liveness_entry,
                    help='UNINITIALIZED_READ for a snippet: registers defined at its entry, e.g. "s[0:1],v0" (repeatable)')
     c.add_argument('--no-liveness', action='store_true', help='do not run UNINITIALIZED_READ')
     suppress.add_arguments(c)
@@ -580,8 +733,13 @@ def hook(args) -> int:
     Environment:
       RADISA_HOOK_INCLUDE   regex the edited path must match (default: \\.(hip|s)$)
       RADISA_COMPILE_COMMANDS, RADISA_FLAGS, RADISA_HIPCC   as for `radisa check`
-    Exit 2 hands the findings to the model (stderr); everything else never blocks.
+    Exit 2 hands the findings to the model (stderr): errors in the file (check exit 1), or a
+    project configuration the check refuses to run with (check exit 2: a bad .radisa.json, a missing
+    baseline). Everything else never blocks: a clean file, an incomplete analysis (exit 3, reported
+    on stderr), and environment values the hook itself cannot turn into a valid command line.
     """
+    import contextlib
+    import io
     import os
     import sys
     try:
@@ -591,22 +749,28 @@ def hook(args) -> int:
     path = (event.get('tool_input') or {}).get('file_path') or ''
     if not path or not re.search(os.environ.get('RADISA_HOOK_INCLUDE', r'\.(hip|s)$'), path):
         return 0
-    argv = ['check', path, '--json', os.devnull]
-    if os.environ.get('RADISA_COMPILE_COMMANDS'):
-        argv += ['--compile-commands', os.environ['RADISA_COMPILE_COMMANDS']]
-    if os.environ.get('RADISA_FLAGS'):
-        argv += ['--flag', os.environ['RADISA_FLAGS']]
-    if os.environ.get('RADISA_HIPCC'):
-        argv += ['--cxx', os.environ['RADISA_HIPCC']]
+    # `--opt=value`: a value that starts with '-' (RADISA_FLAGS=-O2) is not taken for an option.
+    argv = ['check', path if not path.startswith('-') else './' + path, f'--json={os.devnull}']
+    for env, opt in (('RADISA_COMPILE_COMMANDS', '--compile-commands'), ('RADISA_FLAGS', '--flag'),
+                     ('RADISA_HIPCC', '--cxx')):
+        if os.environ.get(env):
+            argv.append(f'{opt}={os.environ[env]}')
     from .cli import main
-    import contextlib
-    import io
-    buf = io.StringIO()
-    with contextlib.redirect_stdout(buf):
-        code = main(argv)
+    buf, err = io.StringIO(), io.StringIO()
+    try:
+        with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(err):
+            code = main(argv)
+    except SystemExit as ex:   # argparse: the command line built from the environment is unusable
+        print('radisa hook: could not build a `radisa check` command from the environment '
+              f'(exit {ex.code}); the file was not checked:\n' + err.getvalue(), file=sys.stderr)
+        return 0
     if code == 1:
         print(buf.getvalue() + '\nFix every error above (warnings are advisory), then save again.',
               file=sys.stderr)
+        return 2
+    if code == 2:
+        print('radisa check could not run on this file (configuration or usage error); fix it, then save '
+              'again:\n' + err.getvalue() + buf.getvalue(), file=sys.stderr)
         return 2
     if code == 3:
         print('radisa check could not analyse this file:\n' + buf.getvalue(), file=sys.stderr)

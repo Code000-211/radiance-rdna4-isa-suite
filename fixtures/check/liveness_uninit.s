@@ -1,6 +1,7 @@
 ; tests/test_liveness.py (radisa/liveness.py); same shape as tests/support.py kernel_asm().
-; UNINITIALIZED_READ: v1 (gfx1201 packs the work-item IDs into v0; v1 is not set up), v4 (written
-; only when s2 != 0), s7 (never written; the entry state is s[0:1] kernarg pointer and s2 work-group id).
+; UNINITIALIZED_READ 'review': v1 (gfx1201 packs the work-item IDs into v0; v1 is not set up), s7 (never
+; written; the entry state is s[0:1] kernarg pointer and s2 work-group id). 'info': v4 (written only when
+; s2 != 0: maybe undefined, as LLVM's phi(implicit-def, x) would be).
 	.amdgcn_target "amdgcn-amd-amdhsa--gfx1201"
 	.amdhsa_code_object_version 5
 	.text

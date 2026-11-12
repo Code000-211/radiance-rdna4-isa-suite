@@ -19,14 +19,16 @@ establishes these conventions; the ISA guide states no calling convention:
     return-address operands. After it every counter except STOREcnt is drained: the callee
     waits at its entry and before it returns. Stores of the callee may still be outstanding.
   * A called function (`callee=True`) starts with whatever the caller left outstanding, on
-    every counter, writing registers it cannot know. LLVM waits for LOADcnt, DScnt, KMcnt,
-    EXPcnt, SAMPLEcnt and BVHcnt at the entry of every non-kernel function.
+    every counter, writing registers it cannot know: any VGPR it names on the vector counters,
+    any SGPR on KMcnt (`ENTRY_FILE`). LLVM waits for LOADcnt, DScnt, KMcnt, EXPcnt, SAMPLEcnt
+    and BVHcnt at the entry of every non-kernel function.
   * Before a return (S_SETPC_B64 s[30:31]) LLVM waits for every counter except STOREcnt; a
     LOADcnt that only a GLOBAL_INV holds is not waited for.
 """
 from __future__ import annotations
 
 from collections import deque
+from collections.abc import Mapping
 from pathlib import Path
 import re
 
@@ -140,37 +142,191 @@ def _wait_effect(ins: dict) -> list[tuple[str, int]] | None:
     return [(d, (imm >> shift) & mask) for d, shift, mask in spec]
 
 
-# State: {domain: {producer_pc: (frozenset(dest regs), younger_min)}}
-def _issue(state: dict, dom: str, pc: int, dest: frozenset) -> dict:
-    cur = state.get(dom, {})
-    new = {p: (r, min(CAP, y + 1)) for p, (r, y) in cur.items()}
-    new[pc] = (dest, 0)
-    return {**state, dom: new}
+# Counter state, internally: {counter: (young, old)}. `young` maps a producer to the least number of
+# younger operations on the same counter on any path (< CAP); `old` is a bit set (a Python int, bit
+# = the producer's index in `_Problem.prods[counter]`) of the producers with CAP or more younger
+# operations. A producer is in at most one of the two. Every S_WAIT_* of a counter drops all `old`
+# producers at once (an in-order counter waits for at most 63 < CAP younger operations; an
+# out-of-order one only for 0), so they need no age, and adding one costs one bit, not a copy of
+# every producer: the fixpoint stays near-linear in a kernel with thousands of unwaited stores.
+# The registers a producer writes are fixed per producer (`_Problem.dest`), not part of the state.
+# Counters with nothing outstanding are absent.
+_NONE: tuple = ({}, 0)
+
+
+def _issue(state: dict, dom: str, p: int, bit: dict) -> dict:
+    young, old = state.get(dom, _NONE)
+    bit = bit[dom]
+    new = {}
+    for q, a in young.items():
+        if a + 1 < CAP:
+            new[q] = a + 1
+        else:
+            old |= 1 << bit[q]
+    b = 1 << bit[p]
+    if old & b:
+        old ^= b
+    new.pop(p, None)
+    new[p] = 0
+    return {**state, dom: (new, old)}
 
 
 def _wait(state: dict, dom: str, n: int) -> dict:
     cur = state.get(dom)
     if not cur:
         return state
+    young, old = cur
     if dom in IN_ORDER:
-        kept = {p: v for p, v in cur.items() if v[1] < n}
+        young = {p: a for p, a in young.items() if a < n}
+        old = old if CAP < n else 0
+    elif n == 0:
+        young, old = {}, 0
+    out = dict(state)
+    if young or old:
+        out[dom] = (young, old)
     else:
-        kept = {} if n == 0 else cur
-    return {**state, dom: kept}
-
-
-def _join(a: dict, b: dict) -> dict:
-    out = {}
-    for dom in set(a) | set(b):
-        x, y = a.get(dom, {}), b.get(dom, {})
-        merged = dict(x)
-        for p, (r, age) in y.items():
-            if p in merged:
-                merged[p] = (merged[p][0] | r, min(merged[p][1], age))
-            else:
-                merged[p] = (r, age)
-        out[dom] = merged
+        del out[dom]
     return out
+
+
+def _join(a: dict, b: dict, bit: dict) -> dict:
+    if a is b:
+        return a
+    out = dict(a)
+    for dom, (yb, ob) in b.items():
+        cur = a.get(dom)
+        if cur is None:
+            out[dom] = (yb, ob)
+            continue
+        ya, oa = cur
+        if ya is yb and oa == ob:
+            continue
+        young = dict(ya)
+        for p, age in yb.items():
+            if p not in young or age < young[p]:
+                young[p] = age
+        old = oa | ob
+        if old:
+            for p in young:
+                m = 1 << bit[dom][p]
+                if old & m:
+                    old ^= m
+        out[dom] = (young, old)
+    return out
+
+
+def _bits(x: int) -> list[int]:
+    """Indices of the set bits of `x`, ascending."""
+    s = bin(x)[:1:-1]
+    return [i for i, c in enumerate(s) if c == '1']
+
+
+class _Problem:
+    """What the fixpoint needs to know about the producers of one code unit, built once per solve:
+    per counter, every producer (`prods`, its index is its bit in `old`), the registers it writes
+    (`dest`), and per register the bit set of the producers writing it (`writers`)."""
+
+    def __init__(self, instructions: list[dict], models: dict, callee: bool):
+        self.prods: dict[str, list[int]] = {}
+        self.bit: dict[str, dict[int, int]] = {}
+        self.dest: dict[str, dict[int, frozenset]] = {}
+        self.writers: dict[str, dict] = {}
+        if callee:
+            for dom, regs in callee_entry_registers(instructions, models).items():
+                self._add(dom, ENTRY, regs)
+        for i in instructions:
+            if i['op'] in CALL_OPS:
+                self._add('store', i['pc'], frozenset())
+            elif _wait_effect(i) is None:
+                m = models[i['pc']]
+                for dom in domains(m, i['op']):
+                    self._add(dom, i['pc'], frozenset(m['writes']) if dom != 'store' else frozenset())
+
+    def _add(self, dom: str, p: int, dest: frozenset):
+        bits = self.bit.setdefault(dom, {})
+        if p in bits:
+            return
+        bits[p] = len(bits)
+        self.prods.setdefault(dom, []).append(p)
+        self.dest.setdefault(dom, {})[p] = dest
+        w = self.writers.setdefault(dom, {})
+        for r in dest:
+            w[r] = w.get(r, 0) | 1 << bits[p]
+
+    def pending(self, st: dict, dom: str, regs=None) -> list[tuple[int, int]]:
+        """[(producer, youngest-count)] outstanding on `dom` in raw state `st`; with `regs`, only the
+        `old` producers that write one of them (young ones are all listed)."""
+        young, old = st.get(dom, _NONE)
+        out = []
+        if old:
+            if regs is not None:
+                w = self.writers.get(dom, {})
+                sel = 0
+                for r in regs:
+                    sel |= w.get(r, 0)
+                old &= sel
+            prods = self.prods[dom]
+            out = [(prods[b], CAP) for b in _bits(old)]
+        return out + list(young.items())
+
+
+class Pending(Mapping):
+    """Read-only {producer: (registers it writes, youngest-count)} of one counter (see `solve`)."""
+    __slots__ = ('_pairs', '_dest')
+
+    def __init__(self, problem: _Problem, st: dict, dom: str):
+        self._pairs = dict(problem.pending(st, dom))
+        self._dest = problem.dest[dom]
+
+    def __getitem__(self, p):
+        return self._dest[p], self._pairs[p]
+
+    def __iter__(self):
+        return iter(self._pairs)
+
+    def __len__(self):
+        return len(self._pairs)
+
+
+class State(Mapping):
+    """Read-only {counter: Pending} before one instruction; counters with nothing outstanding are absent."""
+    __slots__ = ('_p', '_st', '_cache')
+
+    def __init__(self, problem: _Problem, st: dict):
+        self._p, self._st, self._cache = problem, st, {}
+
+    def __getitem__(self, dom):
+        if dom not in self._st:
+            raise KeyError(dom)
+        if dom not in self._cache:
+            self._cache[dom] = Pending(self._p, self._st, dom)
+        return self._cache[dom]
+
+    def __iter__(self):
+        return iter(self._st)
+
+    def __len__(self):
+        return len(self._st)
+
+
+class States(Mapping):
+    """pc -> State, built on access from the raw fixpoint result."""
+    __slots__ = ('problem', 'raw')
+
+    def __init__(self, problem: _Problem, raw: dict):
+        self.problem, self.raw = problem, raw
+
+    def __getitem__(self, pc):
+        return State(self.problem, self.raw[pc])
+
+    def __iter__(self):
+        return iter(self.raw)
+
+    def __len__(self):
+        return len(self.raw)
+
+    def __contains__(self, pc):
+        return pc in self.raw
 
 
 BARRIERS = ('s_barrier_signal', 's_barrier_signal_isfirst', 's_barrier_wait')
@@ -225,10 +381,10 @@ def _sync_findings(instructions, state_in, reachable, by_pc, origin) -> list[dic
     return out
 
 
-def operand_models(instructions: list[dict], table: dict, wave: int = 32) -> dict[int, dict]:
+def operand_models(instructions: list[dict], table: dict, wave: int = 32) -> Models:
     """pc -> operand model: `isadb.operand_model`, VOPD pairs from their own decoder (`vopd.decode`)."""
     from . import vopd
-    models = {}
+    models = Models()
     for i in instructions:
         if i.get('vopd_independent_decode'):
             p = vopd.decode(bytes.fromhex(i['raw']))
@@ -253,81 +409,103 @@ def coverage(instructions: list[dict], models: dict) -> dict:
     return stats
 
 
-def callee_entry_registers(instructions: list[dict], models: dict) -> frozenset:
-    """Registers a load of the caller may still be writing at a callee's entry: every VGPR and
-    SGPR (up to VCC) the function names. The caller's loads are not visible in the callee. Not
-    s[30:31]: the call itself writes the return address there, after waiting for scalar loads
+# Register file each counter's operations return data to (RDNA4 ISA §5.7.1): vector memory,
+# LDS, sample, BVH and export/parameter-load results are VGPRs, scalar-memory (and
+# S_SENDMSG_RTN) results SGPRs. The AMD XML operand table agrees: every destination operand of an
+# instruction `domains` puts on load/ds/sample/bvh/exp is a VGPR field.
+ENTRY_FILE = {'load': 'v', 'ds': 'v', 'sample': 'v', 'bvh': 'v', 'exp': 'v', 'km': 's'}
+
+
+def callee_entry_registers(instructions: list[dict], models: dict) -> dict[str, frozenset]:
+    """Per counter, the registers a memory operation of the caller may still be writing at a
+    callee's entry: the VGPRs the function names on the vector counters, its SGPRs up to VCC on
+    KMcnt (`ENTRY_FILE`), nothing on STOREcnt. The caller's loads are not visible in the callee.
+    Not s[30:31]: the call itself writes the return address there, after waiting for scalar loads
     of it (generateWaitcntInstBefore, the call's dst operand)."""
     regs = set()
     for i in instructions:
         m = models[i['pc']]
         regs |= {(k, n) for k, n in m['reads'] | m['writes'] if k == 'v' or k == 's' and n <= 107}
-    return frozenset(regs - {('s', 30), ('s', 31)})
+    regs -= {('s', 30), ('s', 31)}
+    out = {d: frozenset(r for r in regs if r[0] == f) for d, f in ENTRY_FILE.items()}
+    out['store'] = frozenset()
+    return {d: out[d] for d in CALLEE_ENTRY}
 
 
-def _transfer(state: dict, i: dict, models: dict) -> dict:
+def _transfer(state: dict, i: dict, models: dict, bit: dict) -> dict:
     eff = _wait_effect(i)
     if eff is not None:
         for dom, n in eff:
             state = _wait(state, dom, n)
         if i['op'] in CALL_OPS:
             # setStateOnFunctionEntryOrReturn: stores of the callee may still be outstanding.
-            state = _issue(state, 'store', i['pc'], frozenset())
+            state = _issue(state, 'store', i['pc'], bit)
         return state
     m = models[i['pc']]
     for dom in domains(m, i['op']):
-        dest = frozenset(m['writes']) if dom != 'store' else frozenset()
-        state = _issue(state, dom, i['pc'], dest)
+        state = _issue(state, dom, i['pc'], bit)
     return state
 
 
-_SOLVED: tuple = ()
+class Models(dict):
+    """pc -> operand model (`operand_models`). It also holds the last `solve` result for these
+    models, so a kernel pass that gets the same instructions, edges and models as `analyze` reuses
+    the fixpoint; the cache lives and dies with the one code unit the models belong to."""
+    solved: tuple = ()
 
 
 def solve(instructions: list[dict], edges: dict, table: dict, wave: int = 32, models: dict | None = None,
-          callee: bool = False) -> tuple[dict, dict, str]:
+          callee: bool = False) -> tuple[Mapping, dict, str]:
     """The counter fixpoint: (state_in, models, 'converged' | 'aborted').
 
-    state_in: pc -> {counter: {producer: (registers it writes, youngest-count)}}, the may-state
-    before the instruction; counters are 'load', 'store', 'sample', 'bvh', 'ds', 'km', 'exp'.
-    A producer is the pc of a memory instruction, the pc of a call (stores of the callee, on
-    'store'), or ENTRY (what a caller left outstanding, `callee=True`). youngest-count is the
-    least number of younger operations on the same counter on any path (capped at CAP).
-    The result of the last `analyze`/`solve` on the very same instructions, edges and models
-    objects is reused, so a kernel pass gets it without solving again.
+    state_in: pc -> {counter: {producer: (registers it writes, youngest-count)}} (read-only
+    mappings, `States`), the may-state before the instruction; counters are 'load', 'store',
+    'sample', 'bvh', 'ds', 'km', 'exp', and one with nothing outstanding is absent. A producer is
+    the pc of a memory instruction, the pc of a call (stores of the callee, on 'store'), or ENTRY
+    (what a caller left outstanding, `callee=True`). youngest-count is the least number of younger
+    operations on the same counter on any path (capped at CAP). `state_in.raw` / `.problem` are
+    the internal form `analyze` works on.
+    When `models` is a `Models` (as `operand_models` returns) the result is kept in it, and a
+    second call with the very same instructions, edges and models objects returns it again.
     """
-    global _SOLVED
     if models is None:
         models = operand_models(instructions, table, wave)
-    last = _SOLVED
-    if last and last[0] is instructions and last[1] is edges and last[2] is models and last[3] == callee:
-        return last[4]
-    if not instructions:
-        return {}, models, 'converged'
-    by_pc = {i['pc']: i for i in instructions}
-    entry = instructions[0]['pc']
-    init = {}
-    if callee:
-        regs = callee_entry_registers(instructions, models)
-        init = {d: {ENTRY: (regs if d != 'store' else frozenset(), 0)} for d in CALLEE_ENTRY}
-    state_in = {entry: init}
-    work = deque([entry])
-    guard, status = 0, 'converged'
-    while work:
-        guard += 1
-        if guard > 200 * len(instructions) + 1000:
-            status = 'aborted'
-            break
-        pc = work.popleft()
-        out = _transfer(state_in[pc], by_pc[pc], models)
-        for s in edges.get(pc, []):
-            old = state_in.get(s)
-            new = out if old is None else _join(old, out)
-            if old is None or new != old:
-                state_in[s] = new
-                work.append(s)
-    result = (state_in, models, status)
-    _SOLVED = (instructions, edges, models, callee, result)
+    last = getattr(models, 'solved', ())
+    if last and last[0] is instructions and last[1] is edges and last[2] == callee:
+        return last[3]
+    problem = _Problem(instructions, models, callee)
+    raw: dict = {}
+    status = 'converged'
+    if instructions:
+        by_pc = {i['pc']: i for i in instructions}
+        entry = instructions[0]['pc']
+        bit = problem.bit
+        init = {}
+        if callee:
+            init = {d: ({ENTRY: 0}, 0) for d in CALLEE_ENTRY}
+        raw[entry] = init
+        work = deque([entry])
+        queued = {entry}
+        guard = 0
+        while work:
+            guard += 1
+            if guard > 200 * len(instructions) + 1000:
+                status = 'aborted'
+                break
+            pc = work.popleft()
+            queued.discard(pc)
+            out = _transfer(raw[pc], by_pc[pc], models, bit)
+            for s in edges.get(pc, []):
+                old = raw.get(s)
+                new = out if old is None else _join(old, out, bit)
+                if old is None or new is not old and new != old:
+                    raw[s] = new
+                    if s not in queued:
+                        queued.add(s)
+                        work.append(s)
+    result = (States(problem, raw), models, status)
+    if isinstance(models, Models):
+        models.solved = (instructions, edges, callee, result)
     return result
 
 
@@ -346,7 +524,7 @@ def _return_findings(instructions, state_in, reachable, by_pc, origin) -> list[d
         if i['op'] != 's_setpc_b64' or i['args'].strip() != RETURN_ADDRESS or pc not in reachable:
             continue
         pending = {}
-        for dom, entries in sorted(state_in.get(pc, {}).items()):
+        for dom, entries in sorted(state_in[pc].items()) if pc in state_in else ():
             if dom == 'store' or not entries:
                 continue
             if dom == 'load' and all(p != ENTRY and by_pc[p]['op'] == 'global_inv' for p in entries):
@@ -354,8 +532,7 @@ def _return_findings(instructions, state_in, reachable, by_pc, origin) -> list[d
             pending[dom] = sorted(entries)
         if not pending:
             continue
-        what = '; '.join(f"{WAIT_NAME[d].removeprefix('s_wait_')}: " +
-                         ', '.join(f'{producer_op(p, by_pc)} ({_where(p, origin)})' for p in ps)
+        what = '; '.join(f"{WAIT_NAME[d].removeprefix('s_wait_')}: " + describe(ps, by_pc, origin)
                          for d, ps in pending.items())
         waits_needed = [f'{WAIT_NAME[d]} 0' for d in pending]
         out.append({'rule': 'CALLEE_RETURN_OUTSTANDING', 'severity': 'review', 'pc': pc,
@@ -367,6 +544,19 @@ def _return_findings(instructions, state_in, reachable, by_pc, origin) -> list[d
                     'pending': {d: [None if p == ENTRY else p for p in ps] for d, ps in pending.items()},
                     'source': CALLS})
     return out
+
+
+LISTED = 8
+
+
+def describe(prods: list[int], by_pc: dict, origin: dict | None) -> str:
+    """'op (where), ...' for outstanding producers (in the order given); past LISTED of them, the
+    last LISTED and the number of the others."""
+    shown = prods if len(prods) <= LISTED else prods[-LISTED:]
+    text = ', '.join(f'{producer_op(p, by_pc)} ({_where(p, origin)})' for p in shown)
+    if len(prods) > LISTED:
+        text = f'{len(prods) - LISTED} older ones and ' + text
+    return text
 
 
 def analyze(instructions: list[dict], edges: dict, reachable: set, table: dict, wave: int = 32,
@@ -386,26 +576,33 @@ def analyze(instructions: list[dict], edges: dict, reachable: set, table: dict, 
     if not instructions:
         return [], stats
     state_in, models, stats['fixpoint'] = solve(instructions, edges, table, wave, models, callee)
+    raw, problem = state_in.raw, state_in.problem
 
     findings = []
-    reported: dict[int, dict] = {}
+    # One finding per unwaited producer; ENTRY counts once per register file (`ENTRY_FILE`).
+    reported: dict = {}
     for i in instructions:
         pc = i['pc']
-        if pc not in state_in or pc not in reachable:
+        if pc not in raw or pc not in reachable:
             continue
-        st = state_in[pc]
+        st = raw[pc]
+        if not st:
+            continue
         m = models[pc]
         call = i['op'] in CALL_OPS
         if _wait_effect(i) is not None and not call:
             continue
         own = set(domains(m, i['op']))
         half = _store_half(i)
-        for dom, entries in st.items():
-            if call and dom != 'km':
-                # A call waits only for scalar loads of its address / return-address registers;
-                # the callee waits for the rest at its entry.
+        used = m['reads'] | m['writes']
+        for dom in st:
+            if dom == 'store' or call and dom != 'km':
+                # Stores write no register. A call waits only for scalar loads of its address /
+                # return-address registers; the callee waits for the rest at its entry.
                 continue
-            for prod, (dest, younger) in entries.items():
+            dests = problem.dest[dom]
+            for prod, younger in problem.pending(st, dom, used):
+                dest = dests[prod]
                 reads = m['reads']
                 if (half and prod != ENTRY and half[0] in dest
                         and _load_half(by_pc[prod]['op']) not in (None, half[1])):
@@ -420,16 +617,24 @@ def analyze(instructions: list[dict], edges: dict, reachable: set, table: dict, 
                 # write lands later, no wait is required (WAW in issue order).
                 if dom in own and dom in IN_ORDER and not (dest & reads):
                     continue
-                if prod in reported:
+                key = (ENTRY, ENTRY_FILE[dom]) if prod == ENTRY else prod
+                if key in reported:
                     # One finding per unwaited producer; later uses are the same bug.
-                    reported[prod]['later_uses'].append(pc)
+                    f = reported[key]
+                    if f['pc'] != pc and f['later_uses'][-1:] != [pc]:
+                        f['later_uses'].append(pc)
                     continue
                 need = younger if dom in IN_ORDER else 0
                 required = f'{WAIT_NAME[dom]} {need}'
                 if prod == ENTRY:
                     # Every counter the caller may still hold for these registers.
-                    required = ', '.join(f'{WAIT_NAME[d]} {e[ENTRY][1] if d in IN_ORDER else 0}'
-                                         for d, e in st.items() if ENTRY in e and e[ENTRY][0] & hit)
+                    held = []
+                    for d in st:
+                        if d != 'store' and problem.dest[d].get(ENTRY, frozenset()) & hit:
+                            age = dict(problem.pending(st, d, hit)).get(ENTRY)
+                            if age is not None:
+                                held.append(f'{WAIT_NAME[d]} {age if d in IN_ORDER else 0}')
+                    required = ', '.join(held)
                 regs = ', '.join(sorted(f'{a}{b}' for a, b in hit))
                 use = 'reads' if hit & reads else 'overwrites'
                 msg = (f"{i['op']} {use} {regs} while {producer_op(prod, by_pc)} ({_where(prod, origin)}) may "
@@ -453,7 +658,7 @@ def analyze(instructions: list[dict], edges: dict, reachable: set, table: dict, 
                      'registers': sorted(f'{a}{b}' for a, b in hit), 'later_uses': [],
                      'consumer_operand_model': 'xml' if m['known'] else 'text-superset',
                      'source': source, **extra}
-                reported[prod] = f
+                reported[key] = f
                 findings.append(f)
     findings += _sync_findings(instructions, state_in, reachable, by_pc, origin)
     if callee:

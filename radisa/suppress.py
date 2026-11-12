@@ -25,19 +25,25 @@ Inline suppression, in a comment (`//`, `/* */` in HIP/C++; `;`, `//`, `/* */` i
     // radisa: ignore[MISSING_WAIT,MISSING_ALU_WAIT] the asm block above waits for it
     ; radisa: ignore-file[HIP_NO_LAUNCH_BOUNDS] launch bounds come from the host wrapper
 
-`ignore[...]` on line L covers findings whose loc is line L or L+1 (the finding's line, or the line
-directly above it); consecutive comment-only `radisa:` lines all cover the first line after them.
+`ignore[...]` in a trailing comment (code before it on the same line) covers findings on that line
+only. On a comment-only line L it covers line L and the next line with code, reached over
+comment-only lines (further `radisa:` lines, the rest of a block comment) but not over a blank
+line. A /* */ directive may continue its reason on the next lines of the same block comment.
 `ignore-file[...]` covers the whole file, and, in the checked input file itself, also findings that
 carry no source location (REGISTER_SPILL, ...). Line-scoped suppression needs finding['loc']: a
-finding without one (machine code without line tables) cannot be suppressed by line. The reason
-after `]` is mandatory: without it the comment does nothing and SUPPRESSION_NO_REASON (warning) is
-reported. Every listed rule that suppressed nothing is reported as UNUSED_SUPPRESSION (warning),
-except for rules that are disabled and when `--kernel` limits the run. Only files that the input is
-or that a finding points into are read for comments.
+finding without one (machine code without line tables) cannot be suppressed by line, and the
+UNUSED_SUPPRESSION message then says so. The reason after `]` is mandatory: without it the comment
+does nothing and SUPPRESSION_NO_REASON (warning) is reported. Every listed rule of a directive in
+the checked input file that suppressed nothing is reported as UNUSED_SUPPRESSION (warning), except
+for rules that are disabled and when `--kernel` limits the run; directives in other files (headers)
+are not, since another translation unit may need them. Only files that the input is or that a
+finding points into are read for comments.
 
 Suppressed findings move to report['suppressed'] (with 'suppression': kind, reason, file, line, and
-'kernel'); error-severity ones are named in the summary line (`summary_suffix`): suppressing a
-memory-safety error is the user's call, but it stays visible.
+'kernel'), baselined ones to report['baselined'] (`hidden_findings`, `sarif_suppression`). Every
+error-severity finding that is not shown as an error, whether suppressed, baselined, disabled or
+re-graded by the configuration, is named in the summary line (`summary_suffix`, "hidden errors"):
+hiding a memory-safety error is the user's call, but it stays visible.
 
 Baseline fingerprint (`--write-baseline FILE`, `--baseline FILE`): sha256 over the JSON list
 
@@ -54,18 +60,28 @@ Baseline fingerprint (`--write-baseline FILE`, `--baseline FILE`): sha256 over t
 
 No pc, address or line number goes in, so edits elsewhere in the file do not invalidate the
 baseline; an edit of the flagged instruction (or, for lexical findings, of the flagged line) does.
-`--baseline` moves matching findings to report['baselined'] and adds BASELINE_STALE (note) for
-entries that no longer occur (not with --kernel). `--write-baseline` writes the fingerprints of all
-findings left after configuration and inline suppression (not this module's own hygiene findings)
-and then applies that file as the baseline of the same run.
+
+A baseline file holds the entries of any number of input files: each entry has 'input', the input
+file relative to the baseline's directory (`input_key`); an older single-file baseline without it
+belongs to its top-level 'input'. `--baseline` applies only the entries of the checked file (one
+file's baseline never hides findings in another, also with a repository-wide "baseline" in
+.radisa.json), moves matching findings to report['baselined'] and adds BASELINE_STALE (note) for
+this file's entries that no longer occur (not with --kernel). `--write-baseline FILE` replaces this
+input's entries in FILE (with --kernel: those of the checked kernels) and keeps every other file's;
+the file is rewritten atomically under a lock on its directory (POSIX), so concurrent runs into one
+FILE all land. It records all findings left after configuration and inline suppression (not this
+module's own hygiene findings) and then applies FILE as the baseline of the same run.
 """
 from __future__ import annotations
 
 from collections import Counter
+import contextlib
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
+import tempfile
 
 from . import __version__
 
@@ -420,41 +436,90 @@ class _Files:
         return self.text[key]
 
 
+def scan_comments(lines: list[str], asm: bool) -> list[dict]:
+    """Per line: {'comments': [(start, end, block_continues)], 'code': bool}.
+
+    Comments are // to the end of the line, /* ... */ (also over several lines) and, in assembly,
+    ; to the end of the line; text in "..." / '...' literals is code. 'code' says whether the line
+    has anything outside comments. block_continues: the segment is a /* comment still open at the
+    end of the line."""
+    out, block = [], False
+    for text in lines:
+        segs, code, i, n = [], False, 0, len(text)
+        while i < n:
+            if block:
+                j = text.find('*/', i)
+                if j < 0:
+                    segs.append((i, n, True))
+                    break
+                segs.append((i, j, False))
+                block, i = False, j + 2
+                continue
+            if text.startswith('/*', i):
+                block, i = True, i + 2
+                continue
+            if text.startswith('//', i) or (asm and text[i] == ';'):
+                segs.append((i + (1 if text[i] == ';' else 2), n, False))
+                break
+            if text[i] in '"\'':
+                q, j = text[i], i + 1
+                while j < n and text[j] != q:
+                    j += 2 if text[j] == '\\' else 1
+                code, i = True, j + 1
+                continue
+            code = code or not text[i].isspace()
+            i += 1
+        out.append({'comments': segs, 'code': code})
+    return out
+
+
+def _clean_reason(text: str) -> str:
+    return text.strip().lstrip('*').strip().lstrip(':-–— ').strip()
+
+
 def parse_directives(lines: list[str], path: str) -> list[dict]:
     """The `radisa: ignore[...]` / `ignore-file[...]` comments of one file.
 
-    Each: {'file', 'line' (1-based), 'scope' 'line'|'file', 'rules' [ids], 'reason' str, 'covers'
-    set of lines (line scope)}. A directive counts only inside a comment: after //, /* or (in
-    assembly) ;, or on a block-comment continuation line starting with *.
+    Each: {'file', 'line' (1-based), 'scope' 'line'|'file', 'rules' [ids], 'reason' str,
+    'comment_only' bool, 'covers' set of lines, 'target' the code line a comment-only directive
+    applies to (or None)}. A directive counts only inside a comment (`scan_comments`): //, /* */
+    and, in assembly, ;. The reason is the rest of that comment; a /* */ directive whose reason is
+    empty takes it from the following lines of the same block comment.
+
+    Coverage: a directive on a line that also has code (a trailing comment) covers that line only.
+    A directive on a comment-only line covers its own line and the next line with code, reached
+    over comment-only lines (more directives, the rest of a block comment) but not over a blank
+    line.
     """
     asm = Path(path).suffix in ASM_SUFFIXES
-    markers = ('//', '/*', ';') if asm else ('//', '/*')
+    info = scan_comments(lines, asm)
     found = []
-    for n, text in enumerate(lines, 1):
-        m = DIRECTIVE.search(text)
-        if not m:
-            continue
-        before = text[:m.start()]
-        cuts = [before.find(c) for c in markers if c in before]
-        if cuts:
-            code = before[:min(cuts)]
-        elif before.lstrip().startswith('*'):
-            code = ''   # block-comment continuation line
-        else:
-            continue    # not inside a comment
-        reason = m['reason'].split('*/', 1)[0].strip().lstrip(':-–— ').strip()
-        found.append({'file': path, 'line': n, 'scope': 'file' if m['file'] else 'line',
-                      'rules': _names([m['rules']]), 'reason': reason if re.search(r'\w', reason) else '',
-                      'comment_only': code.strip() == '', 'used': set()})
-    by_line = {d['line']: d for d in found}
+    for n, (text, li) in enumerate(zip(lines, info), 1):
+        for start, end, cont in li['comments']:
+            m = DIRECTIVE.search(text[start:end])
+            if not m:
+                continue
+            reason = _clean_reason(m['reason'])
+            j = n
+            while cont and not re.search(r'\w', reason) and j < len(lines):
+                nxt = info[j]['comments']   # the block comment's continuation on line j + 1
+                if not nxt or nxt[0][0] != 0:
+                    break
+                s0, e0, cont = nxt[0]
+                reason = _clean_reason(lines[j][s0:e0])
+                j += 1
+            found.append({'file': path, 'line': n, 'scope': 'file' if m['file'] else 'line',
+                          'rules': _names([m['rules']]), 'reason': reason if re.search(r'\w', reason) else '',
+                          'comment_only': not li['code'], 'used': set()})
     for d in found:
-        covers = {d['line'], d['line'] + 1}
+        d['covers'], d['target'] = {d['line']}, None
         if d['comment_only']:
             j = d['line'] + 1
-            while j in by_line and by_line[j]['comment_only']:
+            while j <= len(lines) and not info[j - 1]['code'] and info[j - 1]['comments']:
                 j += 1
-            covers.add(j)
-        d['covers'] = covers
+            if j <= len(lines) and info[j - 1]['code']:
+                d['covers'].add(j)
+                d['target'] = j
     return found
 
 
@@ -500,23 +565,135 @@ def fingerprints(report: dict, files: _Files | None = None) -> list[tuple[str, d
     return out
 
 
-def write_baseline(path: Path, entries: list[tuple[str, dict, list]], report: dict) -> None:
-    rows = sorted(({'fingerprint': fp, 'rule': f['rule'], 'severity': f['severity'],
-                    'kernel': f.get('_kernel', ''), 'instruction': f.get('instruction', ''),
-                    'message': f['message'][:200]} for fp, f, _ in entries),
-                  key=lambda r: (r['rule'], r['kernel'], r['fingerprint']))
-    Path(path).write_text(json.dumps({'schema': SCHEMA, 'radisa': __version__, 'input': report.get('input'),
-                                      'entries': rows}, indent=2, sort_keys=True) + '\n')
+def input_key(input_path: str | Path, baseline: str | Path) -> str:
+    """The per-entry 'input' of a baseline: the input file relative to the baseline's directory
+    (POSIX). The same file gets the same key from any working directory."""
+    return Path(os.path.relpath(Path(input_path).resolve(), Path(baseline).resolve().parent)).as_posix()
 
 
-def read_baseline(path: Path) -> dict[str, dict]:
+def _load_doc(path: Path, missing_ok: bool = False) -> dict:
+    """The baseline document; ValueError when it is not one (an empty or, with missing_ok, an
+    absent file is an empty baseline)."""
     try:
-        data = json.loads(Path(path).read_text(encoding='utf-8'))
-    except (OSError, ValueError) as ex:
+        text = Path(path).read_text(encoding='utf-8')
+    except FileNotFoundError:
+        if missing_ok:
+            return {'schema': SCHEMA, 'entries': []}
+        raise ValueError(f'baseline file not found: {path}') from None
+    except OSError as ex:
+        raise ValueError(f'baseline {path}: {ex}') from ex
+    if missing_ok and not text.strip():
+        return {'schema': SCHEMA, 'entries': []}
+    try:
+        data = json.loads(text)
+    except ValueError as ex:
         raise ValueError(f'baseline {path}: {ex}') from ex
     if not isinstance(data, dict) or data.get('schema') != SCHEMA or not isinstance(data.get('entries'), list):
         raise ValueError(f'baseline {path}: not a {SCHEMA} file')
-    return {e['fingerprint']: e for e in data['entries'] if isinstance(e, dict) and 'fingerprint' in e}
+    return data
+
+
+def _owner(e: dict, doc: dict, path: Path, here: Path) -> str | None:
+    """Which input file baseline entry `e` belongs to, as a resolved path string, or None.
+
+    Per-entry 'input' (written since 0.2.0, and by `radisa check-all`) is relative to the baseline's
+    directory. An entry without one belongs to the document's top-level 'input' (a single-file
+    baseline, as given on that command line: tried against the working directory, the baseline's
+    directory and `here`'s directory); when that names no existing file but has `here`'s basename
+    (the checkout moved), it is taken as `here`."""
+    bdir = Path(path).resolve().parent
+    if e.get('input'):
+        return str((bdir / e['input']).resolve())
+    top = doc.get('input')
+    if not top:
+        return None
+    for c in (Path(top), Path.cwd() / top, bdir / top, here.parent / Path(top).name):
+        try:
+            if c.is_file():
+                return str(c.resolve())
+        except OSError:
+            continue
+    return str(here) if Path(top).name == here.name else None
+
+
+def read_baseline(path: Path, input_path: str | Path | None = None) -> dict[str, dict]:
+    """{fingerprint: entry} of baseline `path` that apply to `input_path` (every entry when None).
+
+    A baseline holds entries of any number of input files (see `_owner`): fingerprints carry no
+    file name, so an entry recorded for one file must never hide a finding in another."""
+    doc = _load_doc(Path(path))
+    here = Path(input_path).resolve() if input_path else None
+    out = {}
+    for e in doc['entries']:
+        if not isinstance(e, dict) or 'fingerprint' not in e:
+            continue
+        if here is None or _owner(e, doc, Path(path), here) == str(here):
+            out[e['fingerprint']] = e
+    return out
+
+
+@contextlib.contextmanager
+def _locked(directory: Path):
+    """An exclusive flock on `directory` (POSIX), so concurrent `--write-baseline` runs into one
+    file merge instead of losing each other's entries. Without fcntl (Windows) no lock is taken."""
+    try:
+        import fcntl
+    except ImportError:
+        yield
+        return
+    fd = os.open(directory, os.O_RDONLY)
+    try:
+        fcntl.flock(fd, fcntl.LOCK_EX)
+        yield
+    finally:
+        os.close(fd)   # releases the lock
+
+
+def write_baseline(path: Path, entries: list[tuple[str, dict, list]], report: dict,
+                   kernels: set[str] | None = None) -> int:
+    """Record `entries` (from `fingerprints`) as the baseline of report['input'] in `path`.
+
+    Merges: entries of other input files already in `path` are kept, this input's are replaced
+    (with `kernels`, a --kernel run: only those of the kernels in `kernels`). The file is replaced
+    atomically under a directory lock, so readers never see half a file and concurrent writers
+    (one per input) all land. ValueError when `path` exists and is not a baseline (it is not
+    overwritten). Returns the number of entries in the file."""
+    path = Path(path)
+    bdir = path.resolve().parent
+    here = Path(report['input']).resolve() if report.get('input') else None
+    key = input_key(here, path) if here else None
+    rows = [{'fingerprint': fp, 'rule': f['rule'], 'severity': f['severity'], 'kernel': f.get('_kernel', ''),
+             'instruction': f.get('instruction', ''), 'message': f['message'][:200],
+             **({'input': key} if key else {})} for fp, f, _ in entries]
+    with _locked(bdir):
+        doc = _load_doc(path, missing_ok=True)
+        for e in doc['entries']:
+            if not isinstance(e, dict) or 'fingerprint' not in e:
+                continue
+            owner = _owner(e, doc, path, here) if here else None
+            if here is not None and owner == str(here):
+                if kernels is None or e.get('kernel', '') in kernels or e.get('kernel', '') == '':
+                    continue   # replaced by this run
+            if owner is not None and not e.get('input'):
+                e = {**e, 'input': Path(os.path.relpath(owner, bdir)).as_posix()}
+            if owner is None and not e.get('input'):
+                continue       # belongs to no file that can be named any more
+            rows.append(e)
+        rows.sort(key=lambda r: (r.get('input', ''), r['rule'], r.get('kernel', ''), r['fingerprint']))
+        inputs = sorted({r['input'] for r in rows if r.get('input')})
+        out = {'schema': SCHEMA, 'radisa': __version__,
+               'input': report.get('input') if inputs == ([key] if key else []) else None,
+               'inputs': inputs, 'entries': rows}
+        fd, tmp = tempfile.mkstemp(prefix=f'.{path.name}.', suffix='.tmp', dir=bdir)
+        try:
+            with os.fdopen(fd, 'w', encoding='utf-8') as fh:
+                fh.write(json.dumps(out, indent=2, sort_keys=True) + '\n')
+            os.replace(tmp, path)
+        except BaseException:
+            with contextlib.suppress(OSError):
+                os.unlink(tmp)
+            raise
+    return len(rows)
 
 
 # ------------------------------------------------------------------ the report filter
@@ -532,7 +709,7 @@ def report_filter(report: dict, args) -> None:
     summary = {'config': str(s['config']) if s['config'] else None,
                'baseline': str(s['baseline']) if s['baseline'] else None,
                'disabled': Counter(), 'regraded': Counter(), 'suppressed': 0, 'baselined': 0,
-               'suppressed_errors': Counter()}
+               'suppressed_errors': Counter(), 'config_errors': Counter()}
     suppressed, baselined = report.setdefault('suppressed', []), report.setdefault('baselined', [])
     new: list[dict] = []
 
@@ -545,6 +722,8 @@ def report_filter(report: dict, args) -> None:
             if not _protected(f):
                 if f['rule'] in s['disable']:
                     summary['disabled'][f['rule']] += 1
+                    if f['severity'] == 'error':
+                        summary['config_errors'][f['rule']] += 1
                     continue
                 level = s['severity'].get(f['rule'])
                 if level and level != f['severity']:
@@ -568,16 +747,16 @@ def report_filter(report: dict, args) -> None:
             directives[key] = parse_directives(text, files.display.get(key, key)) if text is not None else []
         return directives.get(key, [])
 
-    input_key = None
+    input_file = None
     if files.input and files.input.suffix in TEXT_SUFFIXES and files.input.is_file():
-        input_key = str(files.input)
-        scan(input_key)
+        input_file = str(files.input)
+        scan(input_file)
     for kernel, lst in _all_lists(report):
         keep = []
         for f in lst:
             hit = None
             if not _protected(f) and f['rule'] not in HYGIENE:
-                key = files.resolve((f.get('loc') or {}).get('file')) if f.get('loc') else input_key
+                key = files.resolve((f.get('loc') or {}).get('file')) if f.get('loc') else input_file
                 line = (f.get('loc') or {}).get('line')
                 for d in scan(key):
                     if not d['reason'] or f['rule'] not in d['rules']:
@@ -596,6 +775,9 @@ def report_filter(report: dict, args) -> None:
             if f.get('default_severity', f['severity']) == 'error':
                 summary['suppressed_errors'][f['rule']] += 1
         lst[:] = keep
+    # Findings left in the input file that carry no line: a line-scoped directive cannot match them.
+    unlocated = Counter(f['rule'] for _, lst in _all_lists(report) for f in lst
+                        if not f.get('loc') and not _protected(f) and f['rule'] not in HYGIENE)
     for key, ds in directives.items():
         for d in ds:
             where = 'ignore-file' if d['scope'] == 'file' else 'ignore'
@@ -604,15 +786,32 @@ def report_filter(report: dict, args) -> None:
                                     'reason; it suppresses nothing. Write why the finding does not apply after '
                                     'the closing bracket', d, s, rules=d['rules']))
                 continue
-            if partial:
+            # Only the checked file's own directives: one in a header may be used by another
+            # translation unit or instantiation, which this run does not see.
+            if partial or key != input_file:
                 continue
             for rule in d['rules']:
                 if rule in d['used'] or rule in s['disable']:
                     continue
-                why = '' if rule in RULES else ' (not a rule radisa knows, see `radisa rules`)'
-                scope = 'in this file' if d['scope'] == 'file' else f"on line {d['line']} or {max(d['covers'])}"
-                new.append(_hygiene('UNUSED_SUPPRESSION', f'radisa: {where}[{rule}] suppresses nothing: no {rule} '
-                                    f'finding {scope}{why}; remove it', d, s, suppression_rule=rule))
+                if d['scope'] == 'file':
+                    scope = 'in this file'
+                elif not d['comment_only']:
+                    scope = f"on line {d['line']}"
+                elif d['target'] is not None:
+                    scope = f"on line {d['target']} (the code line this comment applies to)"
+                else:
+                    scope = f"on line {d['line']} (no code line follows this comment directly)"
+                if rule not in RULES:
+                    text = (f'radisa: {where}[{rule}] suppresses nothing: {rule} is not a rule radisa knows '
+                            '(see `radisa rules`); remove or correct it')
+                elif d['scope'] == 'line' and unlocated[rule]:
+                    text = (f'radisa: {where}[{rule}] matched nothing {scope}, but {unlocated[rule]} {rule} '
+                            'finding(s) of this file carry no source line (machine code that could not be mapped '
+                            'to lines of this file), so a line-scoped ignore cannot match them. Use '
+                            f'ignore-file[{rule}] <reason> if they are all accepted')
+                else:
+                    text = f'radisa: {where}[{rule}] suppresses nothing: no {rule} finding {scope}; remove it'
+                new.append(_hygiene('UNUSED_SUPPRESSION', text, d, s, suppression_rule=rule))
     report['findings'] += [f for f in new if f]
 
     # 3. baseline
@@ -623,10 +822,11 @@ def report_filter(report: dict, args) -> None:
         entries = fingerprints(report, files)
         target = s['baseline']
         if getattr(args, 'write_baseline', None):
-            write_baseline(Path(args.write_baseline), entries, report)
+            write_baseline(Path(args.write_baseline), entries, report,
+                           {k.get('name') or '' for k in report.get('kernels') or []} if partial else None)
             target = Path(args.write_baseline)
         if target is not None:
-            known = read_baseline(target)
+            known = read_baseline(target, report.get('input') or '')
             summary['baseline'] = str(target)
             hidden = set()
             matched = set()
@@ -654,12 +854,22 @@ def report_filter(report: dict, args) -> None:
         for _, lst in _all_lists(report):
             for f in lst:
                 f.pop('_kernel', None)
+    # Errors that stay in the report re-graded below error by the configuration are hidden too.
+    for _, lst in _all_lists(report):
+        for f in lst:
+            if f.get('default_severity') == 'error' and f['severity'] != 'error':
+                summary['config_errors'][f['rule']] += 1
     report['suppression'] = {**summary, 'disabled': dict(summary['disabled']), 'regraded': dict(summary['regraded']),
-                             'suppressed_errors': dict(summary['suppressed_errors'])}
+                             'suppressed_errors': dict(summary['suppressed_errors']),
+                             'config_errors': dict(summary['config_errors'])}
 
 
 def summary_suffix(report: dict) -> str:
-    """Text to append to the `radisa check:` summary line ('' when nothing was hidden)."""
+    """Text to append to the `radisa check:` summary line ('' when nothing was hidden or re-graded).
+
+    Every error-severity finding that is not shown as an error, whatever hid it (inline or file
+    suppression, the baseline, --disable / "off", a lower --severity), is named in
+    "(hidden errors: RULE xN, ...)"."""
     s = report.get('suppression') or {}
     parts = []
     if s.get('suppressed'):
@@ -668,13 +878,38 @@ def summary_suffix(report: dict) -> str:
         parts.append(f"{s['baselined']} in baseline")
     if s.get('disabled'):
         parts.append(f"{sum(s['disabled'].values())} disabled by configuration")
+    if s.get('regraded'):
+        parts.append(f"{sum(s['regraded'].values())} re-graded by configuration")
     if not parts:
         return ''
     text = '; ' + ', '.join(parts)
-    errs = s.get('suppressed_errors') or {}
+    errs = Counter(s.get('suppressed_errors') or {}) + Counter(s.get('config_errors') or {})
     if errs:
         text += ' (hidden errors: ' + ', '.join(f'{r} x{n}' for r, n in sorted(errs.items())) + ')'
     return text
+
+
+def hidden_findings(report: dict) -> list[dict]:
+    """The findings this filter took out of the report by suppression or baseline (not the
+    disabled ones, which are only counted), each with 'kernel' and 'suppression'
+    {'kind': 'inline'|'file'|'baseline', 'reason' or 'fingerprint', 'file', ...}. For output
+    formats that list suppressed results (SARIF `suppressions`, see `sarif_suppression`)."""
+    return list(report.get('suppressed') or []) + list(report.get('baselined') or [])
+
+
+def sarif_suppression(f: dict) -> dict:
+    """The SARIF 2.1.0 `suppression` object (§3.35) of a finding from `hidden_findings`:
+    kind 'inSource' for a radisa: ignore comment, 'external' for the baseline file."""
+    sup = f.get('suppression') or {}
+    if sup.get('kind') == 'baseline':
+        return {'kind': 'external', 'status': 'accepted',
+                'justification': f"recorded in baseline {sup.get('file')}",
+                'properties': {'fingerprint': sup.get('fingerprint')}}
+    out = {'kind': 'inSource', 'status': 'accepted', 'justification': sup.get('reason') or ''}
+    if sup.get('file') and sup.get('line'):
+        out['location'] = {'physicalLocation': {'artifactLocation': {'uri': str(sup['file'])},
+                                                'region': {'startLine': int(sup['line'])}}}
+    return out
 
 
 # ------------------------------------------------------------------ radisa rules

@@ -125,6 +125,15 @@ class SarifTest(unittest.TestCase):
         fps = [x['partialFingerprints'][formats.FINGERPRINT_KEY] for x in formats.to_sarif([r])['runs'][0]['results']]
         self.assertEqual(len(set(fps)), 2)
 
+    def test_same_basename_in_different_directories(self):
+        """Regression: v1 keyed the input by its basename, so a/k.s and c/k.s collided."""
+        f = finding('MISSING_WAIT', line=5, instruction='v_add_f32 v1, v1, v1')
+        log = formats.to_sarif([report('a/k.s', kernel_findings=[f]), report('c/k.s', kernel_findings=[copy.deepcopy(f)])],
+                               base=Path.cwd())
+        fps = [x['partialFingerprints'][formats.FINGERPRINT_KEY] for x in log['runs'][0]['results']]
+        self.assertEqual(len(set(fps)), 2)
+        self.assertEqual(formats.FINGERPRINT_KEY, 'radisaFinding/v2')
+
     def test_sets_and_paths_serialise(self):
         r = report(kernel_findings=[finding('MISSING_WAIT', registers={('v', 1), ('v', 2)}, producer=Path('x'))])
         validate_sarif(self, json.loads(json.dumps(formats.to_sarif([r]))))
@@ -161,6 +170,15 @@ class GithubTest(unittest.TestCase):
     def test_empty(self):
         self.assertEqual(formats.to_github([report(status='PASS')]), '')
 
+    def test_file_outside_base_is_a_path(self):
+        """Regression: a file outside `base` was written as file%3A///... (a URI, not a path)."""
+        r = report('/elsewhere/x.hip', kernel_findings=[finding('MISSING_WAIT', line=2, file='/elsewhere/x.hip'),
+                                                        finding('SGPR_PAIR_GUARD', 'review')])
+        out = formats.to_github([r], base='/home/nobody').splitlines()
+        self.assertTrue(out[0].startswith('::error file=/elsewhere/x.hip,line=2,'), out[0])
+        self.assertTrue(out[1].startswith('::warning file=/elsewhere/x.hip,title='), out[1])
+        self.assertNotIn('file%3A', ''.join(out))
+
 
 class EmitTest(unittest.TestCase):
     def test_all_formats(self):
@@ -170,6 +188,11 @@ class EmitTest(unittest.TestCase):
         self.assertIn('-> FAIL', formats.emit([r], 'text'))
         self.assertEqual(json.loads(formats.emit([r], 'json'))['status'], 'FAIL')
         self.assertIsInstance(json.loads(formats.emit([r, r], 'json')), list)
+        # one report: exactly check.render; several: each block names its file (regression)
+        self.assertEqual(formats.emit([r], 'text'), check.render(r, False) + '\n')
+        two = formats.emit([r, report('b.s', status='PASS')], 'text')
+        self.assertIn('==> src/k.hip: FAIL <==\n', two)
+        self.assertIn('==> b.s: PASS <==\n', two)
         validate_sarif(self, json.loads(formats.emit([r], 'sarif')))
         self.assertTrue(formats.emit([r], 'github').startswith('::error '))
         with self.assertRaises(ValueError):

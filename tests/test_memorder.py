@@ -84,6 +84,41 @@ class SysStoreWait(unittest.TestCase):
         self.assertIn('a store of the function s_swappc_b64 calls', f['message'])
 
 
+    def test_caller_stores_are_pending_in_a_callee(self):
+        # A called function starts with the caller's stores outstanding (LLVM's entry waits leave
+        # STOREcnt alone, setStateOnFunctionEntryOrReturn); only s_wait_storecnt 0 clears them.
+        prologue = [ins('s_wait_loadcnt_dscnt', '0x0', 0), ins('s_wait_expcnt', '0x0', 4),
+                    ins('s_wait_samplecnt', '0x0', 8), ins('s_wait_bvhcnt', '0x0', 12),
+                    ins('s_wait_kmcnt', '0x0', 16)]
+        store = ins('global_store_b32', 'v0, v2, s[0:1] scope:SCOPE_SYS', 20, 8)
+        ret = ins('s_setpc_b64', 's[30:31]', 28)
+        f, = self.callee_pass(prologue + [store, ret])
+        self.assertEqual(f['pending'], {'store': [None]})
+        self.assertEqual(f['required_wait'], ['s_wait_storecnt 0'])
+        self.assertIn('a memory operation of the caller (issued before the call)', f['message'])
+        self.assertIn('insertWaitsBeforeSystemScopeStore', f['source'])
+        waited = prologue + [ins('s_wait_storecnt', '0x0', 20), dict(store, pc=24), dict(ret, pc=32)]
+        self.assertEqual(self.callee_pass(waited), [])
+        # The same code as a kernel: nothing of a caller is outstanding.
+        self.assertEqual(self.callee_pass(prologue + [store, ret], callee=False), [])
+
+    def test_many_pending_stores_are_summarised(self):
+        seq = [ins('global_store_b32', 'v0, v1, s[0:1]', 8 * k, 8) for k in range(20)]
+        seq += [ins('global_store_b32', 'v0, v2, s[0:1] scope:SCOPE_SYS', 160, 8), ins('s_endpgm', '', 168)]
+        f, = self.callee_pass(seq, callee=False)
+        self.assertEqual(f['pending'], {'store': [8 * k for k in range(20)]})
+        self.assertIn(f'{20 - waits.LISTED} older ones and global_store_b32 (pc 0x60)', f['message'])
+        self.assertNotIn('(pc 0x58)', f['message'])
+
+    def callee_pass(self, seq, callee=True):
+        edges, reachable, _ = rules.cfg(seq)
+        table = check.isadb.load(None)
+        ctx = {'kernel': {'name': 'f', 'descriptor': {}, 'callee': callee}, 'instructions': seq, 'edges': edges,
+               'reachable': reachable, 'table': table, 'wave': 32, 'origin': None,
+               'models': waits.operand_models(seq, table), 'options': {'enable': {'SYS_STORE_WAIT'}}}
+        return memorder.kernel_pass(ctx)
+
+
 class Solve(unittest.TestCase):
     def test_reuses_the_fixpoint_of_analyze(self):
         table = check.isadb.load(None)
@@ -100,6 +135,25 @@ class Solve(unittest.TestCase):
         self.assertEqual(state_in[8]['load'][0][0], frozenset({('v', 1)}))
         # A different callee flag is a different problem.
         self.assertIn(waits.ENTRY, waits.solve(seq, edges, table, 32, models, callee=True)[0][0]['load'])
+        # The result is kept in the models of this one code unit, not in the module.
+        self.assertIs(models.solved[3][0], waits.solve(seq, edges, table, 32, models, callee=True)[0])
+        self.assertFalse(hasattr(waits, '_SOLVED'))
+
+    def test_kernel_pass_reuses_the_fixpoint_of_check_kernel(self):
+        # check.check_kernel gives waits.analyze and ctx['models'] the same Models object.
+        table = check.isadb.load(None)
+        seq = [ins('global_load_b32', 'v1, v0, s[0:1]', 0, 8),
+               ins('global_store_b32', 'v0, v2, s[0:1] scope:SCOPE_SYS', 8, 8), ins('s_endpgm', '', 16)]
+        edges, reachable, _ = rules.cfg(seq)
+        models = waits.operand_models(seq, table)
+        waits.analyze(seq, edges, reachable, table, 32, None, models)
+        solved = models.solved
+        ctx = {'kernel': {'name': 'k', 'descriptor': {}}, 'instructions': seq, 'edges': edges,
+               'reachable': reachable, 'table': table, 'wave': 32, 'origin': None, 'models': models,
+               'options': {'enable': {'SYS_STORE_WAIT'}}}
+        f, = memorder.kernel_pass(ctx)
+        self.assertIs(models.solved, solved)
+        self.assertEqual(f['pending'], {'load': [0]})
 
 
 if __name__ == '__main__':

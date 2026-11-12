@@ -2,8 +2,8 @@
   "schema": "radisa-llvm-pins/1",
   "provenance": {
     "revision": "llvm-project main, fetched 2026-11-12, commit unknown",
-    "generated_utc": "2026-11-12T13:31:30+00:00",
-    "note": "Initial pins were generated from llvm-project main (upstream, not ROCm), fetched 2026-11-12, commit unknown. docs/CHECK.md names ROCm llvm-project d6f6cb69 as the basis of AMDGPUWaitSGPRHazards / SIInsertWaitcnts; these pins are NOT from that commit. Regenerate them on the Radiance machine with `radisa drift --llvm-src <ROCm llvm-project> --update --revision d6f6cb69` and review the rules of every fact the update reports as changed."
+    "generated_utc": "2026-11-12T14:12:12+00:00",
+    "note": "Initial pins were generated from llvm-project main (upstream, not ROCm), fetched 2026-11-12, commit unknown. docs/CHECK.md names ROCm llvm-project d6f6cb69 as the basis of AMDGPUWaitSGPRHazards / SIInsertWaitcnts; these pins are NOT from that commit. Regenerate them on the Radiance machine with `radisa drift --llvm-src <ROCm llvm-project> --update --revision d6f6cb69` and review the rules of every fact the update reports as changed. Facts the given tree lacks make --update refuse (exit 3, nothing written); re-anchor them by editing file / alt_files / anchor in this JSON (features.* already fall back to AMDGPU.td, where ROCm d6f6cb69 and older trees define FeatureISAVersion12 / FeatureGFX12), then rerun with --note to record what the new pins are."
   },
   "normalisation": "radisa.drift.normalize: comments removed, string/char literals kept verbatim, whitespace dropped except one space between adjacent word tokens; sha256 over UTF-8.",
   "facts": [
@@ -11,6 +11,9 @@
       "id": "features.isa_version_12",
       "family": "target-features",
       "file": "GCNFeatures.td",
+      "alt_files": [
+        "AMDGPU.td"
+      ],
       "anchor": "FeatureISAVersion12",
       "extractor": "td_def",
       "sha256": "07b3362624b7b7a71376554e9338f35cbe65e859f59bb96358cd7a67b6ec217e",
@@ -29,6 +32,9 @@
       "id": "features.gfx12_generation",
       "family": "target-features",
       "file": "GCNFeatures.td",
+      "alt_files": [
+        "AMDGPU.td"
+      ],
       "anchor": "FeatureGFX12",
       "extractor": "td_def",
       "sha256": "5fc714c2332423f6794ca6acc122a7552c93b7419b2892678f237264b64037e7",
@@ -60,7 +66,7 @@
       "file": "GCNSubtarget.h",
       "anchor": "hasVALUReadSGPRHazard",
       "extractor": "cxx_function",
-      "sha256": "ebd19910d275fd45bd9592779d3f2357c8fdbb61aa9c3e64dea865ccf3f3e720",
+      "sha256": "754316f2bc4e9a580fbbb44b21fe24f7ae1d7a17739047aed0b29ad12b0c95c0",
       "rules": [
         "MISSING_ALU_WAIT",
         "ALU_WAIT_TTMP",
@@ -75,7 +81,7 @@
       "file": "GCNSubtarget.h",
       "anchor": "requiresNopBeforeDeallocVGPRs",
       "extractor": "cxx_function",
-      "sha256": "805e5f800a60a56259c533745e0a2dfe7fcfb3ffe826cc9f4dff4ba8e79a7687",
+      "sha256": "e237af67fc0f01ef029e3e620998a8bcdeb3fb9fc785a99af6156ea417c48505",
       "rules": [
         "DEALLOC_NO_NOP"
       ],
@@ -87,7 +93,7 @@
       "file": "GCNSubtarget.h",
       "anchor": "requiresWaitIdleBeforeGetReg",
       "extractor": "cxx_function",
-      "sha256": "44d4fd68cae098e158a64131479ad039b2034bb50d5ef739b039ee15279e844e",
+      "sha256": "091bfa104d7cd421bb148d715be87bcd4f1599f09fe3f0de86f4a28db40fbae1",
       "rules": [],
       "note": "Currently HasGFX1250Insts, false for gfx1201; no radisa rule depends on it. If it becomes true for gfx1201, LLVM requires s_wait_idle before s_getreg and a new rule is needed."
     },
@@ -97,7 +103,7 @@
       "file": "GCNSubtarget.h",
       "anchor": "setRegModeNeedsVNOPs",
       "extractor": "cxx_function",
-      "sha256": "0f1f3ca0949f36f3e22172c3b3a9470a48e8c07c3e43d1a63ecdbd7045a76e64",
+      "sha256": "59a544446e9063edb62af0c59555fce6c66af040cf10c50fc32a1269fd85774a",
       "rules": [],
       "note": "Currently HasGFX1250Insts && GFX12, false for gfx1201; no radisa rule. If it becomes true for gfx1201, LLVM inserts v_nops after s_setreg of MODE and a new rule is needed."
     },
@@ -107,7 +113,7 @@
       "file": "GCNSubtarget.h",
       "anchor": "hasVALUPartialForwardingHazard",
       "extractor": "cxx_function",
-      "sha256": "a5629f5ada8b846af483f7cb6b1e05ad39bb8c3d89e038e7aee64336ced0813e",
+      "sha256": "b9efaf47e574c8bbe77fa827cffd6870a1cc3a3d7113c09d7c5b83b87cb7455b",
       "rules": [],
       "note": "Currently GFX11 only, false for gfx1201; no radisa rule. If it covers GFX12, fixVALUPartialForwardingHazard applies and a new rule is needed."
     },
@@ -117,7 +123,7 @@
       "file": "GCNSubtarget.h",
       "anchor": "hasVALUMaskWriteHazard",
       "extractor": "cxx_function",
-      "sha256": "880b2227da8a07fb65b32c45eb307d39594b86970f2d485680343b8db0287278",
+      "sha256": "87f7eca245d64381d42a8e911436f5617801aac2f4bf960cc4e822e1cbd0bc79",
       "rules": [],
       "note": "Currently GFX11 only, false for gfx1201; no radisa rule. If it covers GFX12, fixVALUMaskWriteHazard applies and a new rule is needed."
     },
@@ -127,7 +133,7 @@
       "file": "GCNSubtarget.h",
       "anchor": "hasLdsDirect",
       "extractor": "cxx_function",
-      "sha256": "3686ab5c9d2402f3c33c9be978f2e01e07888ff0e35fe56a45fa0b0d6d0bf279",
+      "sha256": "704379ca5905bdd939c72ea32fd58f9d610ad516a1512d0f4fe601abfdb16b60",
       "rules": [],
       "note": "Currently GFX11+, true for gfx1201: gates fixLdsDirectVALUHazard / fixLdsDirectVMEMHazard in fixHazards. No radisa rule models the LDS-direct hazards yet (not checked); add the rule name here when one exists."
     },
@@ -137,7 +143,7 @@
       "file": "GCNHazardRecognizer.cpp",
       "anchor": "GCNHazardRecognizer::fixHazards",
       "extractor": "cxx_function",
-      "sha256": "d5aac977f30eb4dc6a3b28c8cf5d18ad1f0fb9d73f795783033cb04897fdd18a",
+      "sha256": "4fbfd8a410fc8b6e990b7d427b5df6a6524bad9ee09b5a97bfd6bdc2c720f821",
       "rules": [
         "WMMA_D_TO_AB",
         "PERMLANE_AFTER_CMPX"
@@ -150,7 +156,7 @@
       "file": "GCNHazardRecognizer.cpp",
       "anchor": "GCNHazardRecognizer::fixWMMAHazards",
       "extractor": "cxx_function",
-      "sha256": "684f2c4e05cc78df00d8d5e40835b6b9102754400bf3ec2a7071cd9c7a92abf6",
+      "sha256": "57eca72b8f9d2d2f13ceec6d49e94028c713c80b5f6f776bebc0e00d80391b69",
       "rules": [
         "WMMA_D_TO_AB",
         "WMMA_OPERANDS"
@@ -163,11 +169,35 @@
       "file": "GCNHazardRecognizer.cpp",
       "anchor": "GCNHazardRecognizer::fixVcmpxPermlaneHazards",
       "extractor": "cxx_function",
-      "sha256": "bbbea86e1e2d90880bdbb4c9a47af6da864408644b8e018650f2b883b591a1c3",
+      "sha256": "75358f92dc9040d1ff045ca50d6062f3b739c51f5c4b9c294c5bcd27a15b0c9b",
       "rules": [
         "PERMLANE_AFTER_CMPX"
       ],
       "note": "v_cmpx writing EXEC followed by v_permlane*: LLVM inserts v_mov_b32 vN, vN; which instructions separate them."
+    },
+    {
+      "id": "hazards.isPermlane",
+      "family": "hazard-recognizer",
+      "file": "GCNHazardRecognizer.cpp",
+      "anchor": "isPermlane",
+      "extractor": "cxx_function",
+      "sha256": "b4ec4c954a2a43e1387bb9f20b8d0660757ffe63723d9799c22a1192e29fb5a7",
+      "rules": [
+        "PERMLANE_AFTER_CMPX"
+      ],
+      "note": "Static helper called by fixVcmpxPermlaneHazards: the opcodes LLVM treats as the v_permlane* side of the hazard (the set PERMLANE_AFTER_CMPX must match)."
+    },
+    {
+      "id": "hazards.isVCmpXWritesExec",
+      "family": "hazard-recognizer",
+      "file": "GCNHazardRecognizer.cpp",
+      "anchor": "isVCmpXWritesExec",
+      "extractor": "cxx_function",
+      "sha256": "d2caeadc414a8cd6e168519ffb0dedcc1526b02057605ddf38e096bf8db0b9c2",
+      "rules": [
+        "PERMLANE_AFTER_CMPX"
+      ],
+      "note": "Static helper called by fixVcmpxPermlaneHazards: which instructions count as the EXEC-writing v_cmpx side of the hazard (VOPC, or a VOP3/SDWA compare, that modifies EXEC)."
     },
     {
       "id": "waitsgpr.whole_file",
@@ -175,7 +205,7 @@
       "file": "AMDGPUWaitSGPRHazards.cpp",
       "anchor": "AMDGPUWaitSGPRHazards.cpp",
       "extractor": "file",
-      "sha256": "8976dfc30d59837ddb278ec32dc2568ce23505dd865822f0f159cfc43507168f",
+      "sha256": "00d59e77e4f85e9377ef59c467add095e775c3e9dbe4461aa252814befbbbb38",
       "rules": [
         "MISSING_ALU_WAIT",
         "ALU_WAIT_TTMP",
@@ -190,7 +220,7 @@
       "file": "SIInsertWaitcnts.cpp",
       "anchor": "WaitcntBrackets::determineVGPR16Dependency",
       "extractor": "cxx_function",
-      "sha256": "336a9a6e891d8d177b8653fe9b8c5b0f46fe112098cf2f76b1e896514e9dbd8e",
+      "sha256": "e738b4182efe4c87325e00da98d071ea39f80d9e3881120c169e9d6300251816",
       "rules": [
         "MISSING_WAIT"
       ],
@@ -218,7 +248,7 @@
       "file": "SIInsertHardClauses.cpp",
       "anchor": "SIInsertHardClauses.cpp",
       "extractor": "file",
-      "sha256": "b8ba4f24c329cdb2c7cc1f3a427f1db0d5b60e849b57c96a95ac66c5d18872d9",
+      "sha256": "626af8edf6aad6536bc08e6d425a72a5f92b98144bd7da06a32c2f249291cc44",
       "rules": [
         "CLAUSE_TOO_LONG",
         "CLAUSE_MIXED",
@@ -232,11 +262,23 @@
       "file": "SIMemoryLegalizer.cpp",
       "anchor": "SIGfx12CacheControl::finalizeStore",
       "extractor": "cxx_function",
-      "sha256": "892b704ada8ddd4fbdc9096b5fdc98a72083ce8b58b1374ccb9301e6a72c7546",
+      "sha256": "28a7f7cf87ece704500710bfcb94cb204abccae23b3e08ab164326a7995bfa60",
       "rules": [
         "SYS_STORE_WAIT"
       ],
       "note": "Waits LLVM inserts before system-scope stores on GFX12.0 (memorder.py)."
+    },
+    {
+      "id": "memorder.gfx12_insertWaitsBeforeSystemScopeStore",
+      "family": "memory-model",
+      "file": "SIMemoryLegalizer.cpp",
+      "anchor": "SIGfx12CacheControl::insertWaitsBeforeSystemScopeStore",
+      "extractor": "cxx_function",
+      "sha256": "70d886d9bd394339e78f0b453ba2c34ecf27e61b7b339cf63f4e2680b8e59d33",
+      "rules": [
+        "SYS_STORE_WAIT"
+      ],
+      "note": "Called by SIGfx12CacheControl::finalizeStore: the exact s_wait_*cnt list (LOADCNT, SAMPLECNT/BVHCNT if image/BVH instructions exist, KMCNT, STORECNT) that memorder.py SYS_STORE_WAIT restates."
     }
   ]
 }

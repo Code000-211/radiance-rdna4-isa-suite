@@ -5,7 +5,8 @@ Normative basis (LLVM main, llvm/lib/Target/AMDGPU/):
   predecessor block until the hazard producer (hazard) or an instruction for which `IsExpired` holds.
   The forward "may" dataflow below (union over predecessors, producer sets killed by the expiring
   instructions) answers the same question: does some path reach the consumer from a producer
-  without passing an expiring instruction?
+  without passing an expiring instruction? It runs on the edges of `rules.cfg`, which, like the MBB
+  predecessor lists LLVM walks, give s_setpc_b64 (return, tail call, long branch) no fall-through.
 - `fixWMMAHazards`: a WMMA/SWMMAC whose A (src0) or B (src1) overlaps the D (vdst) of an earlier
   WMMA/SWMMAC; on GFX12 also the SWMMAC index (src2); overlap with C is allowed on GFX12+ (the
   hardware stalls, per the comment there). Expires at `SIInstrInfo::isVALU(I, AllowLDSDMA=true)`,
@@ -32,7 +33,7 @@ Normative basis (LLVM main, llvm/lib/Target/AMDGPU/):
   for S_CLAUSE and LLVM never sets them.
 """
 from __future__ import annotations
-from collections import Counter, deque
+from collections import Counter
 
 from . import isadb
 
@@ -119,52 +120,138 @@ def _fmt(regs: set) -> str:
         ', '.join(f'v{x}' for x in v)
 
 
-def _forward(ins: list[dict], edges: dict, reachable: set, transfer) -> dict[int, tuple]:
-    """In-state per reachable pc of a union dataflow over the direct CFG; states are tuples of frozensets."""
-    if not ins:
-        return {}
-    order = [i['pc'] for i in ins if i['pc'] in reachable]
-    by_pc = {i['pc']: i for i in ins}
-    state_in: dict[int, tuple] = {}
+def _blocks(ins: list[dict], edges: dict, reachable: set) -> tuple[list[int], dict, dict]:
+    """Reachable straight-line chains (leader pc -> member pcs) in reverse postorder, and block preds.
+
+    A pc continues its predecessor's chain when it has exactly one predecessor and that one has no
+    other successor; everything else (entry, join, branch target) starts a block.
+    """
     entry = ins[0]['pc']
-    if entry not in reachable:
+    order = [i['pc'] for i in ins if i['pc'] in reachable]
+    npred, single = Counter(), {}
+    for p in order:
+        ss = edges.get(p, [])
+        npred.update(ss)
+        if len(ss) == 1:
+            single[ss[0]] = p
+    def inner(pc: int) -> bool:
+        return pc != entry and npred[pc] == 1 and pc in single
+    members = {}
+    for pc in order:
+        if inner(pc):
+            continue
+        chain = [pc]
+        while len(edges.get(chain[-1], [])) == 1 and inner(edges[chain[-1]][0]):
+            chain.append(edges[chain[-1]][0])
+        members[pc] = chain
+    succ = {b: [s for s in edges.get(c[-1], []) if s in members] for b, c in members.items()}
+    preds: dict[int, list[int]] = {b: [] for b in members}
+    for b, ss in succ.items():
+        for s in ss:
+            preds[s].append(b)
+    rpo, seen, stack = [], {entry}, [(entry, iter(succ[entry]))]
+    while stack:
+        b, it = stack[-1]
+        for s in it:
+            if s not in seen:
+                seen.add(s); stack.append((s, iter(succ[s])))
+                break
+        else:
+            stack.pop(); rpo.append(b)
+    rpo.reverse()
+    return rpo, members, preds
+
+
+def _forward(ins: list[dict], edges: dict, reachable: set, events: dict, wanted: set) -> dict[int, tuple]:
+    """In-states at the `wanted` pcs of a may-dataflow whose components are producer sets.
+
+    `events[pc]` holds one entry per component: None (keeps the set), -1 (empties it) or k >= 0 (the
+    set becomes {producer k}). Sets are int bitmasks over producer numbers. The fixpoint is computed
+    per basic block in reverse postorder (a block's effect is the last event in it, or the identity),
+    so the cost is O(blocks + edges) bitmask unions per sweep, with a few sweeps for loops, and the
+    memory one mask per block and component; per-instruction states exist only for `wanted`.
+    """
+    if not ins or ins[0]['pc'] not in reachable:
         return {}
-    state_in[entry] = (frozenset(), frozenset())
-    todo, queued = deque([entry]), {entry}
-    while todo:
-        pc = todo.popleft(); queued.discard(pc)
-        out = transfer(by_pc[pc], state_in[pc])
-        for s in edges.get(pc, []):
-            old = state_in.get(s)
-            new = out if old is None else tuple(a | b for a, b in zip(old, out))
-            if new != old:
-                state_in[s] = new
-                if s not in queued:
-                    todo.append(s); queued.add(s)
-    return {pc: state_in[pc] for pc in order if pc in state_in}
+    rpo, members, preds = _blocks(ins, edges, reachable)
+    n = len(next(iter(events.values()), ()))
+    effect = {}
+    for b, chain in members.items():
+        eff = [None] * n
+        for pc in chain:
+            for c, e in enumerate(events[pc]):
+                if e is not None:
+                    eff[c] = e
+        effect[b] = tuple(None if e is None else 0 if e < 0 else 1 << e for e in eff)
+    empty = (0,) * n
+    state_in, state_out = {}, {}
+    changed = True
+    while changed:
+        changed = False
+        for b in rpo:
+            new = empty
+            for p in preds[b]:
+                o = state_out.get(p)
+                if o is not None and o != new:
+                    new = tuple(x | y for x, y in zip(new, o))
+            if state_in.get(b) != new:
+                state_in[b] = new
+                state_out[b] = tuple(x if e is None else e for x, e in zip(new, effect[b]))
+                changed = True
+    out = {}
+    for b, chain in members.items():
+        st = state_in.get(b, empty)
+        for pc in chain:
+            if pc in wanted:
+                out[pc] = st
+            ev = events[pc]
+            if any(e is not None for e in ev):
+                st = tuple(x if e is None else 0 if e < 0 else 1 << e for x, e in zip(st, ev))
+    return out
+
+
+def _bits(mask: int) -> list[int]:
+    out = []
+    while mask:
+        low = mask & -mask
+        out.append(low.bit_length() - 1)
+        mask ^= low
+    return out
+
+
+MAX_LISTED = 6
 
 
 def alu_hazards(ins: list[dict], edges: dict, reachable: set, models: dict, table: dict) -> list[dict]:
     """WMMA_D_TO_AB and PERMLANE_AFTER_CMPX (both 'error': LLVM fixes them for gfx1201)."""
-    def transfer(i: dict, st: tuple) -> tuple:
-        m = models[i['pc']]
-        wmma, cmpx = st
+    wmma_pcs, cmpx_pcs, events, wanted = [], [], {}, set()
+    for i in ins:
+        pc, m = i['pc'], models[i['pc']]
+        valu = is_valu(i, m)
         # IsHazard is tested before IsExpired, so a producer that is itself a VALU still counts.
         if is_wmma(i, m):
-            wmma = frozenset([i['pc']])
-        elif is_valu(i, m):
-            wmma = frozenset()
+            w = len(wmma_pcs); wmma_pcs.append(pc); wanted.add(pc)
+        else:
+            w = -1 if valu else None
         if is_vcmpx_exec(i, m):
-            cmpx = frozenset([i['pc']])
-        elif is_valu(i, m) and not is_vnop(i, m):
-            cmpx = frozenset()
-        return wmma, cmpx
-
-    states = _forward(ins, edges, reachable, transfer)
+            c = len(cmpx_pcs); cmpx_pcs.append(pc)
+        else:
+            c = -1 if valu and not is_vnop(i, m) else None
+        if is_permlane(i, m):
+            wanted.add(pc)
+        events[pc] = (w, c)
+    if not wmma_pcs and not cmpx_pcs:
+        return []
+    states = _forward(ins, edges, reachable, events, wanted)
     by_pc = {i['pc']: i for i in ins}
+    dregs: dict[int, set] = {}
     out = []
-    for pc, (wmma, cmpx) in states.items():
-        i, m = by_pc[pc], models[pc]
+    for i in ins:
+        pc = i['pc']
+        if pc not in states:
+            continue
+        wmma, cmpx = states[pc]
+        m = models[pc]
         if wmma and is_wmma(i, m):
             ops = _operand_regs(i)
             if len(ops) < 3:
@@ -172,10 +259,13 @@ def alu_hazards(ins: list[dict], edges: dict, reachable: set, models: dict, tabl
             else:
                 swmmac = _name(i, m).startswith('V_SWMMAC_')
                 roles = [('A', ops[1]), ('B', ops[2])] + ([('index', ops[3])] if swmmac and len(ops) > 3 else [])
-                for prod in sorted(wmma):
+                for k in _bits(wmma):
+                    prod = wmma_pcs[k]
                     p = by_pc[prod]
-                    pops = _operand_regs(p)
-                    d = pops[0] if pops else set()
+                    if prod not in dregs:
+                        pops = _operand_regs(p)
+                        dregs[prod] = pops[0] if pops else set()
+                    d = dregs[prod]
                     hit = [(r, d & regs) for r, regs in roles if d & regs]
                     if not hit:
                         continue
@@ -187,8 +277,10 @@ def alu_hazards(ins: list[dict], edges: dict, reachable: set, models: dict, tabl
         if cmpx and is_permlane(i, m):
             ops = isadb.split_operands(i['args'])
             src0 = ops[1] if len(ops) > 1 else 'vN'
-            prods = sorted(cmpx)
-            names = ', '.join(f"{by_pc[p]['op']} at pc {p:#x}" for p in prods)
+            prods = [cmpx_pcs[k] for k in _bits(cmpx)]
+            names = ', '.join(f"{by_pc[p]['op']} at pc {p:#x}" for p in prods[:MAX_LISTED])
+            if len(prods) > MAX_LISTED:
+                names += f' and {len(prods) - MAX_LISTED} more'
             out.append(_finding('PERMLANE_AFTER_CMPX', 'error',
                 f"{i['op']} follows {names}, which writes EXEC, with no VALU other than v_nop in between on "
                 f'some path (s_nop, v_nop and scalar instructions do not separate them); LLVM '

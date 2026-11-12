@@ -17,6 +17,7 @@ UNTESTED ON HARDWARE: generated, compiled and linted with clang/llvm-mc 18 only,
     python3 hwprobe/generate.py                  # rewrite hwprobe/cases/*.hip + manifest.json
     python3 hwprobe/generate.py --check          # exit 1 if the checked-in files are stale
     python3 hwprobe/generate.py --data DIR       # inputs, expected outputs, cases.tsv for host_runner
+    python3 hwprobe/generate.py --verify-lint DIR  # exit 1 unless DIR/<case>.json match the manifest
 
 Every kernel: `(unsigned *out, const unsigned *in)`, block 256 (8 waves of 32), one input word per
 thread, `words_per_lane` output words per thread; `out` is filled with `fill_byte` before each launch.
@@ -406,6 +407,55 @@ def write_data(out_dir: Path, hsaco_dir: str = '.', grid: int = GRID) -> Path:
     return tsv
 
 
+def lint_problems(case: dict, report: dict) -> list[str]:
+    """Why a `radisa check --json` report on `<case>.hsaco` does not match the manifest ([] if it does).
+
+    The report's exit code cannot tell: both kernels share one code object and `_hazard` alone makes
+    it FAIL (which also hides an INCOMPLETE). So, per kernel: `_hazard` reports exactly
+    {(rule, severity)} among errors and warnings, `_fixed` reports no error and not the rule, neither
+    has an `incomplete` finding or zero decoded instructions, and no object-level error/incomplete.
+    """
+    name, rule = case['name'], case['rule']
+    severity = 'review' if rule in REVIEW_RULES else 'error'
+    kernels = {k.get('name'): k for k in report.get('kernels', [])}
+    out = [f'{name}: object-level {f["severity"]} {f["rule"]}: {f.get("message", "")}'
+           for f in report.get('findings', []) if f.get('severity') in ('error', 'incomplete')]
+    for variant in ('hazard', 'fixed'):
+        k = kernels.get(f'{name}_{variant}')
+        if k is None:
+            out.append(f'{name}_{variant}: kernel not in the report')
+            continue
+        fs = k.get('findings', [])
+        if not k.get('instructions'):
+            out.append(f'{name}_{variant}: no instructions decoded')
+        out += [f'{name}_{variant}: incomplete {f["rule"]}' for f in fs if f['severity'] == 'incomplete']
+        if variant == 'hazard':
+            got = sorted({(f['rule'], f['severity']) for f in fs if f['severity'] in ('error', 'review')})
+            if got != [(rule, severity)]:
+                out.append(f'{name}_hazard: expected exactly {rule} ({severity}), got {got or "nothing"}')
+        else:
+            bad = sorted({(f['rule'], f['severity']) for f in fs if f['severity'] == 'error' or f['rule'] == rule})
+            if bad:
+                out.append(f'{name}_fixed: expected no error and no {rule}, got {bad}')
+    return out
+
+
+def verify_lint(lint_dir: Path, only: str = '') -> list[str]:
+    """lint_problems() for every case (name containing `only`) from lint_dir/<case>.json."""
+    out = []
+    for c in CASES:
+        if only not in c['name']:
+            continue
+        p = lint_dir / f'{c["name"]}.json'
+        try:
+            report = json.loads(p.read_text())
+        except (OSError, ValueError) as e:
+            out.append(f'{c["name"]}: cannot read {p}: {e}')
+            continue
+        out += lint_problems(c, report)
+    return out
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description=__doc__.split('\n\n')[0])
     p.add_argument('--out', default=str(CASES_DIR), help='where to write the .hip files and manifest.json')
@@ -413,8 +463,16 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument('--data', help='also write inputs, expected outputs and cases.tsv into this directory')
     p.add_argument('--hsaco-dir', default='.', help='directory cases.tsv names for the <case>.hsaco code objects')
     p.add_argument('--grid', type=int, default=GRID, help=f'workgroups per launch (default {GRID})')
+    p.add_argument('--verify-lint', metavar='DIR',
+                   help='exit 1 unless DIR/<case>.json (radisa check --json) matches the manifest per kernel')
+    p.add_argument('--case', default='', help='with --verify-lint: only cases whose name contains this')
     a = p.parse_args(argv)
     out = Path(a.out)
+    if a.verify_lint:
+        problems = verify_lint(Path(a.verify_lint), a.case)
+        for m in problems:
+            print(f'lint mismatch: {m}', file=sys.stderr)
+        return 1 if problems else 0
     files = sources()
     if a.check:
         stale = [n for n, t in files.items() if not (out / n).is_file() or (out / n).read_text() != t]
