@@ -393,7 +393,10 @@ def audit_kernel(kernel: dict, decoded: dict, models: dict | None = None, table:
         if i.get('vopd_independent_decode'):
             for rule, text in vopd.validate(vopd.decode(bytes.fromhex(i['raw'])), md['.wavefront_size'],
                                              descriptor.get('encoded_vgprs')):
-                issues.append(finding('VOPD_'+rule, 'review' if rule in ('REGISTER_RANGE', 'ANTIDEP', 'SOURCE_HI') else 'error',
+                # ANTIDEP is a note: LLVM emits it on purpose (isVOPDAntidependencyAllowed); 3065 hits, all
+                # compiler output, in the 114 libr4d units measured with AMD clang 24.
+                severity = 'info' if rule == 'ANTIDEP' else 'review' if rule in ('REGISTER_RANGE', 'SOURCE_HI') else 'error'
+                issues.append(finding('VOPD_'+rule, severity,
                                       text, i['pc'], 'resources' if rule == 'REGISTER_RANGE' else 'vopd'))
         elif 'v_dual_' in i['text']:
             issues.append(finding('VOPD_IDENTITY', 'incomplete', 'LLVM VOPD does not match raw format detector',i['pc'],'vopd'))

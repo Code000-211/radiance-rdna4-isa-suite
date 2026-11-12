@@ -1,7 +1,7 @@
 import unittest
 from radisa import vopd
 from radisa.binary import FormatError
-from support import vopd_bytes
+from support import needs_llvm_mc, vopd_bytes
 
 class VOPDTests(unittest.TestCase):
     def codes(self,raw,**kw):return {r for r,_ in vopd.validate(vopd.decode(raw),kw.get('wave',32),kw.get('allocated',256))}
@@ -64,3 +64,19 @@ class VOPDTests(unittest.TestCase):
                 p=vopd.decode(vopd_bytes(dx=x,dy=y))
                 self.assertEqual((p.x.dst,p.y.dst),(x,y))
                 self.assertEqual((p.x.dst^p.y.dst)&1,1)
+
+
+class SeverityTests(unittest.TestCase):
+    """VOPD_ANTIDEP is a note: LLVM emits the pattern on purpose for non-DPMACC X
+    (SIInstrInfo::isVOPDAntidependencyAllowed), so it must neither fail a run nor count as a warning."""
+    @needs_llvm_mc
+    def test_antidep_is_a_note(self):
+        from support import all_findings, check_text
+        code, report = check_text('\tv_dual_mov_b32 v6, v1 :: v_dual_add_f32 v7, v6, v2\n\ts_endpgm\n', '--no-config')
+        self.assertEqual([(f['rule'], f['severity']) for f in all_findings(report)], [('VOPD_ANTIDEP', 'info')])
+        self.assertEqual((code, report['status']), (0, 'PASS'))
+
+    def test_registry_matches(self):
+        from radisa import suppress
+        self.assertEqual(suppress.RULES['VOPD_ANTIDEP']['severity'], 'info')
+        self.assertEqual(suppress.RULES['VOPD_RAW_DPMACC']['severity'], 'error')

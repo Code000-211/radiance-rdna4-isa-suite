@@ -216,7 +216,7 @@ configuration can change it (see "Configuration"). `*` = off unless enabled.
 |---|---|---|
 | `VOPD_OPCODE`, `VOPD_SOURCE`, `VOPD_BANK`, `VOPD_SRC2`, `VOPD_SCALAR_BUS`, `VOPD_DPP`, `VOPD_WAVE32` | error | reserved opcode or source encoding, SRC0/SRC1 bank conflict, SRC2 parity, more than two scalar/literal sources, DPP source, VOPD in wave64 |
 | `VOPD_RAW_DPMACC` | error | §7.8; LLVM `SIInstrInfo::isVOPDAntidependencyAllowed`: X (DPMACC) writes a register Y reads |
-| `VOPD_ANTIDEP` | warning | the same for non-DPMACC X, which LLVM emits |
+| `VOPD_ANTIDEP` | note | the same for non-DPMACC X, which LLVM emits deliberately (`SIInstrInfo::isVOPDAntidependencyAllowed`); 3065 hits in the 114 libr4d units, all compiler output |
 | `VOPD_SOURCE_HI`, `VOPD_REGISTER_RANGE` | warning | VCC_HI/EXEC_HI sourced by a wave32 component; a VGPR outside the descriptor allocation (§3.3.2) |
 | `VOPD_IDENTITY` | incomplete | LLVM's VOPD text does not match the raw format decoder |
 
@@ -686,7 +686,7 @@ instructions, none outside the AMD operand model. 112 `PASS`, 2 `NO_KERNELS` (`a
 | findings | count |
 |---|---|
 | any rule at `error` | 0 for every rule. `LDS_STORE_BEFORE_BARRIER` had no finding either (a warning on `1fe68fb`, an error on `0b3712d`, as it is again now) |
-| `VOPD_ANTIDEP` (warning) | 3065 |
+| `VOPD_ANTIDEP` (warning at the time of the run, a note since) | 3065 |
 | `REGISTER_SPILL` (warning) | 548 |
 | `SCRATCH_USE` (warning) | 76 |
 | `UNINITIALIZED_READ` (warning) | 46: 36 are `v_readfirstlane_b32 sN, v1` in `attn_paged`, the rest dead tuple copies in `gdn_kkt_solve` and `hc_bf16`; in none is the value used in arithmetic |

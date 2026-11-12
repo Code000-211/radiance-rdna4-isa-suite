@@ -203,7 +203,7 @@ RULES: dict[str, dict] = {
     'VOPD_SRC2': _r('error', 'VOPD SRC2 operands of equal parity', 'RDNA4 ISA §7.8'),
     'VOPD_RAW_DPMACC': _r('error', 'VOPD X (DPMACC) writes a register Y reads', 'RDNA4 ISA §7.8; '
                           'LLVM SIInstrInfo::isVOPDAntidependencyAllowed'),
-    'VOPD_ANTIDEP': _r('review', 'VOPD X writes a register Y reads (LLVM emits it for non-DPMACC)',
+    'VOPD_ANTIDEP': _r('info', 'VOPD X writes a register Y reads (LLVM emits it for non-DPMACC)',
                        'RDNA4 ISA §7.8; LLVM SIInstrInfo::isVOPDAntidependencyAllowed'),
     'VOPD_SCALAR_BUS': _r('error', 'VOPD pair with more than two scalar/literal sources', 'RDNA4 ISA §7.8'),
     'VOPD_IDENTITY': _r('incomplete', 'LLVM VOPD text does not match the raw format decoder', 'RDNA4 ISA §7.8'),
