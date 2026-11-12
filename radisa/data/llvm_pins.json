@@ -1,0 +1,242 @@
+{
+  "schema": "radisa-llvm-pins/1",
+  "provenance": {
+    "revision": "llvm-project main, fetched 2026-11-12, commit unknown",
+    "generated_utc": "2026-11-12T13:31:30+00:00",
+    "note": "Initial pins were generated from llvm-project main (upstream, not ROCm), fetched 2026-11-12, commit unknown. docs/CHECK.md names ROCm llvm-project d6f6cb69 as the basis of AMDGPUWaitSGPRHazards / SIInsertWaitcnts; these pins are NOT from that commit. Regenerate them on the Radiance machine with `radisa drift --llvm-src <ROCm llvm-project> --update --revision d6f6cb69` and review the rules of every fact the update reports as changed."
+  },
+  "normalisation": "radisa.drift.normalize: comments removed, string/char literals kept verbatim, whitespace dropped except one space between adjacent word tokens; sha256 over UTF-8.",
+  "facts": [
+    {
+      "id": "features.isa_version_12",
+      "family": "target-features",
+      "file": "GCNFeatures.td",
+      "anchor": "FeatureISAVersion12",
+      "extractor": "td_def",
+      "sha256": "07b3362624b7b7a71376554e9338f35cbe65e859f59bb96358cd7a67b6ec217e",
+      "rules": [
+        "PERMLANE_AFTER_CMPX",
+        "CLAUSE_TOO_LONG",
+        "SYS_STORE_WAIT",
+        "MISSING_WAIT",
+        "VGPR_OUT_OF_RANGE",
+        "UNINITIALIZED_READ",
+        "LDS_STORE_BEFORE_BARRIER"
+      ],
+      "note": "Feature set of gfx1201 (GCNProcessors.td GFX1201 uses FeatureISAVersion12.Features). Rules read: FeatureVcmpxPermlaneHazard (PERMLANE_AFTER_CMPX), FeatureMaxHardClauseLength32 (CLAUSE_TOO_LONG), FeatureWaitsBeforeSystemScopeStores (SYS_STORE_WAIT), FeatureD16Writes32BitVgpr (MISSING_WAIT D16 halves), Feature1536VGPRs (VGPR_OUT_OF_RANGE), FeaturePackedTID / FeatureArchitectedSGPRs (UNINITIALIZED_READ entry state), FeatureBackOffBarrier (LDS_STORE_BEFORE_BARRIER). A new *Hazard feature here means LLVM fixes a new hazard on gfx1201: consider a new rule."
+    },
+    {
+      "id": "features.gfx12_generation",
+      "family": "target-features",
+      "file": "GCNFeatures.td",
+      "anchor": "FeatureGFX12",
+      "extractor": "td_def",
+      "sha256": "5fc714c2332423f6794ca6acc122a7552c93b7419b2892678f237264b64037e7",
+      "rules": [
+        "MISSING_ALU_WAIT",
+        "ALU_WAIT_TTMP",
+        "WMMA_D_TO_AB",
+        "VOPD_*",
+        "DEALLOC_NO_NOP",
+        "CLAUSE_TOO_LONG"
+      ],
+      "note": "Generation features implied for every GFX12 target, incl. FeatureGFX12Insts (hasVALUReadSGPRHazard, isGFX12Plus branches of fixWMMAHazards), FeatureVOPDInsts, FeatureMaxHardClauseLength32."
+    },
+    {
+      "id": "processor.gfx1201",
+      "family": "target-features",
+      "file": "GCNProcessors.td",
+      "anchor": "GFX1201",
+      "extractor": "td_def",
+      "sha256": "584a4857816df785fdcc3c58a8f886a3da37b870c10a998542c27a1e5e140afe",
+      "rules": [
+        "*"
+      ],
+      "note": "gfx1201 processor model: speed model and feature list it is built from. A change here can affect every rule."
+    },
+    {
+      "id": "subtarget.hasVALUReadSGPRHazard",
+      "family": "subtarget-predicates",
+      "file": "GCNSubtarget.h",
+      "anchor": "hasVALUReadSGPRHazard",
+      "extractor": "cxx_function",
+      "sha256": "ebd19910d275fd45bd9592779d3f2357c8fdbb61aa9c3e64dea865ccf3f3e720",
+      "rules": [
+        "MISSING_ALU_WAIT",
+        "ALU_WAIT_TTMP",
+        "SGPR_PAIR_GUARD",
+        "CALLEE_RETURN_OUTSTANDING"
+      ],
+      "note": "Gates AMDGPUWaitSGPRHazards (s_wait_alu insertion); currently HasGFX12Insts && !HasGFX1250Insts, true for gfx1201."
+    },
+    {
+      "id": "subtarget.requiresNopBeforeDeallocVGPRs",
+      "family": "subtarget-predicates",
+      "file": "GCNSubtarget.h",
+      "anchor": "requiresNopBeforeDeallocVGPRs",
+      "extractor": "cxx_function",
+      "sha256": "805e5f800a60a56259c533745e0a2dfe7fcfb3ffe826cc9f4dff4ba8e79a7687",
+      "rules": [
+        "DEALLOC_NO_NOP"
+      ],
+      "note": "SIInsertWaitcnts emits s_nop 0 before s_sendmsg MSG_DEALLOC_VGPRS when true; currently !HasGFX1250Insts, true for gfx1201."
+    },
+    {
+      "id": "subtarget.requiresWaitIdleBeforeGetReg",
+      "family": "subtarget-predicates",
+      "file": "GCNSubtarget.h",
+      "anchor": "requiresWaitIdleBeforeGetReg",
+      "extractor": "cxx_function",
+      "sha256": "44d4fd68cae098e158a64131479ad039b2034bb50d5ef739b039ee15279e844e",
+      "rules": [],
+      "note": "Currently HasGFX1250Insts, false for gfx1201; no radisa rule depends on it. If it becomes true for gfx1201, LLVM requires s_wait_idle before s_getreg and a new rule is needed."
+    },
+    {
+      "id": "subtarget.setRegModeNeedsVNOPs",
+      "family": "subtarget-predicates",
+      "file": "GCNSubtarget.h",
+      "anchor": "setRegModeNeedsVNOPs",
+      "extractor": "cxx_function",
+      "sha256": "0f1f3ca0949f36f3e22172c3b3a9470a48e8c07c3e43d1a63ecdbd7045a76e64",
+      "rules": [],
+      "note": "Currently HasGFX1250Insts && GFX12, false for gfx1201; no radisa rule. If it becomes true for gfx1201, LLVM inserts v_nops after s_setreg of MODE and a new rule is needed."
+    },
+    {
+      "id": "subtarget.hasVALUPartialForwardingHazard",
+      "family": "subtarget-predicates",
+      "file": "GCNSubtarget.h",
+      "anchor": "hasVALUPartialForwardingHazard",
+      "extractor": "cxx_function",
+      "sha256": "a5629f5ada8b846af483f7cb6b1e05ad39bb8c3d89e038e7aee64336ced0813e",
+      "rules": [],
+      "note": "Currently GFX11 only, false for gfx1201; no radisa rule. If it covers GFX12, fixVALUPartialForwardingHazard applies and a new rule is needed."
+    },
+    {
+      "id": "subtarget.hasVALUMaskWriteHazard",
+      "family": "subtarget-predicates",
+      "file": "GCNSubtarget.h",
+      "anchor": "hasVALUMaskWriteHazard",
+      "extractor": "cxx_function",
+      "sha256": "880b2227da8a07fb65b32c45eb307d39594b86970f2d485680343b8db0287278",
+      "rules": [],
+      "note": "Currently GFX11 only, false for gfx1201; no radisa rule. If it covers GFX12, fixVALUMaskWriteHazard applies and a new rule is needed."
+    },
+    {
+      "id": "subtarget.hasLdsDirect",
+      "family": "subtarget-predicates",
+      "file": "GCNSubtarget.h",
+      "anchor": "hasLdsDirect",
+      "extractor": "cxx_function",
+      "sha256": "3686ab5c9d2402f3c33c9be978f2e01e07888ff0e35fe56a45fa0b0d6d0bf279",
+      "rules": [],
+      "note": "Currently GFX11+, true for gfx1201: gates fixLdsDirectVALUHazard / fixLdsDirectVMEMHazard in fixHazards. No radisa rule models the LDS-direct hazards yet (not checked); add the rule name here when one exists."
+    },
+    {
+      "id": "hazards.fixHazards",
+      "family": "hazard-recognizer",
+      "file": "GCNHazardRecognizer.cpp",
+      "anchor": "GCNHazardRecognizer::fixHazards",
+      "extractor": "cxx_function",
+      "sha256": "d5aac977f30eb4dc6a3b28c8cf5d18ad1f0fb9d73f795783033cb04897fdd18a",
+      "rules": [
+        "WMMA_D_TO_AB",
+        "PERMLANE_AFTER_CMPX"
+      ],
+      "note": "The list of hazard fixers LLVM runs after scheduling and the predicates gating each. A new or re-gated fixer that applies to gfx1201 is a hazard no radisa rule checks."
+    },
+    {
+      "id": "hazards.fixWMMAHazards",
+      "family": "hazard-recognizer",
+      "file": "GCNHazardRecognizer.cpp",
+      "anchor": "GCNHazardRecognizer::fixWMMAHazards",
+      "extractor": "cxx_function",
+      "sha256": "684f2c4e05cc78df00d8d5e40835b6b9102754400bf3ec2a7071cd9c7a92abf6",
+      "rules": [
+        "WMMA_D_TO_AB",
+        "WMMA_OPERANDS"
+      ],
+      "note": "GFX12 branch: WMMA/SWMMAC D feeding the next A/B (and SWMMAC index) needs one V_NOP."
+    },
+    {
+      "id": "hazards.fixVcmpxPermlaneHazards",
+      "family": "hazard-recognizer",
+      "file": "GCNHazardRecognizer.cpp",
+      "anchor": "GCNHazardRecognizer::fixVcmpxPermlaneHazards",
+      "extractor": "cxx_function",
+      "sha256": "bbbea86e1e2d90880bdbb4c9a47af6da864408644b8e018650f2b883b591a1c3",
+      "rules": [
+        "PERMLANE_AFTER_CMPX"
+      ],
+      "note": "v_cmpx writing EXEC followed by v_permlane*: LLVM inserts v_mov_b32 vN, vN; which instructions separate them."
+    },
+    {
+      "id": "waitsgpr.whole_file",
+      "family": "wait-sgpr-hazards",
+      "file": "AMDGPUWaitSGPRHazards.cpp",
+      "anchor": "AMDGPUWaitSGPRHazards.cpp",
+      "extractor": "file",
+      "sha256": "8976dfc30d59837ddb278ec32dc2568ce23505dd865822f0f159cfc43507168f",
+      "rules": [
+        "MISSING_ALU_WAIT",
+        "ALU_WAIT_TTMP",
+        "SGPR_PAIR_GUARD",
+        "CALLEE_RETURN_OUTSTANDING"
+      ],
+      "note": "The whole pass that sgpr.py mirrors (tracked SGPRs, VA_SDST/VA_VCC/SA_SDST counters, merge at joins, callee entry, wait encoding). Any change needs sgpr.py re-reviewed."
+    },
+    {
+      "id": "waitcnt.determineVGPR16Dependency",
+      "family": "waitcnt",
+      "file": "SIInsertWaitcnts.cpp",
+      "anchor": "WaitcntBrackets::determineVGPR16Dependency",
+      "extractor": "cxx_function",
+      "sha256": "336a9a6e891d8d177b8653fe9b8c5b0f46fe112098cf2f76b1e896514e9dbd8e",
+      "rules": [
+        "MISSING_WAIT"
+      ],
+      "note": "D16 / true16 halves: when a 16-bit load result shares the 32-bit VGPR with the other half (waits.py d16 handling)."
+    },
+    {
+      "id": "waitcnt.dealloc_vgprs",
+      "family": "waitcnt",
+      "file": "SIInsertWaitcnts.cpp",
+      "anchor": "if (!WCG->isOptNone() && MFI->isDynamicVGPREnabled())",
+      "extractor": "statement",
+      "sha256": "b8494f918cf0e70f9c7d94e6b6fd56837c5ced3f0e762909c57bf1e8015ffd17",
+      "rules": [
+        "DEALLOC_NO_NOP",
+        "DEALLOC_DYNAMIC",
+        "DEALLOC_EPILOGUE",
+        "USE_AFTER_DEALLOC",
+        "DYNAMIC_VGPR_MODE"
+      ],
+      "note": "Where SIInsertWaitcnts::run puts s_alloc_vgpr 0 (dynamic VGPRs) or s_nop 0 + s_sendmsg MSG_DEALLOC_VGPRS before s_endpgm, and the condition under which it does."
+    },
+    {
+      "id": "clauses.whole_file",
+      "family": "hard-clauses",
+      "file": "SIInsertHardClauses.cpp",
+      "anchor": "SIInsertHardClauses.cpp",
+      "extractor": "file",
+      "sha256": "b8ba4f24c329cdb2c7cc1f3a427f1db0d5b60e849b57c96a95ac66c5d18872d9",
+      "rules": [
+        "CLAUSE_TOO_LONG",
+        "CLAUSE_MIXED",
+        "CLAUSE_BRANCH"
+      ],
+      "note": "Hard clause formation (clause types, mixed load/store clauses, length limit, basic-block scope). The task named it AMDGPUInsertHardClauses.cpp; the upstream file is SIInsertHardClauses.cpp."
+    },
+    {
+      "id": "memorder.gfx12_finalizeStore",
+      "family": "memory-model",
+      "file": "SIMemoryLegalizer.cpp",
+      "anchor": "SIGfx12CacheControl::finalizeStore",
+      "extractor": "cxx_function",
+      "sha256": "892b704ada8ddd4fbdc9096b5fdc98a72083ce8b58b1374ccb9301e6a72c7546",
+      "rules": [
+        "SYS_STORE_WAIT"
+      ],
+      "note": "Waits LLVM inserts before system-scope stores on GFX12.0 (memorder.py)."
+    }
+  ]
+}

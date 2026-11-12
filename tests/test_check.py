@@ -11,7 +11,7 @@ import unittest
 from radisa import hipsrc, incremental, isadb, vopd, waits
 from radisa.cli import main
 from radisa.rules import cfg
-from support import ROOT, instruction, seq, vopd_bytes
+from support import ROOT, instruction, needs_hip, needs_kernel_asm, seq, vopd_bytes
 
 FIX = ROOT / 'fixtures' / 'check'
 TABLE = isadb.load()
@@ -90,6 +90,11 @@ class TableTests(unittest.TestCase):
         m = model('v_made_up_b32', 'v1, v2')
         self.assertFalse(m['known'])
         self.assertEqual(names(m['reads']), ['v1', 'v2'])
+        self.assertEqual(names(m['writes']), ['v1', 'v2'])
+        # A known mnemonic whose printed operands fit no XML form is unknown the same way.
+        m = model('v_mov_b32_e32', 'v1, v2, v3, v4')
+        self.assertFalse(m['known'])
+        self.assertEqual(names(m['writes']), ['v1', 'v2', 'v3', 'v4'])
 
 
 def run_waits(*spec):
@@ -377,6 +382,7 @@ class AssemblyCheckTests(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertEqual([(f['rule'], f['severity']) for f in findings(r)], [('CFG_FALLTHROUGH', 'info')])
 
+    @needs_kernel_asm
     def test_whole_kernel_is_clean(self):
         code, r, _ = run_check(FIX / 'kernel_reduce.s')
         self.assertEqual((code, r['status'], findings(r)), (0, 'PASS', []))
@@ -401,6 +407,7 @@ class AssemblyCheckTests(unittest.TestCase):
             '\ts_wait_dscnt 0x0\n\ts_barrier_signal -1\n\ts_barrier_wait -1\n',
             '\ts_barrier_signal -1\n\ts_barrier_wait -1\n\ts_wait_dscnt 0x0\n'), 'LDS_STORE_BEFORE_BARRIER')
 
+    @needs_kernel_asm
     def test_every_single_fault_in_a_kernel_fails(self):
         seen = []
         with tempfile.TemporaryDirectory() as d:
@@ -415,6 +422,7 @@ class AssemblyCheckTests(unittest.TestCase):
         self.assertEqual(set(seen), {'MISSING_WAIT', 'LDS_STORE_BEFORE_BARRIER', 'CFG_FALLTHROUGH',
                                      'VGPR_OUT_OF_RANGE'})
 
+    @needs_kernel_asm
     def test_vgpr_out_of_range(self):
         # The descriptor allocates 8 VGPRs (granule of 8 in wave32): v7 is the last one the kernel owns.
         text = (FIX / 'kernel_reduce.s').read_text()
@@ -502,6 +510,7 @@ class HipCheckTests(unittest.TestCase):
     def check(self, name, *extra):
         return run_check(FIX / name, '--cxx', gfx1201_compiler(), '--flag', '-nogpuinc -nogpulib', *extra)
 
+    @needs_hip(gfx1201_compiler(), FIX / 'clean_compiled.hip')
     def test_per_kernel_codegen_matches_whole_unit(self):
         full = self.check('clean_compiled.hip', '--no-incremental')[1]
         inc = self.check('clean_compiled.hip')[1]
@@ -542,6 +551,7 @@ class HipCheckTests(unittest.TestCase):
         lexical = [f for f in r['findings'] if f['rule'] == 'HIP_INLINE_ASM_MEMORY']
         self.assertEqual([f['loc']['line'] for f in lexical], [14])
 
+    @needs_hip(gfx1201_compiler(), FIX / 'clean_compiled.hip')
     def test_compiler_scheduled_code_is_clean(self):
         code, r, _ = self.check('clean_compiled.hip')
         self.assertEqual(code, 0, findings(r))

@@ -15,6 +15,10 @@ it), but after it every Radiance kernel is one self-contained function. So:
   4. the findings of unchanged kernels come from the cache, their source lines
      moved along with the edit (difflib over the old and new file text)
 
+The optimised IR also feeds asmclobber (ASM_UNDECLARED_CLOBBER): its findings are added to the
+kernel's result before caching, so a cached kernel reports them too. They depend only on the
+kernel's IR, which the fingerprint covers.
+
 Step 3 produces the same machine code as compiling the unit (241/241 kernels of
 seven libr4d units compared). When the optimised module still has non-kernel
 functions, module-level code generation (LDS layout across kernels) could differ:
@@ -33,9 +37,9 @@ import shlex
 import subprocess
 
 from .binary import FormatError
-from . import __version__, hipsrc
+from . import __version__, asmclobber, hipsrc
 
-SCHEMA = 'radisa-incremental-v2'   # v2: new rules, cached findings of v1 are stale
+SCHEMA = 'radisa-incremental-v3'   # v3: kernel results carry ASM_UNDECLARED_CLOBBER (asmclobber)
 LLC_OPT = {'-O0': '-O0', '-O1': '-O1', '-O2': '-O2', '-O3': '-O3', '-Os': '-O2', '-Oz': '-O2'}
 
 
@@ -284,6 +288,14 @@ def _plain(x):
     return sorted(x) if isinstance(x, (set, frozenset)) else str(x)
 
 
+def kernel_asm_findings(kernel: str, mod: dict, table: dict) -> list[dict]:
+    """asmclobber findings of one kernel of the optimised module (helpers are inlined into it)."""
+    out = asmclobber.check_function_ir(mod['functions'][kernel], mod['metadata'], mod['attributes'], table)
+    for f in out:
+        f.update(function=unquote(kernel), kernel=True)
+    return out
+
+
 def default_cache_root() -> Path:
     env = os.environ.get('RADISA_CACHE')
     if env:
@@ -316,7 +328,9 @@ def check_hip_incremental(path: Path, table: dict, backend: dict, args, work: Pa
     if d.returncode:
         raise FormatError('llvm-dis failed: ' + d.stderr.strip())
     mod = parse_module(d.stdout)
-    salt = json.dumps([SCHEMA, __version__, table['source']['xml_sha256'], gen.identity])
+    # `identity` (check.analysis_identity): cached findings follow every change to the analysis.
+    salt = json.dumps([SCHEMA, __version__, table['source']['xml_sha256'], gen.identity,
+                       getattr(check_object_bytes, 'identity', None)])
     fp = Fingerprints(mod, salt)
     kernels = [k for k in mod['kernels']
                if not args.kernel or args.kernel in unquote(k)]
@@ -342,8 +356,12 @@ def check_hip_incremental(path: Path, table: dict, backend: dict, args, work: Pa
         functions = hipsrc.parse_asm(asm.read_text(encoding='utf-8', errors='replace'), base_cwd)
         results, n2 = check_object_bytes(obj.read_bytes(), str(path), table, backend, args.kernel,
                                          work, functions, args.timeout)
-        return results, notes + n2, {'mode': 'whole-module', 'codegen': gen.mode, 'kernels': len(results),
-                                     'compiled': len(results), 'reused': 0,
+        names = {r['name'] for r in results}
+        n2 += asmclobber.attach(results, [f for f in asmclobber.check_ir_text(d.stdout, table, str(path))
+                                          if not f['kernel'] or f['function'] in names])   # --kernel filter
+        nk = sum(1 for r in results if not r.get('callee'))   # functions are checked too, not counted
+        return results, notes + n2, {'mode': 'whole-module', 'codegen': gen.mode, 'kernels': nk,
+                                     'compiled': nk, 'reused': 0,
                                      'reason': f'{len(extra)} non-kernel function(s) after optimisation'}
 
     key = hashlib.sha1(json.dumps([str(path.resolve()), cxx, cargs, base_cwd]).encode()).hexdigest()[:16]
@@ -381,6 +399,7 @@ def check_hip_incremental(path: Path, table: dict, backend: dict, args, work: Pa
                                    args.timeout)
         if len(rs) != 1:
             raise FormatError(f'{unquote(k)}: expected one kernel in its object, found {len(rs)}')
+        rs[0]['findings'] += kernel_asm_findings(k, mod, table)
         # The same shape as a cached result: plain JSON values.
         return k, json.loads(json.dumps(rs[0], default=_plain)), json.loads(json.dumps(n, default=_plain))
 

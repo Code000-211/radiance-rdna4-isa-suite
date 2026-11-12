@@ -278,11 +278,15 @@ def _looks_like(token: str, op: list) -> bool:
 
 
 def operand_model(table: dict, op: str, args: str, wave: int = 32) -> dict:
-    """Reads/writes of one disassembled instruction, or `known=False`."""
+    """Reads/writes of one disassembled instruction, or `known=False`.
+
+    An unknown instruction (mnemonic not in the table, or no XML form fits the printed operands) is
+    taken to read AND write every register its text names: nothing about it is assumed harmless.
+    """
     name, entry = lookup(table, op)
     text_regs = registers(args)
     if entry is None:
-        return {'known': False, 'name': None, 'reads': text_regs, 'writes': set(),
+        return {'known': False, 'name': None, 'reads': text_regs, 'writes': set(text_regs),
                 'reason': 'mnemonic not in AMD ISA table'}
     args = re.split(r'\s(?://|;)', ' ' + args, maxsplit=1)[0].strip()
     positional = split_operands(args)
@@ -322,5 +326,5 @@ def operand_model(table: dict, op: str, args: str, wave: int = 32) -> dict:
         return {'known': True, 'name': name, 'entry': entry, 'enc': form['enc'],
                 'reads': reads, 'writes': writes, 'returns': returns,
                 'mem_read': mem_read, 'mem_write': mem_write}
-    return {'known': False, 'name': name, 'entry': entry, 'reads': text_regs, 'writes': set(),
+    return {'known': False, 'name': name, 'entry': entry, 'reads': text_regs, 'writes': set(text_regs),
             'reason': f'{len(positional)} printed operands match no XML form of {name}'}

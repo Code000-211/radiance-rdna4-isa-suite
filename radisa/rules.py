@@ -7,7 +7,7 @@ from __future__ import annotations
 from collections import Counter, deque
 import re
 from .binary import FormatError
-from . import vopd
+from . import hazards, vopd
 
 SOURCES = {
     'resources': 'AMD RDNA4 ISA §3.3.2.1, printed p.17; LLVM AMDGPUUsage kernel descriptor',
@@ -200,27 +200,26 @@ def deallocation_checks(ins: list[dict], edges: dict, reachable: set) -> list[di
     return out
 
 
-def local_checks(ins: list[dict], edges: dict, reachable: set) -> tuple[list[dict], dict]:
-    """Pattern-level checks within basic blocks. No inter-wave memory proof."""
+def local_checks(ins: list[dict], edges: dict, reachable: set, wave: int = 32) -> tuple[list[dict], dict]:
+    """Pattern-level checks within basic blocks. No inter-wave memory proof.
+
+    The LLVM-fixed ALU hazards (WMMA_D_TO_AB, PERMLANE_AFTER_CMPX), DEALLOC_NO_NOP and the s_clause
+    lint run over the whole direct CFG in `hazards.analyze`; their findings are appended here.
+    """
     out, count = [], Counter()
     preds = Counter(x for xs in edges.values() for x in xs)
     branch_targets = {x for i in ins if i['op'].startswith(('s_branch','s_cbranch')) for x in edges.get(i['pc'], [])}
     pending: dict[str, list[tuple[set, int]]] = {'load': [], 'ds': [], 'km': [], 'exp': []}
-    last_wmma = None
     previous = None
     for i in ins:
         pc, op = i['pc'], i['op']
         if pc not in reachable: continue
         if pc in branch_targets or preds[pc] > 1 or (previous and edges.get(previous['pc']) != [pc]):
-            pending = {k: [] for k in pending}; last_wmma = None
+            pending = {k: [] for k in pending}
             count['basic_block_resets'] += 1
         reads, writes, known = rw(i)
         if not known: count['instructions_outside_rw_subset'] += 1
         else: count['instructions_in_rw_subset'] += 1
-        # Independent of rw modeling: immediate CMPX -> PERMLANE restriction.
-        if previous and op.startswith('v_permlane') and previous['op'].startswith('v_cmpx'):
-            out.append(finding('PERMLANE_AFTER_CMPX', 'error',
-                'PERMLANE immediately follows V_CMPX without intervening VALU', pc, 'permlane'))
         # RAW/WAW candidates: narrow supported instruction subset only.
         if known:
             for domain, records in pending.items():
@@ -251,28 +250,6 @@ def local_checks(ins: list[dict], edges: dict, reachable: set) -> tuple[list[dic
                 pending['load'].append((writes, pc)); pending['ds'].append((writes, pc))
             elif op.startswith('ds_load_'): pending['ds'].append((writes, pc))
             elif op.startswith(('s_load_', 's_buffer_load_')): pending['km'].append((writes, pc))
-        if op.startswith(('v_wmma_', 'v_swmmac_')):
-            a = operands(i['args'])
-            if len(a) < 4:
-                out.append(finding('WMMA_OPERANDS', 'incomplete', 'WMMA operands not understood', pc, 'wmma'))
-            else:
-                dst = regs(a[0])
-                abindex = regs(','.join(a[1:3]+a[4:]))
-                if last_wmma and last_wmma[1] & abindex:
-                    out.append(finding('WMMA_D_TO_AB', 'error',
-                        'WMMA D feeds next WMMA A/B/index without V_NOP or proved independent VALU',
-                        pc, 'wmma', producer=last_wmma[0]))
-                last_wmma = (pc, dst)
-        elif op == 'v_nop': last_wmma = None
-        elif op.startswith('v_') and last_wmma:
-            if known and not (last_wmma[1] & (reads|writes)):
-                last_wmma = None
-            else:
-                # A dependent/unknown VALU might add the required scheduling
-                # separation but we cannot certify independence. Do not turn a
-                # later overlap into a definite violation.
-                last_wmma = None
-                count['wmma_separation_unknown'] += 1
         previous = i
     # Exact three-/four-instruction instance of the documented SGPR-pair hazard.
     # Broader ALU scoreboard modeling remains explicitly outside coverage.
@@ -291,6 +268,8 @@ def local_checks(ins: list[dict], edges: dict, reachable: set) -> tuple[list[dic
                 out.append(finding('SGPR_PAIR_GUARD', 'review',
                     'documented VALU-read/SALU-write/read SGPR-pair pattern lacks S_WAIT_ALU guard',
                     c['pc'], 'wait', producer=a['pc']))
+    hz, hstats = hazards.analyze(ins, edges, reachable, wave=wave)
+    out += hz; count.update(hstats)
     return out, dict(count)
 
 
@@ -340,7 +319,7 @@ def audit_kernel(kernel: dict, decoded: dict) -> dict:
                 'last-use dirty discard requires whole-buffer lifetime proof',i['pc'],'cache'))
     edges, reachable, cissues = cfg(ins); issues += cissues
     issues += deallocation_checks(ins, edges, reachable)
-    local, stats = local_checks(ins, edges, reachable); issues += local
+    local, stats = local_checks(ins, edges, reachable, md.get('.wavefront_size', 32)); issues += local
     issues += waterfall_checks(ins, edges)
     counts = Counter(i['op'] for i in ins)
     return {'name': kernel['name'], 'symbol': kernel['symbol'],
@@ -354,7 +333,9 @@ def audit_kernel(kernel: dict, decoded: dict) -> dict:
             'checks':{
                 'vopd':'raw-binary legality subset', 'direct_cfg':'intra-kernel direct edges',
                 'deallocation':'reachable uses, explicit CFG only',
-                'wmma':'basic-block explicit D-to-A/B/index hazards',
+                'wmma':'whole direct-CFG D-to-A/B/index hazards (LLVM fixWMMAHazards)',
+                'alu_hazards':'whole direct-CFG CMPX->PERMLANE (LLVM fixVcmpxPermlaneHazards)',
+                'clauses':'s_clause length/type/branch lint (LLVM SIInsertHardClauses)',
                 'memory_waits':'local supported-op diagnostic; not proof',
                 'sgpr_pair':'documented narrow pattern diagnostic; not full scoreboard',
                 'waterfall':'measured-cost candidate, not correctness failure',

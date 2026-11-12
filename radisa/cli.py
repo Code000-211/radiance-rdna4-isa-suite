@@ -308,6 +308,8 @@ def main(argv=None) -> int:
     a.add_argument('--expect');a.add_argument('--capture-log');a.set_defaults(fn=audit)
     b=sub.add_parser('baseline');b.add_argument('manifest');b.add_argument('--out',required=True);b.set_defaults(fn=baseline)
     from .check import add_parser as add_check;add_check(sub)
+    from .batch import add_parser as add_batch;add_batch(sub)
+    from .drift import add_parser as add_drift;add_drift(sub)
     args=p.parse_args(argv)
     try:
         if getattr(args,'timeout',1)<=0: raise FormatError('timeout must be positive')

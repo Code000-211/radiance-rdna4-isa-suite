@@ -1,0 +1,13 @@
+# pre-commit (https://pre-commit.com) hook definitions for `radisa check`.
+# Each staged .hip / .s file is checked on its own by check-kernel.sh (through
+# `check-tree.sh --each`): exit 1 = error finding, 3 = analysis incomplete; both block the commit.
+# HIP files need a gfx1201-capable clang (--cxx is not passed; set $RADISA_HIPCC) and, for the
+# project's real flags, RADISA_COMPILE_COMMANDS=build/compile_commands.json in the environment.
+# Full validation needs the ROCm / Radiance LLVM 24 toolchain; LLVM 18 assembles snippets only.
+- id: radisa-check
+  name: radisa check (gfx1201 machine-code lint)
+  description: Lint HIP sources and gfx1201 assembly with `radisa check`, one file at a time.
+  entry: check-tree.sh --each
+  language: script
+  files: '\.(hip|s)$'
+  pass_filenames: true

@@ -6,6 +6,7 @@ source checks here are lexical hints (severity review/info), never proofs.
 """
 from __future__ import annotations
 
+import functools
 import json
 import os
 from pathlib import Path
@@ -15,6 +16,7 @@ import shutil
 import subprocess
 
 from .binary import FormatError
+from . import isadb
 
 SOURCE_SUFFIXES = {'.hip', '.cu', '.cpp', '.cc', '.cxx'}
 MEMORY_MNEMONIC = re.compile(
@@ -132,6 +134,21 @@ def compile_hip(source: Path, workdir: Path, cxx: str | None, flags: list[str],
     return result
 
 
+def compile_ir(source: Path, workdir: Path, cxx: str | None, flags: list[str],
+               compile_commands: Path | None, arch: str = 'gfx1201', timeout: float = 600) -> dict:
+    """Optimised device IR of the unit as text (clang -emit-llvm -S, same arguments as compile_hip),
+    for IR-level checks such as asmclobber. {'command', 'returncode', 'stderr', 'ir': str | None}."""
+    cxx, args, cwd = hip_command(source, cxx, flags, compile_commands, arch)
+    out = workdir / (source.stem + '.gfx1201.ll')
+    cmd = [cxx, *args, '-emit-llvm', '-S', str(source.resolve()), '-o', str(out)]
+    try:
+        p = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, cwd=cwd, check=False)
+    except (OSError, subprocess.TimeoutExpired) as ex:
+        raise FormatError(f'compiler failed to run: {ex}') from ex
+    ir = out.read_text(encoding='utf-8', errors='replace') if not p.returncode and out.exists() else None
+    return {'command': cmd, 'returncode': p.returncode, 'stderr': p.stderr, 'ir': ir}
+
+
 # ------------------------------------------------------------------ .s parsing
 
 LABEL = re.compile(r'^([A-Za-z_.$][\w.$@]*):')
@@ -210,8 +227,27 @@ def _base(m: str) -> str:
     return re.sub(r'_(e32|e64|dpp|sdwa|e64_dpp)$', '', m.lower())
 
 
+@functools.lru_cache(maxsize=1)
+def _default_table() -> dict | None:
+    try:
+        return isadb.load()
+    except (OSError, ValueError, FormatError):
+        return None
+
+
+@functools.lru_cache(maxsize=4096)
+def _canonical(mnemonic: str) -> str | None:
+    t = _default_table()
+    return isadb.lookup(t, mnemonic)[0] if t else None
+
+
 def _same(decoded: str, asm: str) -> bool:
-    return _base(decoded) == _base(asm) or (decoded.startswith('v_dual_') and asm.lower().startswith('v_dual_'))
+    """Same instruction, also across the aliases the assembler accepts and the disassembler does
+    not print (inline asm often keeps pre-GFX12 names: s_add_u32 is decoded as s_add_co_u32)."""
+    if _base(decoded) == _base(asm) or (decoded.startswith('v_dual_') and asm.lower().startswith('v_dual_')):
+        return True
+    a, b = _canonical(decoded.lower()), _canonical(asm.lower())
+    return a is not None and a == b
 
 
 def source_map(decoded: list[dict], asm_instructions: list[dict]) -> tuple[dict, str | None]:
@@ -244,26 +280,101 @@ def _line_col(src: str, pos: int) -> tuple[int, int]:
     return line, pos - (src.rfind('\n', 0, pos) + 1) + 1
 
 
+# Every GNU spelling clang accepts: asm, __asm, __asm__, with volatile/inline/goto qualifiers.
+ASM_STATEMENT = re.compile(
+    r'(?<![\w$])(?:__asm__|__asm|asm)(?![\w$])\s*'
+    r'(?:(?:volatile|__volatile__|__volatile|inline|__inline__|__inline|goto)(?![\w$])\s*)*'
+    r'\(\s*((?:"(?:[^"\\]|\\.)*"\s*)+)')
+DEFINE = re.compile(r'^[ \t]*#[ \t]*define[ \t]+([A-Za-z_]\w*)(\()?', re.M)
+
+
+def _defines(src: str) -> list[dict]:
+    """#define directives (with backslash continuations): name, function-like, span, body."""
+    out = []
+    for m in DEFINE.finditer(src):
+        end = m.end()
+        while True:
+            nl = src.find('\n', end)
+            if nl < 0:
+                end = len(src)
+                break
+            if src[end:nl].rstrip(' \t\r').endswith('\\'):
+                end = nl + 1
+                continue
+            end = nl
+            break
+        out.append({'name': m[1], 'function': bool(m[2]), 'start': m.start(), 'end': end,
+                    'body': src[m.end():end]})
+    return out
+
+
+def asm_statements(src: str) -> list[dict]:
+    """Inline asm statements of comment-free source text: position, template text, and for asm
+    that a macro expands to, the macro chain with the line of each definition.
+
+    asm inside a #define body is reported where the macro is used (a macro never used emits no
+    code); macros that use such a macro are followed to a fixed point (nested macros)."""
+    defs = _defines(src)
+    spans = [(d['start'], d['end']) for d in defs]
+    inside = lambda pos: any(a <= pos < b for a, b in spans)
+    found = []
+    for m in ASM_STATEMENT.finditer(src):
+        if not inside(m.start()):
+            found.append({'pos': m.start(), 'template': m[1], 'via': []})
+    asm_macro: dict[str, list[dict]] = {}
+    for d in defs:
+        bodies = [{'template': a[1], 'via': []} for a in ASM_STATEMENT.finditer(d['body'])]
+        if bodies:
+            asm_macro[d['name']] = [{**b, 'via': [d]} for b in bodies]
+    for _ in range(16):
+        grew = False
+        for d in defs:
+            if d['name'] in asm_macro:
+                continue
+            for name, stmts in list(asm_macro.items()):
+                if re.search(rf'(?<![\w$]){name}(?![\w$])', d['body']):
+                    asm_macro[d['name']] = [{**b, 'via': [d, *b['via']]} for b in stmts]
+                    grew = True
+                    break
+        if not grew:
+            break
+    by_name = {d['name']: d for d in defs}
+    for name, stmts in asm_macro.items():
+        call = r'\s*\(' if by_name[name]['function'] else ''
+        for m in re.finditer(rf'(?<![\w$]){name}(?![\w$]){call}', src):
+            if inside(m.start()):
+                continue
+            found += [{'pos': m.start(), 'template': b['template'], 'via': b['via']} for b in stmts]
+    for f in found:
+        f['macros'] = [{'name': d['name'], 'line': _line_col(src, d['start'])[0]} for d in f.pop('via')]
+    return sorted(found, key=lambda f: f['pos'])
+
+
 def source_checks(path: Path, cite) -> list[dict]:
     raw = path.read_text(encoding='utf-8', errors='replace')
     src = _strip_comments(raw)
     out = []
 
-    def add(rule, severity, pos, message, section=None):
+    def add(rule, severity, pos, message, section=None, **extra):
         line, col = _line_col(src, pos)
         out.append({'rule': rule, 'severity': severity, 'message': message, 'pc': None,
                     'loc': {'file': str(path), 'line': line, 'column': col},
-                    'source': cite(section) if section else 'radisa HIP source check (lexical)'})
+                    'source': cite(section) if section else 'radisa HIP source check (lexical)', **extra})
 
-    for m in re.finditer(r'\basm\s*(?:volatile\s*)?\(\s*((?:"(?:[^"\\]|\\.)*"\s*)+)', src):
-        body = ''.join(re.findall(r'"((?:[^"\\]|\\.)*)"', m[1]))
+    for a in asm_statements(src):
+        body = ''.join(re.findall(r'"((?:[^"\\]|\\.)*)"', a['template']))
         body = re.sub(r'\\[ntr]', ' ', body)
         mem = MEMORY_MNEMONIC.search(body)
         if mem and not re.search(r'\bs_wait_(load|store|ds|km|sample|bvh|idle)', body):
-            add('HIP_INLINE_ASM_MEMORY', 'review', m.start(),
-                f'inline asm issues {mem[1]} without a wait in the same asm statement; the '
+            via = ''
+            if a['macros']:
+                via = ' (expanded from ' + ' -> '.join(f"macro {m['name']} defined at line {m['line']}"
+                                                         for m in a['macros']) + ')'
+            add('HIP_INLINE_ASM_MEMORY', 'review', a['pos'],
+                f'inline asm issues {mem[1]} without a wait in the same asm statement{via}; the '
                 'compiler does not track counters of asm memory instructions. Whether a use races it '
-                'is decided on the machine code (MISSING_WAIT)', '5.7.1')
+                'is decided on the machine code (MISSING_WAIT)', '5.7.1',
+                **({'macros': a['macros']} if a['macros'] else {}))
     for m in re.finditer(r'\b__shfl(?:_xor|_up|_down)?(?:_sync)?\s*\(', src):
         depth, i, args, start = 1, m.end(), [], m.end()
         while i < len(src) and depth:

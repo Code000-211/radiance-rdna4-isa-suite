@@ -94,7 +94,10 @@ class HazardTests(unittest.TestCase):
     def test_permlane_cmpx(self):
         self.assertIn('PERMLANE_AFTER_CMPX',self.rules(seq(('v_cmpx_eq_u32','v0,v1'),('v_permlane16_b32','v0,v1,s0,s1'),('s_endpgm',))))
     def test_permlane_vnop(self):
-        self.assertNotIn('PERMLANE_AFTER_CMPX',self.rules(seq(('v_cmpx_eq_u32','v0,v1'),('v_nop',),('v_permlane16_b32','v0,v1,s0,s1'),('s_endpgm',))))
+        # LLVM GCNHazardRecognizer::fixVcmpxPermlaneHazards: V_NOP does not expire the hazard ("V_NOP will be
+        # discarded by SQ"); its fix is a v_mov_b32 of the permlane's src0 onto itself.
+        self.assertIn('PERMLANE_AFTER_CMPX',self.rules(seq(('v_cmpx_eq_u32','v0,v1'),('v_nop',),('v_permlane16_b32','v0,v1,s0,s1'),('s_endpgm',))))
+        self.assertNotIn('PERMLANE_AFTER_CMPX',self.rules(seq(('v_cmpx_eq_u32','v0,v1'),('v_mov_b32','v1,v1'),('v_permlane16_b32','v0,v1,s0,s1'),('s_endpgm',))))
     def test_sgpr_documented_pattern(self):
         self.assertIn('SGPR_PAIR_GUARD',self.rules(seq(('v_mov_b32','v0,s1'),('s_mov_b32','s0,0x42'),('s_mov_b32','s2,s0'),('s_endpgm',))))
     def test_sgpr_different_pair(self):

@@ -1,0 +1,173 @@
+{
+  "block": 256,
+  "cases": [
+    {
+      "basis": "RDNA4 ISA 5.7.1 memory dependency counters (DScnt)",
+      "file": "cases/ds_load_wait.hip",
+      "name": "ds_load_wait",
+      "title": "LDS load result read without s_wait_dscnt",
+      "variants": {
+        "fixed": {
+          "expect": "clean",
+          "kernel": "ds_load_wait_fixed",
+          "note": "s_wait_dscnt 0x0 between the load and its reader."
+        },
+        "hazard": {
+          "expect": "MISSING_WAIT",
+          "kernel": "ds_load_wait_hazard",
+          "note": "v_add_nc_u32 reads the ds_load_b32 destination with the load outstanding.",
+          "severity": "error"
+        }
+      },
+      "words_per_lane": 1
+    },
+    {
+      "basis": "RDNA4 ISA 5.7.1 memory dependency counters (LOADcnt)",
+      "file": "cases/global_load_wait.hip",
+      "name": "global_load_wait",
+      "title": "global load result read without s_wait_loadcnt",
+      "variants": {
+        "fixed": {
+          "expect": "clean",
+          "kernel": "global_load_wait_fixed",
+          "note": "s_wait_loadcnt 0x0 between the load and its reader."
+        },
+        "hazard": {
+          "expect": "MISSING_WAIT",
+          "kernel": "global_load_wait_hazard",
+          "note": "v_add_nc_u32 reads the global_load_b32 destination with the load outstanding.",
+          "severity": "error"
+        }
+      },
+      "words_per_lane": 1
+    },
+    {
+      "basis": "LLVM AMDGPUUsage.md, Memory Model GFX12: LDS operations of different waves of a work-group can be reordered, s_wait_dscnt 0x0 is required to synchronise them (release before the barrier)",
+      "file": "cases/lds_store_barrier.hip",
+      "name": "lds_store_barrier",
+      "title": "LDS store still outstanding at the workgroup barrier",
+      "variants": {
+        "fixed": {
+          "expect": "clean",
+          "kernel": "lds_store_barrier_fixed",
+          "note": "s_wait_dscnt 0x0 before s_barrier_signal."
+        },
+        "hazard": {
+          "expect": "LDS_STORE_BEFORE_BARRIER",
+          "kernel": "lds_store_barrier_hazard",
+          "note": "ds_store_b32, then s_barrier_signal/s_barrier_wait with no s_wait_dscnt; then each thread reads the word another wave stored.",
+          "severity": "error"
+        }
+      },
+      "words_per_lane": 1
+    },
+    {
+      "basis": "RDNA4 ISA 7.12.1; LLVM GCNHazardRecognizer::fixWMMAHazards (inserts V_NOP_e32)",
+      "file": "cases/wmma_d_to_a.hip",
+      "name": "wmma_d_to_a",
+      "title": "WMMA result D used as A of the next WMMA with no VALU in between",
+      "variants": {
+        "fixed": {
+          "expect": "clean",
+          "kernel": "wmma_d_to_a_fixed",
+          "note": "v_nop between the two WMMAs (what fixWMMAHazards inserts)."
+        },
+        "hazard": {
+          "expect": "WMMA_D_TO_AB",
+          "kernel": "wmma_d_to_a_hazard",
+          "note": "the second v_wmma reads v[72:75] (D of the first) as A immediately.",
+          "severity": "error"
+        }
+      },
+      "words_per_lane": 1
+    },
+    {
+      "basis": "RDNA4 ISA 7.2.8; LLVM GCNHazardRecognizer::fixVcmpxPermlaneHazards (FeatureVcmpxPermlaneHazard, in FeatureISAVersion12; inserts V_MOV_B32 src0, src0 because \"V_NOP will be discarded by SQ\")",
+      "file": "cases/cmpx_permlane.hip",
+      "name": "cmpx_permlane",
+      "title": "v_permlane16 right after a v_cmpx that writes EXEC",
+      "variants": {
+        "fixed": {
+          "expect": "clean",
+          "kernel": "cmpx_permlane_fixed",
+          "note": "v_mov_b32 src0, src0 in between (what fixVcmpxPermlaneHazards inserts)."
+        },
+        "hazard": {
+          "expect": "PERMLANE_AFTER_CMPX",
+          "kernel": "cmpx_permlane_hazard",
+          "note": "v_cmpx_gt_u32 (lanes 0-15 stay active), then v_permlane16_b32 immediately. EXEC is restored inside the asm and declared clobbered (clang warns -Winline-asm that exec is reserved; harmless here).",
+          "severity": "error"
+        }
+      },
+      "words_per_lane": 1
+    },
+    {
+      "basis": "LLVM AMDGPUWaitSGPRHazards.cpp (GFX12 VALU SGPR read hazard); s_wait_alu fields: RDNA4 ISA S_WAITCNT_DEPCTR",
+      "file": "cases/alu_wait_carry.hip",
+      "name": "alu_wait_carry",
+      "title": "VALU reads an SGPR (carry) a VALU wrote, with no s_wait_alu depctr_va_sdst(0)",
+      "variants": {
+        "fixed": {
+          "expect": "clean",
+          "kernel": "alu_wait_carry_fixed",
+          "note": "s_wait_alu 0xf1ff (depctr_va_sdst(0)) before the reader, as the pass inserts."
+        },
+        "hazard": {
+          "expect": "MISSING_ALU_WAIT",
+          "kernel": "alu_wait_carry_hazard",
+          "note": "v_add_co_u32 writes the carry SGPR, v_add_co_ci_u32 reads it next (pair tracked by an earlier VALU read).",
+          "severity": "error"
+        }
+      },
+      "words_per_lane": 2
+    },
+    {
+      "basis": "LLVM AMDGPUWaitSGPRHazards.cpp numbers every ttmp as SGPR 0 (SIRegisterInfo.td HW encoding), so it emits no wait here; radisa reports ALU_WAIT_TTMP (warning). Not documented by AMD",
+      "file": "cases/alu_wait_ttmp.hip",
+      "name": "alu_wait_ttmp",
+      "title": "the MISSING_ALU_WAIT shape with a scalar read of ttmp0 in between (radisa/sgpr.py)",
+      "variants": {
+        "fixed": {
+          "expect": "clean",
+          "kernel": "alu_wait_ttmp_fixed",
+          "note": "s_wait_alu 0xf1ff (depctr_va_sdst(0)) before the reader."
+        },
+        "hazard": {
+          "expect": "ALU_WAIT_TTMP",
+          "kernel": "alu_wait_ttmp_hazard",
+          "note": "v_mov reads s0 (pair 0 tracked), v_add_co_u32 writes the carry, s_cmp_eq_u32 reads ttmp0, v_add_co_ci_u32 reads the carry with no s_wait_alu (LLVM emits none here).",
+          "severity": "review"
+        }
+      },
+      "words_per_lane": 2
+    },
+    {
+      "basis": "RDNA4 ISA 5.7.1 (LOADcnt returns in order); relaxation as in LLVM SIInsertWaitcnts (D16 halves)",
+      "file": "cases/d16_other_half.hip",
+      "name": "d16_other_half",
+      "title": "16-bit store of the low half while a D16 load is outstanding",
+      "variants": {
+        "fixed": {
+          "expect": "clean",
+          "kernel": "d16_other_half_fixed",
+          "note": "lo-half load first: s_wait_loadcnt 0x1 retires it, the store runs while the hi-half load is still outstanding (accepted by radisa, emitted by LLVM). A mismatch here is evidence against that relaxation, not only a harness bug."
+        },
+        "hazard": {
+          "expect": "MISSING_WAIT",
+          "kernel": "d16_other_half_hazard",
+          "note": "hi-half load, then lo-half load, s_wait_loadcnt 0x1 retires only the hi load; global_store_b16 reads the lo half with its load outstanding.",
+          "severity": "error"
+        }
+      },
+      "words_per_lane": 2
+    }
+  ],
+  "fill_byte": 165,
+  "grid": 512,
+  "hardware_validated": false,
+  "iterations": 200,
+  "note": "UNTESTED ON HARDWARE. A mismatch on a hazard variant is evidence for the rule; zero mismatches do not show the rule is unnecessary. A mismatch on a fixed variant is a harness bug.",
+  "schema": "radisa-hwprobe-1",
+  "target": "gfx1201",
+  "wave": 32
+}
