@@ -1,10 +1,10 @@
 """radisa.hazards: LLVM-fixed gfx1201 hazards over the whole direct CFG, DEALLOC_NO_NOP, s_clause lint."""
-import os, shutil, tempfile, unittest
+import os, shutil, subprocess, tempfile, unittest
 from pathlib import Path
 from radisa import hazards, isadb
 from radisa.rules import cfg, local_checks
 from support import (seq, CHECK_FIX, run_check, all_findings, needs_llvm_mc, needs_minimal_kernel, kernel_asm,
-                     check_text, needs_hip)
+                     check_text, needs_hip, lit24_objdump)
 
 
 def gfx1201_compiler():
@@ -178,6 +178,26 @@ class CfgTests(unittest.TestCase):
         f = run(CMPX, *self.long_branch(0x10), ('s_endpgm',), PERM, ('s_endpgm',))
         self.assertEqual([(y['rule'], y['pc'], y['producer']) for y in f], [('PERMLANE_AFTER_CMPX', 24, 0)])
 
+    def test_long_branch_llvm24_literal_spelling(self):
+        # ROCm LLVM 24 prints an inline-valued literal as lit(0x..); the target run on the R9700 found
+        # the long branch unresolved (int('lit(0x20)', 0) fails) and PERMLANE_AFTER_CMPX missing.
+        lit = lambda v: f'lit({v & 0xffffffff:#x})'
+        lb = [('s_getpc_b64', 's[2:3]'), ('s_add_co_u32', f's2, s2, {lit(0x10)}'),
+              ('s_add_co_ci_u32', f's3, s3, {lit(0)}'), ('s_setpc_b64', 's[2:3]')]
+        f = run(CMPX, *lb, ('s_endpgm',), PERM, ('s_endpgm',))
+        self.assertEqual([(y['rule'], y['pc'], y['producer']) for y in f], [('PERMLANE_AFTER_CMPX', 24, 0)])
+        # Backwards: -8 is an inline constant too, printed as the 32-bit literal word.
+        x = seq(('s_nop', '0'), ('s_getpc_b64', 's[2:3]'), ('s_add_co_u32', f's2, s2, {lit(-8)}'),
+                ('s_add_co_ci_u32', f's3, s3, {lit(-1)}'), ('s_setpc_b64', 's[2:3]'))
+        e, r, f = cfg(x)
+        self.assertEqual((e[16], f), ([0], []))
+        # lit64(...) and a non-literal expression: lit64 is a value, an expression is not resolved.
+        x = seq(('s_getpc_b64', 's[2:3]'), ('s_add_co_u32', 's2, s2, lit64(0x4)'),
+                ('s_add_co_ci_u32', 's3, s3, 0'), ('s_setpc_b64', 's[2:3]'), ('s_endpgm',))
+        self.assertEqual(cfg(x)[0][12], [8])
+        x[1]['args'] = 's2, s2, lit(foo)'
+        self.assertEqual([y['rule'] for y in cfg(x)[2]], ['CFG_INDIRECT'])
+
     def test_long_branch_backwards_with_wait_alu(self):
         # LLVM 20+ puts s_wait_alu after s_getpc_b64 and after the add pair (ApplyHazardWorkarounds).
         x = seq(('s_nop', '0'), *self.long_branch(-8, filler=[('s_wait_alu', '0xfffe')]))
@@ -338,6 +358,29 @@ class FixtureTests(unittest.TestCase):
         _, rep = run_check(CHECK_FIX / 'hazard_longbranch.s')
         self.assertEqual([(f['rule'], f['pc'], f['producer']) for f in all_findings(rep)],
                          [('PERMLANE_AFTER_CMPX', 0x2c, 0x4)])
+
+    @staticmethod
+    def obj(d):
+        from support import llvm_mc
+        o = Path(d, 'lb.o')
+        subprocess.run([llvm_mc(), '-triple=amdgcn-amd-amdhsa', '-mcpu=gfx1201', '-filetype=obj',
+                        str(CHECK_FIX / 'hazard_longbranch.s'), '-o', str(o)], check=True, capture_output=True)
+        return o
+
+    @needs_llvm_mc
+    def test_long_branch_llvm24_disassembly(self):
+        # The whole pipeline with LLVM 24's `lit(0x20)` / `lit(0x0)` in the long branch (an
+        # llvm-objdump wrapper rewrites the local disassembler's `32` / `0`). Without the shared
+        # immediate parser this gave PASS on the target.
+        with tempfile.TemporaryDirectory() as d:
+            exe = lit24_objdump(d)
+            if exe is None:
+                self.skipTest('no llvm-objdump')
+            self.assertIn('lit(0x20)', subprocess.run([str(exe), '-d', '--mcpu=gfx1201', str(self.obj(d))],
+                                                      capture_output=True, text=True).stdout)
+            code, rep = run_check(CHECK_FIX / 'hazard_longbranch.s', '--objdump', exe)
+        self.assertEqual((code, [(f['rule'], f['pc'], f['producer']) for f in all_findings(rep)]),
+                         (1, [('PERMLANE_AFTER_CMPX', 0x2c, 0x4)]))
 
     @needs_llvm_mc
     def test_strict_fails_on_review(self):

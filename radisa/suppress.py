@@ -51,7 +51,9 @@ Baseline fingerprint (`--write-baseline FILE`, `--baseline FILE`): sha256 over t
      normalised producer instruction text, normalised source line text, occurrence index]
 
 * instruction text: finding['instruction'], lower-case, comments removed, whitespace collapsed,
-  no blanks after commas;
+  no blanks after commas, LLVM 24's `lit(X)` / `lit64(X)` literal spelling replaced by X as LLVM
+  18-23 prints an integer operand (isadb.canonical_literals), so a baseline written with one
+  disassembler still matches the other;
 * producer instruction: finding['producer_instruction'] when check.py provides it, else '';
 * source line text: only for findings without an instruction (HIP lexical findings): the text of
   the line finding['loc'] points at, normalised the same way; '' otherwise;
@@ -83,7 +85,7 @@ from pathlib import Path
 import re
 import tempfile
 
-from . import __version__
+from . import __version__, isadb
 
 SCHEMA = 'radisa-baseline-v1'
 CONFIG_NAME = '.radisa.json'
@@ -113,10 +115,17 @@ RULES: dict[str, dict] = {
     'MISSING_WAIT': _r('error', 'a register is read or overwritten while a memory instruction writing it may '
                        'still be outstanding on some CFG path', 'RDNA4 ISA §5.7.1 memory dependency counters',
                        memory_safety=True),
-    'LDS_STORE_BEFORE_BARRIER': _r('review', 'an LDS write may still be outstanding (DScnt) at a workgroup barrier '
-                                   '(LLVM waits only for a cross-address-space release fence)',
-                                   'LLVM AMDGPU User Guide, memory model GFX12; SIMemoryLegalizer.cpp '
-                                   'SIGfx12CacheControl::insertWait', memory_safety=True),
+    'LDS_STORE_BEFORE_BARRIER': _r('error', 'an LDS write may still be outstanding (DScnt) at a workgroup barrier '
+                                   '(also where LLVM emits no wait: a "-one-as" or LDS-only fence, a bare barrier)',
+                                   'hardware: hwprobe lds_store_barrier on a Radeon AI PRO R9700 (gfx1201), '
+                                   '2026-11-12, wrong results in 137 and 152 of 200 launches without the wait, '
+                                   'none with it; LLVM AMDGPU User Guide, memory model GFX12; LLVM inserts the '
+                                   'wait only for a cross-address-space release fence (SIMemoryLegalizer.cpp '
+                                   'SIGfx12CacheControl::insertWait), so this rule is the hardware-observed '
+                                   'exception to "error = what LLVM enforces"',
+                                   memory_safety=True,
+                                   note='code that does not read another wave\'s LDS data after the barrier: '
+                                        'radisa: ignore[LDS_STORE_BEFORE_BARRIER] <reason>'),
     'MISSING_ALU_WAIT': _r('error', 'an SGPR read by vector instructions is read before its last write is '
                            'committed, with no s_wait_alu in between', LLVM + 'AMDGPUWaitSGPRHazards.cpp',
                            memory_safety=True),
@@ -400,7 +409,7 @@ def _protected(f: dict) -> bool:
 
 def _norm(text: str) -> str:
     t = re.split(r'\s(?:;|//)', ' ' + (text or ''), maxsplit=1)[0]
-    t = re.sub(r'\s+', ' ', t.strip().lower())
+    t = re.sub(r'\s+', ' ', isadb.canonical_literals(t.strip().lower()))
     return re.sub(r'\s*,\s*', ',', t)
 
 
@@ -939,6 +948,8 @@ def explain(rule: str) -> str:
     lines = [f'{rule}', f"  default severity: {LABEL.get(e['severity'], e['severity'])}"
              + (' (off unless enabled)' if e.get('opt_in') else ''),
              f"  summary: {e['summary']}", f"  basis: {e['basis']}", f"  since: {e['since']}"]
+    if e.get('note'):
+        lines.append(f"  note: {e['note']}")
     if e.get('tool'):
         lines.append(f"  reported by: radisa {e['tool']}")
     if flags:

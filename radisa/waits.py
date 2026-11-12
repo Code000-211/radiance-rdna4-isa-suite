@@ -58,10 +58,14 @@ CALLS = ('LLVM SIInsertWaitcnts.cpp: SIInsertWaitcnts::run (non-kernel function 
          'setStateOnFunctionEntryOrReturn), generateWaitcntInstBefore (SI_RETURN / S_SETPC_B64_return: '
          'all counters but STOREcnt 0, simplifyVmemInvOnlyWait; a call waits only for SMEM writing its '
          'operands), updateEventWaitcntAfter (after a call: all counters but STOREcnt 0)')
-MEMORY_MODEL = ('LLVM AMDGPU User Guide, Memory Model GFX12 (s_wait_dscnt 0 synchronises LDS with vector '
-                'memory between waves); LLVM SIMemoryLegalizer.cpp SIGfx12CacheControl::insertWait (LDS at '
-                'workgroup scope: DSCnt |= IsCrossAddrSpaceOrdering); SIInsertWaitcnts.cpp (no wait at '
-                'S_BARRIER with FeatureBackOffBarrier); counter: AMD RDNA4 ISA §5.7.1')
+MEMORY_MODEL = ('Hardware: hwprobe lds_store_barrier on a Radeon AI PRO R9700 (gfx1201), 2026-11-12: '
+                'ds_store then barrier without s_wait_dscnt gave wrong results in 137 and 152 of 200 '
+                'launches, the s_wait_dscnt 0 variant in none; LLVM AMDGPU User Guide, Memory Model GFX12 '
+                '(s_wait_dscnt 0 synchronises LDS between waves); LLVM SIMemoryLegalizer.cpp '
+                'SIGfx12CacheControl::insertWait (LDS at workgroup scope: DSCnt |= '
+                'IsCrossAddrSpaceOrdering, so no wait for a one-as fence); counter: AMD RDNA4 ISA §5.7.1')
+LDS_BARRIER_HW = ('measured on a Radeon AI PRO R9700 (hwprobe lds_store_barrier, 2026-11-12): without the wait '
+                  'the waves after the barrier read stale LDS in 137 and 152 of 200 launches')
 
 
 def domains(model: dict, op: str) -> list[str]:
@@ -353,18 +357,21 @@ def _where(prod: int, origin: dict | None) -> str:
 def _sync_findings(instructions, state_in, reachable, by_pc, origin) -> list[dict]:
     """Local-memory writes that may be outstanding when a workgroup barrier is reached.
 
-    Severity 'review', not 'error': LLVM does not enforce this wait for gfx1201. SIInsertWaitcnts
-    adds none at S_BARRIER (gfx1201 has FeatureBackOffBarrier), and SIGfx12CacheControl::insertWait
-    (SIMemoryLegalizer.cpp, identical in upstream main and ROCm d6f6cb69) adds S_WAIT_DSCNT for LDS at
-    workgroup scope only when the fence orders across address spaces (`DSCnt |=
-    IsCrossAddrSpaceOrdering`, "LDS operations for all waves are executed in a total global
-    ordering"). So the compiler emits s_wait_dscnt 0 before the barrier for __syncthreads() (fences
-    at the cross-address-space "workgroup" scope), and correctly emits none for a "-one-as" fence
-    (e.g. __builtin_amdgcn_fence(__ATOMIC_RELEASE, "workgroup-one-as")), an OpenCL local fence or a
-    bare __builtin_amdgcn_s_barrier(). Machine code does not say which fence the source had; with an
-    LDS write outstanding a cross-address-space release would have left its wait in place, so on
-    compiler output this finding means the source synchronised only LDS (correct per LLVM's memory
-    model) or had no fence (a source-level race), and in hand-edited code that a wait was removed.
+    Severity 'error', the one rule of this module that LLVM does not enforce: the basis is a
+    hardware observation. hwprobe case lds_store_barrier (ds_store, then s_barrier_signal/wait with
+    no s_wait_dscnt, then each wave reads another wave's LDS words) gave wrong results in 137 and 152
+    of 200 launches on a Radeon AI PRO R9700 on 2026-11-12; the variant with s_wait_dscnt 0 before
+    the barrier had none. LLVM emits the wait for __syncthreads() (its fences are at the
+    cross-address-space "workgroup" scope): SIGfx12CacheControl::insertWait (SIMemoryLegalizer.cpp,
+    identical in upstream main and ROCm d6f6cb69) adds S_WAIT_DSCNT for LDS at workgroup scope only
+    when the fence orders across address spaces (`DSCnt |= IsCrossAddrSpaceOrdering`), and
+    SIInsertWaitcnts adds none at S_BARRIER (gfx1201 has FeatureBackOffBarrier). So LLVM emits no
+    wait for a "-one-as" fence (__builtin_amdgcn_fence(__ATOMIC_RELEASE, "workgroup-one-as")), an
+    OpenCL local fence or a bare __builtin_amdgcn_s_barrier(), and such compiler output is reported
+    here: on the R9700 that pattern is the one that lost LDS writes. Code that really does not read
+    another wave's LDS data after the barrier states so with an inline
+    `radisa: ignore[LDS_STORE_BEFORE_BARRIER] <reason>`. With the rule at 'error', the 114-unit,
+    6448-kernel libr4d corpus compiled by ROCm clang 24 had no finding.
 
     The barrier is the one synchronisation the machine code itself states. Which waits an
     atomic, a fence or a cache invalidate needs depends on the ordering and scope written in
@@ -385,14 +392,14 @@ def _sync_findings(instructions, state_in, reachable, by_pc, origin) -> list[dic
             extra = {}
             if origin and prod in origin:
                 extra['producer_origin'] = origin[prod]
-            f = {'rule': 'LDS_STORE_BEFORE_BARRIER', 'severity': 'review', 'pc': pc,
+            f = {'rule': 'LDS_STORE_BEFORE_BARRIER', 'severity': 'error', 'pc': pc,
                  'producer': None if prod == ENTRY else prod, 'counter': 'ds',
-                 'message': f"{op} is reached while {producer_op(prod, by_pc)} ({at}) may still be outstanding. "
-                            'LLVM emits s_wait_dscnt 0 here only for a release fence that orders LDS together '
-                            'with global memory (the __syncthreads() fences); a "-one-as" or LDS-only fence '
-                            'or a bare barrier gets no wait. If other waves use this write together with '
-                            'global memory after the barrier, or the source had no fence, insert '
-                            's_wait_dscnt 0 before the barrier',
+                 'message': f"{op} is reached while {producer_op(prod, by_pc)} ({at}) may still be outstanding: "
+                            'the waves the barrier releases may read local memory before the write has landed '
+                            f'({LDS_BARRIER_HW}); insert s_wait_dscnt 0 before the barrier. LLVM emits it only '
+                            'for a cross-address-space release fence (__syncthreads()), not for a "-one-as" or '
+                            'LDS-only fence or a bare barrier. If no other wave reads this LDS data after the '
+                            'barrier, say so with `radisa: ignore[LDS_STORE_BEFORE_BARRIER] <reason>`',
                  'required_wait': 's_wait_dscnt 0', 'later_uses': [], 'source': MEMORY_MODEL, **extra}
             seen[prod] = f
             out.append(f)

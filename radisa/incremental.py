@@ -27,6 +27,7 @@ then the whole module goes through llc and nothing is cached.
 from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor
+import contextlib
 import difflib
 import hashlib
 import json
@@ -305,6 +306,15 @@ def default_cache_root() -> Path:
     return Path(base) / 'radisa'
 
 
+@contextlib.contextmanager
+def _cancel_on_error(pool: ThreadPoolExecutor):
+    try:
+        yield
+    except BaseException:
+        pool.shutdown(wait=False, cancel_futures=True)
+        raise
+
+
 def check_hip_incremental(path: Path, table: dict, backend: dict, args, work: Path, check_object_bytes):
     """Returns (kernel results, notes, stats) like check.check_hip, compiling only changed kernels."""
     flags = []
@@ -405,7 +415,10 @@ def check_hip_incremental(path: Path, table: dict, backend: dict, args, work: Pa
         # The same shape as a cached result: plain JSON values.
         return k, json.loads(json.dumps(rs[0], default=_plain)), json.loads(json.dumps(n, default=_plain))
 
-    with ThreadPoolExecutor(max_workers=jobs) as pool:
+    # On an exception (a kernel that fails, or check.Terminated from SIGTERM) the kernels still
+    # queued are cancelled: ThreadPoolExecutor's own exit would compile all of them first, keeping
+    # the work directory (and the process) alive for as long as the whole unit takes.
+    with ThreadPoolExecutor(max_workers=jobs) as pool, _cancel_on_error(pool):
         for k, r, n in pool.map(one, enumerate(todo)):
             results[k] = (r, n)
             snap = {}

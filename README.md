@@ -34,8 +34,9 @@ memory counters are modelled over the whole CFG. Kernels and the non-kernel func
 code object are checked (a function with what a callee may assume at entry and must do before it
 returns). Findings point at source lines (HIP lines, or the lines of a hand-written `.s`) and cite
 the manual section and PDF page, or the LLVM function a rule follows. A rule is an error only where
-the ISA guide documents it or LLVM's AMDGPU backend itself fixes or enforces it for gfx1201; the
-rest are warnings or notes. Among them:
+the ISA guide documents it or LLVM's AMDGPU backend itself fixes or enforces it for gfx1201, with
+one hardware-observed exception (`LDS_STORE_BEFORE_BARRIER`); the rest are warnings or notes.
+Among them:
 
 - `MISSING_WAIT`: a register used while a load/LDS/SMEM/sample access may still be outstanding
   (typically after inline-asm memory instructions, which the compiler does not track), including
@@ -44,8 +45,11 @@ rest are warnings or notes. Among them:
 - `WMMA_D_TO_AB`, `PERMLANE_AFTER_CMPX`: the ALU hazards LLVM fixes, across branches and loops;
 - `CFG_FALLTHROUGH`: a path that never reaches `s_endpgm`; `VGPR_OUT_OF_RANGE`: a VGPR above the
   kernel descriptor's allocation (the hardware does not trap);
-- warnings: `LDS_STORE_BEFORE_BARRIER` (an LDS write outstanding at a barrier; LLVM waits there
-  only for a cross-address-space release fence), `UNINITIALIZED_READ`, `ASM_UNDECLARED_CLOBBER`,
+- `LDS_STORE_BEFORE_BARRIER`: an LDS write outstanding at a workgroup barrier. LLVM waits there
+  only for a cross-address-space release fence, but on an R9700 the barrier without the wait lost
+  LDS writes in 137 and 152 of 200 launches (`hwprobe/`), so it is an error; code that does not
+  read another wave's LDS data after the barrier suppresses it inline with a reason;
+- warnings: `UNINITIALIZED_READ`, `ASM_UNDECLARED_CLOBBER`,
   `CALLEE_RETURN_OUTSTANDING`, `NORETURN_CALL_RETURNS`, `s_clause` and VGPR-deallocation lint;
 - VOPD encoding, spills, scratch and lexical HIP checks.
 
@@ -69,10 +73,13 @@ are compiled and checked again (`--jobs`, cache in `--cache-dir` or `~/.cache/ra
 This gives byte-identical code and descriptors to a whole-unit compile (4475 of 4475 kernels in
 117 libr4d units with LLVM 24). `--no-incremental` restores the single compile.
 
-On all 117 libr4d units, before the rules added in the current change: 115 `PASS`, 2 `INCOMPLETE`
-(`BYTE_COVERAGE`), no error findings. The current rules were developed with LLVM/clang 18.1.3 and
-have not yet been run on that corpus with Radiance's compiler, nor on hardware (`hwprobe/` holds
-the probes for that). `radisa hook` runs the same check as a PostToolUse edit hook.
+On the target (2026-11-12, commit 1fe68fb, AMD clang 24 ROCm d6f6cb69, one R9700): the 114 libr4d
+units (6448 kernels, 11.79 M instructions) gave 112 `PASS`, 2 `NO_KERNELS`, no `FAIL`, no
+`INCOMPLETE` and no error finding; long branches were not resolved in that run (an LLVM 24
+`lit(...)` spelling, fixed since, not yet re-run there). The hardware probes showed the
+`MISSING_WAIT`, `WMMA_D_TO_AB` and `LDS_STORE_BEFORE_BARRIER` hazards on the R9700. Details and
+what is still unvalidated: docs/CHECK.md, "Measured on the target". `radisa hook` runs the same
+check as a PostToolUse edit hook.
 Details, rules, and what is **not** checked or not yet validated: `docs/CHECK.md`.
 
 ## Audit a whole build: `radisa collect` + `audit`
@@ -146,7 +153,7 @@ of the hash check.
 ## Tests
 
 ```bash
-bash tools/rdna4-isa-suite/check.sh            # tests/ (580) + replay_tests/ (142)
+bash tools/rdna4-isa-suite/check.sh            # tests/ (594) + replay_tests/ (142)
 bash tools/rdna4-isa-suite/check-planner.sh    # planner_tests/ (257)
 ```
 
@@ -154,14 +161,14 @@ bash tools/rdna4-isa-suite/check-planner.sh    # planner_tests/ (257)
 need a gfx1201 toolchain newer than LLVM 18 (the checked-in compiler-emitted kernels,
 `clean_compiled.hip`) fail instead of skipping: run it with ROCm's or Radiance's LLVM. With
 Ubuntu LLVM/clang 18.1.3 and no ROCm, `PYTHONPATH=$PWD python3 -m unittest discover -s tests`
-gives 580 tests, OK, 7 skipped. Replay and planner tests need `RADIANCE_SOURCE` pointing at the
+gives 594 tests, OK, 7 skipped. Replay and planner tests need `RADIANCE_SOURCE` pointing at the
 Radiance checkout. `SHA256SUMS` covers the shipped files (`sha256sum -c SHA256SUMS`).
 
 ## Documentation
 
 - `docs/CHECK.md`: `radisa check` and `check-all` rules, CFG, counter and callee model, suppression,
   formats, hook, drift, gaps.
-- `hwprobe/README.md`: hardware probes for the hazard rules (not yet run on a GPU).
+- `hwprobe/README.md`: hardware probes for the hazard rules and their results on one R9700.
 - `docs/ISA_V02.md`, `docs/RULE_COVERAGE.md`, `docs/REVIEW.md`: binary audit gate.
 - `docs/REPLAY_FORMAT.md`, `integration/README.md`: replay manifests and AQL patches.
 - `docs/V06_REVIEW.md`, `docs/OPERATOR_PLANNER.md`, `docs/FLOW_FORMAT.md`, `docs/SOURCES_V06.md`: planner v0.6.

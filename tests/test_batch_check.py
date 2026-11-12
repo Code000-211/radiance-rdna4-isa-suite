@@ -266,6 +266,14 @@ class IsolationTest(Tmp):
         self.assertIn(f'==> {ok.resolve()}: PASS <==', out)
         self.assertIn(f'==> {bad.resolve()}: FAIL <==', out)
 
+    def test_relative_keep_is_absolute(self):
+        """--keep is made absolute before the per-file directory is added: the compiler of a
+        compile_commands entry runs in that entry's directory."""
+        ok = self.touch('ok.s')[0]
+        ns = batch.file_namespace(ok, parse(str(ok), '--keep', 'kept'))
+        self.assertTrue(Path(ns.keep).is_absolute())
+        self.assertEqual(Path(ns.keep).parent, Path('kept').resolve())
+
     def test_worker_without_setsid(self):
         """Regression: no os.setsid (Windows) raised AttributeError before any report was made."""
         import multiprocessing
@@ -323,14 +331,17 @@ class BaselineSplitTest(Tmp):
 class InterruptTest(Tmp):
     """Regression: SIGINT / SIGTERM left the parent, the workers and their compilers running."""
 
-    def _start(self):
+    def _start(self, *argv, command='check-all', tmp=None):
         pidf = self.d / 'cc.pid'
         cc = self.d / 'slowcc'
         cc.write_text(f'#!/bin/sh\necho $$ >> {pidf}\nexec sleep 1000\n')
         cc.chmod(0o755)
         src = self.touch('k.hip', text='__global__ void k(float *p) { p[0] = 1; }\n')[0]
         env = dict(os.environ, PYTHONPATH=str(ROOT))
-        p = subprocess.Popen([sys.executable, '-m', 'radisa', 'check-all', str(src), '--cxx', str(cc), '--quiet'],
+        if tmp:
+            env['TMPDIR'] = str(tmp)
+        extra = ['--quiet'] if command == 'check-all' else []
+        p = subprocess.Popen([sys.executable, '-m', 'radisa', command, str(src), '--cxx', str(cc), *extra, *argv],
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=env)
         self.addCleanup(lambda: p.poll() is None and (p.kill(), p.communicate()))
         t0 = time.monotonic()
@@ -367,6 +378,47 @@ class InterruptTest(Tmp):
                 time.sleep(0.05)
             self.assertFalse(self._alive(cc), f'compiler {cc} survived signal {sig}')
             (self.d / 'cc.pid').unlink()
+
+
+    @unittest.skipUnless(hasattr(os, 'killpg') and shutil.which('sh'), 'POSIX only')
+    def test_no_work_directory_left(self):
+        """Regression: 10 /tmp/radisa-check-* directories were left after 228 unit runs on the target.
+        A check-all worker stopped for its timeout or by a signal was SIGKILLed, and `radisa check`
+        itself died on SIGTERM, both without removing the work directory."""
+        tmp = self.d / 'tmp'
+        cases = [('radisa check, SIGTERM', 'check', (), signal.SIGTERM, 143),
+                 ('radisa check, SIGHUP', 'check', ('--no-incremental',), signal.SIGHUP, 129),
+                 ('check-all, SIGTERM', 'check-all', (), signal.SIGTERM, 143),
+                 ('check-all, --timeout-per-file', 'check-all', ('--timeout-per-file', '3'), None, 3)]
+        for what, command, argv, sig, code in cases:
+            with self.subTest(what):
+                shutil.rmtree(tmp, ignore_errors=True)
+                (self.d / 'cc.pid').unlink(missing_ok=True)
+                tmp.mkdir()
+                p, cc = self._start(*argv, command=command, tmp=tmp)
+                self.assertTrue(list(tmp.rglob('radisa-check-*')), 'the check made no work directory under TMPDIR')
+                if sig:
+                    p.send_signal(sig)
+                try:
+                    _, err = p.communicate(timeout=30)
+                except subprocess.TimeoutExpired:
+                    self.fail(f'{what}: still running after 30 s')
+                self.assertEqual(p.returncode, code, err)
+                self.assertEqual(sorted(str(x.relative_to(tmp)) for x in tmp.rglob('*')), [], what)
+                t0 = time.monotonic()
+                while self._alive(cc) and time.monotonic() - t0 < 5:
+                    time.sleep(0.05)
+                self.assertFalse(self._alive(cc), f'{what}: compiler {cc} survived')
+
+    def test_exception_removes_work_directory(self):
+        tmp = self.d / 'tmp'
+        tmp.mkdir()
+        src = self.touch('x.s')[0]
+        with mock.patch.object(tempfile, 'tempdir', str(tmp)), \
+                mock.patch.object(check, 'check_assembly', side_effect=RuntimeError('boom')):
+            with self.assertRaises(RuntimeError):
+                check.analyze(batch.check_parser().parse_args([str(src)]))
+        self.assertEqual(list(tmp.iterdir()), [])
 
 
 class RealCheckTest(unittest.TestCase):

@@ -1,5 +1,5 @@
 // hwprobe host runner: launches every probe kernel many times and counts mismatching output words.
-// UNTESTED ON HARDWARE: written without a GPU or ROCm; only built against hwprobe/mock (g++).
+// Built unmodified against the real HIP runtime and run on one R9700 (2026-11-12); also builds against hwprobe/mock (g++).
 //
 //   host_runner CASES_TSV ITERATIONS RESULTS_JSON [CASE_SUBSTRING]
 //

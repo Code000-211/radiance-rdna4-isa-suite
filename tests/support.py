@@ -105,6 +105,33 @@ def needs_kernel_asm(f):
     `instprefsize`, the 4-component target id); LLVM 18 does not. Never skipped with RAD_ISA_REQUIRE_LLVM=1."""
     return _need(assembles((CHECK_FIX/'kernel_reduce.s').read_text()),'needs a newer llvm-mc (kernel_reduce.s)')(f)
 
+_LIT24=r'''#!/usr/bin/env python3
+"""llvm-objdump that prints literals as ROCm LLVM 24 (d6f6cb69) does: a literal whose value is an
+inline constant (-16..64) is printed `lit(0x..)` (AMDGPUDisassembler::decodeLiteralConstant ->
+AMDGPUMCExpr::createLit, printed in hex). Only the last operand, when it equals the last encoded word."""
+import re,subprocess,sys
+p=subprocess.run([%r,*sys.argv[1:]],capture_output=True,text=True)
+sys.stderr.write(p.stderr)
+line=re.compile(r'^(\s*\S+\s.*,\s*)(-?\d+)(\s+//\s*[0-9A-Fa-f]+:\s*(?:[0-9A-Fa-f]{8}\s+)+?([0-9A-Fa-f]{8})\s*)$')
+def fix(l):
+    m=line.match(l)
+    if not m or len(m[3].split(':',1)[1].split())<2:return l
+    v,word=int(m[2]),int(m[4],16)
+    if not -16<=v<=64 or v&0xffffffff!=word:return l
+    return f'{m[1]}lit({word:#x}){m[3]}'
+sys.stdout.write(''.join(fix(l) for l in p.stdout.splitlines(True)))
+sys.exit(p.returncode)
+'''
+
+def lit24_objdump(directory):
+    """Path of a wrapper around the local llvm-objdump that prints literals in LLVM 24's `lit(0x..)`
+    spelling (pass it as `--objdump`), or None when there is no llvm-objdump."""
+    import shutil
+    real=next((shutil.which(x) for x in ('/opt/rocm/llvm/bin/llvm-objdump','llvm-objdump','llvm-objdump-18') if shutil.which(x)),None)
+    if not real:return None
+    exe=Path(directory,'lit24-objdump');exe.write_text(_LIT24%real);exe.chmod(0o700)
+    return exe
+
 def needs_minimal_kernel(f):
     """Skip unless llvm-mc assembles kernel_asm() output (LLVM 18 does)."""
     return _need(assembles(kernel_asm('s_endpgm')),'needs llvm-mc for kernel_asm()')(f)

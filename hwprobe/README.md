@@ -1,13 +1,15 @@
 # hwprobe: hardware probes for the `radisa check` hazard rules
 
-> **UNTESTED ON HARDWARE.** This harness was written where no GPU and no ROCm exist. None of the
-> probes has run on a gfx1201 (Radeon AI PRO R9700) or any other GPU. `host_runner.cpp` and
-> `run_probes.sh` have never been built or run against a real HIP runtime. The list of what was
-> and was not checked is at the end of this file.
+> **Run on hardware once.** On 2026-11-12 every probe ran on one Radeon AI PRO R9700 (gfx1201,
+> GPU 0) with AMD clang 24.0.0git (ROCm llvm-project d6f6cb69), the cases as of commit 1fe68fb,
+> 200 launches per variant, grid 512; `host_runner.cpp` was built unmodified against the real HIP
+> runtime. Results are under "Results on the R9700". One GPU, one run: what that does and does not
+> show is at the end of this file.
 
-No rule of `radisa check` has been confirmed on hardware (docs/CHECK.md: `ALU_WAIT_TTMP` "not
-confirmed on hardware"; the fault-injection numbers there measure the linter, not the GPU). These
-probes are meant to be run later on the R9700 to collect that evidence.
+The R9700 run is hardware evidence for `MISSING_WAIT` (LDS, global, and the D16 relaxation),
+`WMMA_D_TO_AB` and `LDS_STORE_BEFORE_BARRIER`. For `PERMLANE_AFTER_CMPX`, `MISSING_ALU_WAIT` and
+`ALU_WAIT_TTMP` no hazard was observed, which shows nothing either way. The fault-injection numbers
+in docs/CHECK.md measure the linter, not the GPU.
 
 ## What a probe is
 
@@ -40,7 +42,7 @@ the number of mismatching words and launches, and the first mismatch.
 |---|---|---|---|---|
 | `ds_load_wait` | `MISSING_WAIT` (error) | `v_add_nc_u32` reads a `ds_load_b32` destination with the load outstanding | `s_wait_dscnt 0x0` before the reader | RDNA4 ISA §5.7.1 (DScnt) |
 | `global_load_wait` | `MISSING_WAIT` (error) | the same with `global_load_b32` | `s_wait_loadcnt 0x0` | RDNA4 ISA §5.7.1 (LOADcnt) |
-| `lds_store_barrier` | `LDS_STORE_BEFORE_BARRIER` (warning) | `ds_store_b32`, then `s_barrier_signal`/`s_barrier_wait` with no wait; each thread then reads the word stored by the next wave | `s_wait_dscnt 0x0` before `s_barrier_signal` | LLVM AMDGPUUsage, Memory Model GFX12 (LDS operations of different waves may be reordered). A warning, not an error: LLVM emits this wait only for a release fence that orders LDS together with global memory (`SIGfx12CacheControl::insertWait`, `DSCnt \|= IsCrossAddrSpaceOrdering`) and none at `S_BARRIER` with `FeatureBackOffBarrier` (`SIInsertWaitcnts`), so an LDS-only fence or a bare barrier gets none. The probe measures whether the hardware needs it here |
+| `lds_store_barrier` | `LDS_STORE_BEFORE_BARRIER` (error) | `ds_store_b32`, then `s_barrier_signal`/`s_barrier_wait` with no wait; each thread then reads the word stored by the next wave | `s_wait_dscnt 0x0` before `s_barrier_signal` | LLVM AMDGPUUsage, Memory Model GFX12. LLVM emits this wait only for a release fence that orders LDS together with global memory (`SIGfx12CacheControl::insertWait`, `DSCnt \|= IsCrossAddrSpaceOrdering`) and none at `S_BARRIER` with `FeatureBackOffBarrier` (`SIInsertWaitcnts`), so an LDS-only fence or a bare barrier gets none. The rule is an error because the R9700 needs the wait here: `_hazard` mismatched in 137 and 152 of 200 launches |
 | `wmma_d_to_a` | `WMMA_D_TO_AB` (error) | the second `v_wmma_f32_16x16x16_f16` reads D of the first as A, directly | `v_nop` between them | RDNA4 ISA §7.12.1; LLVM `GCNHazardRecognizer::fixWMMAHazards` (inserts `V_NOP_e32`) |
 | `cmpx_permlane` | `PERMLANE_AFTER_CMPX` (error) | `v_cmpx_gt_u32` (lanes 0-15 stay active), then `v_permlane16_b32` | `v_mov_b32 src0, src0` between them | RDNA4 ISA §7.2.8; LLVM `fixVcmpxPermlaneHazards` (`FeatureVcmpxPermlaneHazard` is in `FeatureISAVersion12`; inserts `V_MOV_B32`, because "V_NOP will be discarded by SQ") |
 | `alu_wait_carry` | `MISSING_ALU_WAIT` (error) | `v_add_co_u32` writes the carry SGPR and `v_add_co_ci_u32` reads it next. The pair was already read by a VALU | `s_wait_alu 0xf1ff` (`depctr_va_sdst(0)`) before the reader | LLVM `AMDGPUWaitSGPRHazards.cpp` |
@@ -77,6 +79,27 @@ Design notes. These keep `radisa check` exact on the generated code: only the pr
   `ASM_UNDECLARED_CLOBBER` quiet.
 * `wmma_d_to_a` uses the fixed registers v64-v95, all declared as clobbered.
 
+## Results on the R9700 (2026-11-12)
+
+One Radeon AI PRO R9700 (GPU 0), AMD clang 24.0.0git (ROCm d6f6cb69), cases as of commit 1fe68fb,
+`HWPROBE_ITERATIONS=200`, `HWPROBE_GRID=512` (131,072 words per launch for one word per thread).
+`host_runner.cpp` built unmodified against the real HIP runtime. The kernels were launched, so
+`--verify-lint` accepted every code object (`run_probes.sh` stops before launching otherwise).
+Every `_fixed` variant: 0 mismatching launches.
+
+| case | `_hazard`: mismatching launches of 200 | words | reading |
+|---|---|---|---|
+| `ds_load_wait` | 200 | all 26,214,400 | hazard observed |
+| `global_load_wait` | 200 | all 26,214,400 | hazard observed |
+| `wmma_d_to_a` | 200 | all 26,214,400 | hazard observed: the result is 120.0 instead of 128.0 |
+| `lds_store_barrier` | 137 and 152 (two runs) | 8,576 and 8,960 | hazard observed |
+| `d16_other_half` | 200 | not recorded here | hazard observed; `_fixed` clean, so no evidence against the D16 half-store relaxation |
+| `cmpx_permlane` | 0 | 0 | not observed (proves nothing) |
+| `alu_wait_carry` | 0 | 0 | not observed (proves nothing) |
+| `alu_wait_ttmp` | 0 | 0 | not observed (proves nothing) |
+
+`generate.HARDWARE_RUNS` (and `manifest.json` `hardware_runs`) records the same.
+
 ## Running (on the R9700)
 
 ```bash
@@ -108,7 +131,7 @@ Steps:
    checks every kernel against the manifest: `_hazard` reports exactly the expected rule and
    severity, `_fixed` reports no error and not the rule, and neither has an `incomplete` finding.
    The exit code of `radisa check` cannot show this, since `_hazard` alone makes it 1 (or 0 for
-   the cases whose rule is a warning). On a
+   `alu_wait_ttmp`, whose rule is a warning). On a
    mismatch (for example a newer compiler changed the code around the asm) nothing runs and the
    script exits 2, because the results would be filed under a rule the bytes do not have.
 4. `generate.py --data OUT_DIR/data` writes the inputs (`<case>.in.bin`), the expected outputs
@@ -134,9 +157,17 @@ Steps:
 Regenerate after editing `generate.py`: `python3 hwprobe/generate.py`. `cases/*.hip` and
 `cases/manifest.json` are generated and never edited by hand.
 
-## What was verified here, and what was not
+## What was verified, and what was not
 
-Verified (Ubuntu LLVM/clang 18.1.3, no GPU; `tests/test_hwprobe.py`):
+On the R9700 (2026-11-12, see "Results on the R9700"):
+
+* `run_probes.sh` end to end with ROCm's clang and hipcc: case build, `radisa check` and
+  `--verify-lint` on the code objects that ran, `host_runner.cpp` against the real HIP runtime
+  (`hipModuleLoad`, `hipModuleLaunchKernel`, `gcnArchName`), 200 launches per variant.
+* Every `_fixed` variant matched the host-predicted result in every launch, so the expected values,
+  launch geometry and buffer layout are right.
+
+Without a GPU (Ubuntu LLVM/clang 18.1.3; `tests/test_hwprobe.py`):
 
 * Generation is deterministic, and the checked-in `cases/` match the generator.
 * Spot checks of the host-predicted results (neighbour wrap, permlane sentinel lanes, both carry
@@ -151,20 +182,20 @@ Verified (Ubuntu LLVM/clang 18.1.3, no GPU; `tests/test_hwprobe.py`):
   `results.json` after a load error, and exit 2 for an empty selection or zero iterations.
 * `generate.py --verify-lint` on real `radisa check` reports of the compiled cases, and on reports
   edited to drop the expected rule or add an error to `_fixed` (both caught).
-* Once, by hand: `run_probes.sh` end to end, with clang 18 as `HWPROBE_CLANG` and a `g++ -I
-  hwprobe/mock` wrapper as `HIPCC`. The code objects built, `lint/*.json` showed the expected rule
-  per kernel, and the runner ran under the mock.
 
-NOT compiled or run:
+NOT run:
 
-* `host_runner.cpp` with a real `hipcc` / HIP runtime (`hipModuleLoad`, `hipModuleLaunchKernel`,
-  `hipGetDeviceProperties().gcnArchName`). Never built against ROCm headers.
-* `run_probes.sh` with ROCm's clang and hipcc, on any GPU.
-* Any probe kernel on hardware. No mismatch count, in either direction, exists yet.
-* The probes with LLVM 20-24 / ROCm. The asm text is fixed, but the compiler code around it
-  (where LLVM 20+ inserts `s_wait_alu` itself) has not been linted with those compilers.
+* A second GPU (another R9700 or another gfx1201 board), or the R9700 at other clocks or loads. The
+  counts above are from one device.
+* A rerun after this change. Only comments and the `LDS_STORE_BEFORE_BARRIER` severity in the
+  manifest changed in `cases/`, but the run above is of commit 1fe68fb.
+* The probes with LLVM 20-23. The asm text is fixed, but the compiler code around it (where LLVM
+  20+ inserts `s_wait_alu` itself) was linted only with clang 18 and AMD clang 24.
+* A probe that makes `cmpx_permlane`, `alu_wait_carry` or `alu_wait_ttmp` visible. Their zero
+  mismatches say nothing about whether the hazards are real; `alu_wait_ttmp` (a wait LLVM leaves
+  out) stays unconfirmed in both directions.
 * Whether reading `ttmp0` from user code returns without side effects on gfx1201. The compiler
   itself reads `ttmp9` (workgroup id) in every kernel here, which suggests it does.
-* Whether `--no-gpu-bundle-output` is accepted by every ROCm clang. clang 18 accepts it; if a
-  version does not, use `hipcc --genco --offload-arch=gfx1201`. Its output is an offload bundle,
-  and whether `hipModuleLoad` accepts one was not checked here.
+* Whether `--no-gpu-bundle-output` is accepted by every ROCm clang (clang 18 and AMD clang 24
+  accept it). If a version does not, use `hipcc --genco --offload-arch=gfx1201`; whether
+  `hipModuleLoad` accepts the offload bundle that produces was not checked.

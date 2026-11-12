@@ -7,7 +7,7 @@ from __future__ import annotations
 from collections import Counter, deque
 import re
 from .binary import FormatError
-from . import hazards, vopd
+from . import hazards, isadb, vopd
 
 SOURCES = {
     'resources': 'AMD RDNA4 ISA §3.3.2.1, printed p.17; LLVM AMDGPUUsage kernel descriptor',
@@ -151,8 +151,9 @@ def long_branch_target(ins: list[dict], ix: int) -> int | None:
         if j < 0 or ins[j]['op'] not in ops: return None
         a = operands(ins[j]['args'])
         if len(a) != 3 or a[0] != reg or a[1] != reg: return None
-        try: imms.append(int(a[2], 0) & 0xffffffff)
-        except ValueError: return None
+        imm = isadb.immediate(a[2])                # `0x20`, or `lit(0x20)` from LLVM 24
+        if imm is None: return None
+        imms.append(imm & 0xffffffff)
         j -= 1
     while j >= 0 and ins[j]['op'] in _LONG_BRANCH_FILLER: j -= 1
     if j < 0 or ins[j]['op'] != 's_getpc_b64' or ins[j]['args'].strip() != target: return None

@@ -30,6 +30,7 @@ import re
 import struct
 
 from .binary import ELF, FormatError, kernel_inventory, sha256, unpack
+from .isadb import immediate
 from .rules import operands
 
 SHF_EXECINSTR = 4
@@ -228,10 +229,10 @@ def call_target(ins: list[dict], ix: int, relocs: dict, section: int | None) -> 
             return None
         _, value, ndx, addend = r
         return value + addend - (p - after_getpc), ndx
-    try:
-        offset = (int(lit_lo, 0) & 0xffffffff) | (int(found[hi][1], 0) & 0xffffffff) << 32
-    except ValueError:
+    imm_lo, imm_hi = immediate(lit_lo), immediate(found[hi][1])   # `0x100` or LLVM 24's `lit(0x0)`
+    if imm_lo is None or imm_hi is None:
         return None
+    offset = (imm_lo & 0xffffffff) | (imm_hi & 0xffffffff) << 32
     if offset >= 1 << 63:
         offset -= 1 << 64
     return after_getpc + offset, None

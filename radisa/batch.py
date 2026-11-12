@@ -94,8 +94,8 @@ def file_namespace(path: Path, args, compile_commands: str | None = None,
     if getattr(ns, 'jobs', None) is None and hasattr(ns, 'jobs'):
         ns.jobs = max(1, (os.cpu_count() or 1) // max(1, args.jobs))
     unit = f"{re.sub(r'[^A-Za-z0-9_.-]', '_', path.name)}-{hashlib.sha1(str(path.resolve()).encode()).hexdigest()[:12]}"
-    if getattr(ns, 'keep', None):
-        ns.keep = str(Path(ns.keep) / unit)
+    if getattr(ns, 'keep', None):   # absolute: the compiler may run in the compile_commands directory
+        ns.keep = str(Path(ns.keep).resolve() / unit)
     if getattr(ns, 'cache_dir', None):  # one cache per unit, as without --cache-dir
         ns.cache_dir = str(Path(ns.cache_dir) / unit)
     for k in ('fn', 'command'):
@@ -239,17 +239,25 @@ def check_one(path: Path, ns, max_kernels: int | None) -> dict:
     return check.analyze(ns)
 
 
-def _child(conn, path: Path, ns, max_kernels: int | None) -> None:
+def _child(conn, path: Path, ns, max_kernels: int | None, tmp_dir: str | None = None) -> None:
     try:
-        os.setsid()   # its own process group: _kill stops the compilers it starts too
+        os.setsid()   # its own process group: _stop stops the compilers it starts too
     except (OSError, AttributeError):  # AttributeError: no os.setsid (Windows)
         pass
-    try:  # the parent's SIGTERM handler (run) is inherited by fork; the worker just dies
+    try:  # the parent's SIGTERM handler (run) is inherited by fork; check.analyze installs its own
         signal.signal(signal.SIGTERM, signal.SIG_DFL)
     except (OSError, ValueError, AttributeError):
         pass
+    if tmp_dir:
+        # Every temporary file of this worker and of the compilers it starts goes under the
+        # parent's directory, which the parent removes even when it has to SIGKILL the worker.
+        os.makedirs(tmp_dir, exist_ok=True)
+        os.environ['TMPDIR'] = os.environ['TMP'] = os.environ['TEMP'] = tmp_dir
+        tempfile.tempdir = tmp_dir
     try:
         report = check_one(path, ns, max_kernels)
+    except check.Terminated as ex:   # stopped by the parent (_stop): unwound and cleaned up, no report
+        sys.exit(128 + ex.signum)
     except BaseException as ex:  # noqa: BLE001 - a crash is a result, never the end of the run
         report = synthetic_report(str(path), 'CHECK_CRASHED', f'{type(ex).__name__}: {ex}', ns.strict,
                                   traceback=traceback.format_exc())
@@ -260,18 +268,44 @@ def _child(conn, path: Path, ns, max_kernels: int | None) -> None:
     conn.close()
 
 
-def _kill(proc) -> None:
+STOP_GRACE = 5.0   # seconds a worker gets after SIGTERM to remove its work directory
+
+
+def _signal_group(proc, sig) -> None:
     try:
-        os.killpg(proc.pid, signal.SIGKILL)
-    except (OSError, AttributeError):
-        proc.kill()
-    proc.join(5)
+        os.killpg(proc.pid, sig)
+    except (OSError, AttributeError):   # the group is gone, or no killpg (Windows)
+        try:
+            proc.kill() if sig == getattr(signal, 'SIGKILL', None) else proc.terminate()
+        except (OSError, AttributeError, ValueError):
+            pass
+
+
+def _stop(procs: list, grace: float = STOP_GRACE) -> None:
+    """Stop workers and the compilers they started: SIGTERM to each process group first, so that
+    `check.analyze` unwinds (check.Terminated) and removes its work directory; SIGKILL to what is
+    still running after `grace` seconds. A SIGKILLed worker's files are under its `tmp_dir`, which
+    `run_files` removes."""
+    for proc in procs:
+        _signal_group(proc, signal.SIGTERM)
+    deadline = time.monotonic() + grace
+    for proc in procs:
+        proc.join(max(0.0, deadline - time.monotonic()))
+    for proc in procs:
+        if proc.is_alive():
+            _signal_group(proc, getattr(signal, 'SIGKILL', signal.SIGTERM))
+        proc.join(5)
+
+
+def _kill(proc) -> None:
+    _stop([proc])
 
 
 def run_files(jobs: list[tuple[Path, argparse.Namespace]], n: int, timeout: float | None,
-              max_kernels: int | None, progress=None) -> list[dict]:
+              max_kernels: int | None, progress=None, tmp_root: Path | None = None) -> list[dict]:
     """Check every (path, namespace) in at most `n` processes at a time; reports in input order,
-    each with `elapsed_s`."""
+    each with `elapsed_s`. With `tmp_root`, worker i keeps its temporary files (TMPDIR) in
+    `tmp_root/w<i>`, removed when the worker ends, however it ends."""
     ctx = multiprocessing.get_context('fork' if 'fork' in multiprocessing.get_all_start_methods() else 'spawn')
     todo = list(enumerate(jobs))
     running: dict = {}
@@ -287,21 +321,33 @@ def run_files(jobs: list[tuple[Path, argparse.Namespace]], n: int, timeout: floa
             progress(done, len(jobs), report)
 
     try:
-        _loop(ctx, todo, running, n, timeout, max_kernels, finish)
+        _loop(ctx, todo, running, n, timeout, max_kernels, finish, tmp_root)
     finally:  # normal end: nothing left; KeyboardInterrupt / SIGTERM: stop every running check
-        for r, (proc, *_) in list(running.items()):
-            _kill(proc)
+        _stop([proc for proc, *_ in running.values()])
+        for r, (_, i, *_) in list(running.items()):
             r.close()
+            _remove_tmp(tmp_root, i)
         running.clear()
     return reports  # type: ignore[return-value]
 
 
-def _loop(ctx, todo: list, running: dict, n: int, timeout: float | None, max_kernels: int | None, finish) -> None:
+def _worker_tmp(tmp_root: Path | None, i: int) -> str | None:
+    return str(Path(tmp_root) / f'w{i}') if tmp_root else None
+
+
+def _remove_tmp(tmp_root: Path | None, i: int) -> None:
+    if tmp_root:
+        shutil.rmtree(_worker_tmp(tmp_root, i), ignore_errors=True)
+
+
+def _loop(ctx, todo: list, running: dict, n: int, timeout: float | None, max_kernels: int | None, finish,
+          tmp_root: Path | None = None) -> None:
     while todo or running:
         while todo and len(running) < max(1, n):
             i, (path, ns) = todo.pop(0)
             r, w = ctx.Pipe(duplex=False)
-            proc = ctx.Process(target=_child, args=(w, path, ns, max_kernels), daemon=False)
+            proc = ctx.Process(target=_child, args=(w, path, ns, max_kernels, _worker_tmp(tmp_root, i)),
+                               daemon=False)
             proc.start()
             running[r] = (proc, i, time.monotonic(), path, ns)
             w.close()
@@ -320,6 +366,7 @@ def _loop(ctx, todo: list, running: dict, n: int, timeout: float | None, max_ker
                                           ns.strict)
             r.close()
             proc.join(5)
+            _remove_tmp(tmp_root, i)
             finish(i, report, t0)
         if timeout:
             now = time.monotonic()
@@ -327,6 +374,7 @@ def _loop(ctx, todo: list, running: dict, n: int, timeout: float | None, max_ker
                 proc, i, t0, path, ns = running.pop(r)
                 _kill(proc)
                 r.close()
+                _remove_tmp(tmp_root, i)
                 finish(i, synthetic_report(str(path), 'CHECK_TIMEOUT',
                                            f'not finished after --timeout-per-file {timeout:g} s; the file was not '
                                            'checked (its compiler and checker processes were stopped)', ns.strict), t0)
@@ -564,7 +612,7 @@ def run(args) -> int:
     tmp = Path(tempfile.mkdtemp(prefix='radisa-check-all-'))
     try:
         plan = prepare_baselines(jobs, tmp)
-        reports = run_files(jobs, args.jobs, args.timeout_per_file, args.max_kernels_per_file, progress)
+        reports = run_files(jobs, args.jobs, args.timeout_per_file, args.max_kernels_per_file, progress, tmp)
         finish_baselines(plan, jobs)
         reports = [retarget(r, plan['retarget']) for r in reports]
     except KeyboardInterrupt:

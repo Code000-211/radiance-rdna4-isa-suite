@@ -10,7 +10,7 @@ from contextlib import redirect_stdout
 from pathlib import Path
 
 from support import (CHECK_FIX, llvm_mc, needs_llvm_mc, needs_minimal_kernel, kernel_asm, check_text,
-                     all_findings, run_check)
+                     all_findings, run_check, lit24_objdump)
 
 from radisa import binary, check, decode, functions, isadb, rules, sgpr, waits
 
@@ -634,6 +634,32 @@ class NoreturnCall(unittest.TestCase):
         self.assertIsNone(functions.call_target(x[1:], 3, {}, 1))
         y = x[:1] + seq_(('s_sext_i32_i16', 's2, s2', 4)) + x[2:]
         self.assertIsNone(functions.call_target(y, 4, {}, 1))
+        # ROCm LLVM 24 prints inline-valued literals as lit(0x..): same target, also backwards.
+        z = [dict(i) for i in x]
+        z[2]['args'], z[3]['args'] = 's2, s2, lit(0x14)', 's3, s3, lit(0x0)'
+        self.assertEqual(functions.call_target(z, 4, {}, 1), (0x18, None))
+        z[2]['args'], z[3]['args'] = 's2, s2, lit(0xfffffff0)', 's3, s3, lit(0xffffffff)'
+        self.assertEqual(functions.call_target(z, 4, {}, 1), (4 - 16, None))
+        z[2]['args'] = 's2, s2, lit(callee)'
+        self.assertIsNone(functions.call_target(z, 4, {}, 1))
+
+    @needs_minimal_kernel
+    def test_linked_object_llvm24_disassembly(self):
+        # The linked object as ROCm LLVM 24 disassembles it (`s_add_co_u32 s4, s4, lit(0x14)`): the
+        # target run lost NORETURN_CALL_RETURNS here (int('lit(0x14)', 0) fails).
+        import shutil
+        lld = shutil.which('ld.lld')
+        with tempfile.TemporaryDirectory() as d:
+            exe = lit24_objdump(d)
+            if not lld or exe is None:
+                self.skipTest('needs ld.lld and llvm-objdump')
+            obj, so = Path(d, 'nr.o'), Path(d, 'nr.so')
+            assemble((CHECK_FIX / 'callee_noreturn_returns.s').read_text(), obj)
+            subprocess.run([lld, '-shared', str(obj), '-o', str(so)], check=True, capture_output=True)
+            self.assertRegex(subprocess.run([str(exe), '-d', '--mcpu=gfx1201', str(so)], capture_output=True,
+                                            text=True).stdout, r's_add_co_u32 s\d+, s\d+, lit\(0x')
+            _, rep = run_check(so, '--objdump', exe)
+        self.assertEqual(self.found(rep), [('NORETURN_CALL_RETURNS', 'review', 'helper')])
 
 
 if __name__ == '__main__':

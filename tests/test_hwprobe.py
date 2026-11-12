@@ -64,7 +64,10 @@ class GenerationTests(unittest.TestCase):
 
     def test_manifest(self):
         m = json.loads((HW / 'cases' / 'manifest.json').read_text())
-        self.assertFalse(m['hardware_validated'])
+        run, = m['hardware_runs']    # one run: one R9700, 2026-11-12
+        self.assertEqual((run['gpus'], run['fixed_mismatching_launches'], run['hazard_observed']['lds_store_barrier']),
+                         (1, 0, [137, 152]))
+        self.assertEqual(set(run['hazard_observed']) | set(run['hazard_not_observed']), {c['name'] for c in m['cases']})
         self.assertEqual((m['target'], m['wave'], m['block']), ('gfx1201', 32, 256))
         rules = {c['name']: c['variants']['hazard']['expect'] for c in m['cases']}
         self.assertEqual(rules, {
@@ -74,8 +77,7 @@ class GenerationTests(unittest.TestCase):
             'alu_wait_ttmp': 'ALU_WAIT_TTMP', 'd16_other_half': 'MISSING_WAIT'})
         for c in m['cases']:
             self.assertEqual(c['variants']['fixed']['expect'], 'clean')
-            self.assertEqual(c['variants']['hazard']['severity'],
-                             'review' if c['name'] in ('alu_wait_ttmp', 'lds_store_barrier') else 'error')
+            self.assertEqual(c['variants']['hazard']['severity'], 'review' if c['name'] == 'alu_wait_ttmp' else 'error')
             self.assertTrue((HW / c['file']).is_file())
 
     def test_data_is_deterministic(self):

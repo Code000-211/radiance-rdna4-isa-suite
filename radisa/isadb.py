@@ -162,6 +162,48 @@ def cite(table: dict, section: str) -> str:
 
 # ---------------------------------------------------------------- operand model
 
+# A literal operand in disassembly. LLVM up to 23 prints only the value (`0x100`, `32`, `-16`).
+# ROCm LLVM 24 (d6f6cb69) prints a literal whose value would also fit an inline constant as
+# `lit(0x20)`, a 64-bit one as `lit64(0x...)`: AMDGPUDisassembler::decodeLiteralConstant /
+# decodeLiteral64Constant wrap it in AMDGPUMCExpr::createLit (AGVK_Lit / AGVK_Lit64), whose
+# printImpl writes `lit(` / `lit64(` around an MCConstantExpr created with PrintInHex. The
+# assembler accepts the same spelling. Every place that reads an immediate from disassembly
+# text goes through `immediate`; everything else reads the encoding (`raw`).
+LITERAL = re.compile(r'\b(lit64|lit)\(\s*([-+]?(?:0[xX][0-9a-fA-F]+|\d+))\s*\)')
+_INT = re.compile(r'[-+]?(?:0[xX][0-9a-fA-F]+|0[bB][01]+|0[oO]?[0-7]+|[1-9]\d*|0)')
+
+
+def immediate(token: str) -> int | None:
+    """Integer value of one printed immediate operand: `0x20`, `32`, `-16`, `lit(0x20)`,
+    `lit64(0x100000000)`; None for anything else (registers, floats such as `1.0`, expressions).
+    The value is returned as printed (a 32-bit literal is not sign-extended); callers that need
+    the operand width mask it."""
+    t = token.strip()
+    m = re.fullmatch(r'(?:lit64|lit)\(\s*(.*?)\s*\)', t)
+    if m:
+        t = m[1]
+    if not _INT.fullmatch(t):
+        return None
+    sign = -1 if t[0] == '-' else 1
+    t = t.lstrip('+-')
+    if t[:2].lower() in ('0x', '0b', '0o'):
+        return sign * int(t, 0)
+    return sign * int(t, 8 if len(t) > 1 and t[0] == '0' else 10)
+
+
+def canonical_literals(text: str) -> str:
+    """`text` with every `lit(X)` / `lit64(X)` replaced by X as LLVM 18-23 prints the same integer
+    operand: a value that fits an inline constant (-16..64) in decimal, anything else in hex. Used
+    where instruction text is compared across LLVM versions (baseline fingerprints). A literal of
+    a floating-point operand is printed by LLVM 18-23 as e.g. `1.0` and stays different."""
+    def repl(m):
+        bits = 64 if m[1] == 'lit64' else 32
+        v = immediate(m[2]) & ((1 << bits) - 1)
+        s = v - (1 << bits) if v >> (bits - 1) else v
+        return str(s) if -16 <= s <= 64 else hex(v)
+    return LITERAL.sub(repl, text)
+
+
 REG_TOKEN = re.compile(
     r'(?<![\w])(?:([vs])\[\s*(\d+)\s*(?::\s*(\d+)\s*)?\]|([vs])(\d+)|'
     r'ttmp\[\s*(\d+)\s*(?::\s*(\d+)\s*)?\]|ttmp(\d+)|'

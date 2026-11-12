@@ -1,5 +1,5 @@
 // A barrier without a release fence: the compiler inserts no wait, so the LDS write of line 10
-// may still be outstanding at the barrier. Must warn (LDS_STORE_BEFORE_BARRIER, not an error).
+// may still be outstanding when the barrier releases the other waves. Must fail (LDS_STORE_BEFORE_BARRIER).
 #define __global__ __attribute__((global))
 #define __shared__ __attribute__((shared))
 #define __launch_bounds__(n) __attribute__((amdgpu_flat_work_group_size(1, n)))

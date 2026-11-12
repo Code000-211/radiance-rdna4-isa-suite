@@ -105,3 +105,33 @@ class HazardTests(unittest.TestCase):
         self.assertNotIn('SGPR_PAIR_GUARD',self.rules(seq(('v_mov_b32','v0,s3'),('s_mov_b32','s0,0x42'),('s_mov_b32','s2,s0'),('s_endpgm',))))
     def test_plain_salu_not_blanket_hazard(self):
         self.assertNotIn('SGPR_PAIR_GUARD',self.rules(seq(('s_mov_b32','s1,0'),('s_mov_b32','s0,0x42'),('s_mov_b32','s2,s0'),('s_endpgm',))))
+
+class ImmediateTests(unittest.TestCase):
+    """isadb.immediate: the one parser for immediates printed in disassembly (LLVM 18-23 and LLVM 24)."""
+    def test_spellings(self):
+        from radisa.isadb import immediate
+        for t,v in [('0x20',32),('32',32),('-16',-16),('-0x10',-16),('0',0),('lit(0x20)',32),('lit( 0x0 )',0),
+                    ('lit(0xfffffff0)',0xfffffff0),('lit64(0x100000000)',1<<32),('lit(-5)',-5),(' 7 ',7),('0b101',5)]:
+            self.assertEqual(immediate(t),v,t)
+    def test_not_an_integer(self):
+        from radisa.isadb import immediate
+        for t in ['s2','v[0:1]','1.0','lit(1.0)','lit(foo)','(a-b)&0xffffffff','','lit(','lit()','0x','vcc','2.0','litx(1)']:
+            self.assertIsNone(immediate(t),t)
+    def test_canonical_literals(self):
+        from radisa.isadb import canonical_literals as c
+        self.assertEqual(c('s_add_co_u32 s2, s2, lit(0x20)'),'s_add_co_u32 s2, s2, 32')
+        self.assertEqual(c('s_add_co_ci_u32 s3, s3, lit(0xffffffff)'),'s_add_co_ci_u32 s3, s3, -1')
+        self.assertEqual(c('v_mov_b64 v[0:1], lit64(0xfffffffffffffff0)'),'v_mov_b64 v[0:1], -16')
+        self.assertEqual(c('s_mov_b32 s0, lit(0x3f800000)'),'s_mov_b32 s0, 0x3f800000')   # LLVM 18 prints 1.0
+        self.assertEqual(c('s_mov_b32 s0, 0x100'),'s_mov_b32 s0, 0x100')
+    def test_baseline_text_matches_across_llvm(self):
+        from radisa.suppress import _norm
+        self.assertEqual(_norm('s_add_co_u32 s2, s2, lit(0x20)'),_norm('s_add_co_u32 s2, s2, 32'))
+    def test_operand_model_ignores_literal(self):
+        from radisa import isadb
+        t=isadb.load(None)
+        a=isadb.operand_model(t,'s_add_co_u32','s2, s2, lit(0x20)')
+        b=isadb.operand_model(t,'s_add_co_u32','s2, s2, 32')
+        self.assertTrue(a['known'])
+        self.assertEqual((a['reads'],a['writes']),(b['reads'],b['writes']))
+        self.assertEqual(regs('s2, s2, lit(0x20)'),{('s',2)})

@@ -1,4 +1,5 @@
 // Ordinary compiler-scheduled code: loads, LDS, loops, WMMA, atomics. Must pass.
+// radisa-test: wave32-only (__builtin_amdgcn_wmma_*_w32_gfx12 needs wave32; clang rejects it with -mwavefrontsize64)
 #define __global__ __attribute__((global))
 #define __shared__ __attribute__((shared))
 #define __launch_bounds__(n) __attribute__((amdgpu_flat_work_group_size(1, n)))

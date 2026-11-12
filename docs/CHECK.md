@@ -8,8 +8,12 @@ page or the LLVM function they follow. `radisa check-all` runs the same check ov
 
 Severity policy: a rule is an `error` only where the hazard or wait is documented by the ISA guide
 (the memory counters, VGPR range, VOPD encoding) or where LLVM's AMDGPU backend itself fixes or
-enforces it for gfx1201 (the LLVM function is cited). Everything else is a `warning` (`review` in
-the JSON) or a `note` (`info`). No rule has been confirmed on hardware (see "Not validated").
+enforces it for gfx1201 (the LLVM function is cited). One exception, stated as such:
+`LDS_STORE_BEFORE_BARRIER` is an `error` because the hardware needs the wait, although LLVM does
+not insert it for a one-address-space fence (see its row and "Measured on the target"). Everything
+else is a `warning` (`review` in the JSON) or a `note` (`info`). Hardware probes on one R9700
+showed the `MISSING_WAIT`, `WMMA_D_TO_AB` and `LDS_STORE_BEFORE_BARRIER` hazards; no other rule
+has hardware evidence (see "Measured on the target" and "Not validated").
 
 ```bash
 S=tools/rdna4-isa-suite
@@ -76,6 +80,12 @@ and `-c` flags are dropped) and `-x hip --offload-arch=gfx1201 --offload-device-
 -gline-tables-only -S` is added; project `-O`/`-m` flags still win. Extra flags: `--flag "-I inc -DX=1"`.
 `-gline-tables-only` only adds line tables (`-g` crashes clang 20.1.2 on some libr4d units).
 Without ROCm device libraries (as in the test environment) pass `--flag="-nogpulib -nogpuinc"`.
+With `--compile-commands` the compiler runs in that entry's `directory`, so `--keep DIR` is made
+absolute first. Intermediate files go to a `radisa-check-*` directory under `$TMPDIR` unless
+`--keep` is given; it is removed on every way out, including SIGTERM and SIGHUP (exit 128 + the
+signal). `check-all` stops a worker (timeout, Ctrl-C, SIGTERM) with SIGTERM to its process group and
+SIGKILL only 5 s later, and points each worker's `TMPDIR` into its own temporary directory, which it
+removes even after a SIGKILL.
 
 The compiler's `.s` is assembled again with llvm-mc. clang's `.s` names only the target, not the
 wave size, and llvm-mc takes the wave size from its command line (the `.amdhsa_wavefront_size32 0`
@@ -146,7 +156,7 @@ configuration can change it (see "Configuration"). `*` = off unless enabled.
 | rule | severity | basis |
 |---|---|---|
 | `MISSING_WAIT` | error | RDNA4 ISA §5.7.1 counters, PDF pp.62-65: a register is read or overwritten while a load/LDS/SMEM/sample/BVH/export that writes it may still be outstanding on some CFG path |
-| `LDS_STORE_BEFORE_BARRIER` | warning | LLVM AMDGPU User Guide, memory model GFX12; `SIMemoryLegalizer.cpp` `SIGfx12CacheControl::insertWait`. An LDS write may still be outstanding (DScnt) at `s_barrier_signal` / `s_barrier_wait`. LLVM emits `s_wait_dscnt` there only for a release fence that orders LDS together with global memory (`DSCnt \|= IsCrossAddrSpaceOrdering` at workgroup scope); `SIInsertWaitcnts` adds no wait at `S_BARRIER` (FeatureBackOffBarrier). A one-address-space fence (`fence(release, "workgroup-one-as")`) or an LDS-only barrier is correct without it, and machine code does not show which fence the source had. clang 18 output for the one-as fence has exactly this shape (`fixtures/check/clean_barrier_one_as.hip`) |
+| `LDS_STORE_BEFORE_BARRIER` | error | **Hardware-observed; the exception to the severity policy.** An LDS write may still be outstanding (DScnt) at `s_barrier_signal` / `s_barrier_wait`. Basis: hwprobe `lds_store_barrier` on a Radeon AI PRO R9700, 2026-11-12: `ds_store_b32`, then the barrier with no `s_wait_dscnt`, then each wave reads another wave's word gave wrong results in 137 and 152 of 200 launches; with `s_wait_dscnt 0x0` before the barrier, in none. LLVM does not enforce this wait: it emits it only for a release fence that orders LDS together with global memory (`SIMemoryLegalizer.cpp` `SIGfx12CacheControl::insertWait`, `DSCnt \|= IsCrossAddrSpaceOrdering` at workgroup scope, LLVM AMDGPU User Guide memory model GFX12), and `SIInsertWaitcnts` adds none at `S_BARRIER` (FeatureBackOffBarrier). So `__syncthreads()` gets it, but a one-address-space fence (`fence(release, "workgroup-one-as")`), an OpenCL local fence or a bare `__builtin_amdgcn_s_barrier()` does not, and that compiler output is reported (`fixtures/check/barrier_one_as.hip`, `barrier_no_fence.hip`). Code that really does not read another wave's LDS data after the barrier says so with an inline `radisa: ignore[LDS_STORE_BEFORE_BARRIER] reason` |
 | `CALLEE_RETURN_OUTSTANDING` | warning | LLVM `SIInsertWaitcnts.cpp` (waits before a return); §5.7.1: a called function returns while memory operations other than stores may still be outstanding |
 | `SYS_STORE_WAIT` | warning* | LLVM `SIMemoryLegalizer.cpp` `SIGfx12CacheControl::finalizeStore` / `insertWaitsBeforeSystemScopeStore`, FeatureWaitsBeforeSystemScopeStores: a `scope:SCOPE_SYS` store while loads/stores may be outstanding. Opt-in (`--enable SYS_STORE_WAIT`) and unconfirmed: compiler output does not meet the literal reading (below). A message lists at most 8 producers per counter and a count; `pending` lists all |
 | `HIP_INLINE_ASM_MEMORY` | warning | lexical; §5.7.1: an asm statement (or a macro expanding to one) with a memory instruction and no wait in it. A note when only some definitions of a conditionally defined macro do so |
@@ -250,6 +260,16 @@ Successors of each instruction (RDNA4 ISA §5.5; where the ISA leaves a choice, 
   known to return. A noreturn call in the middle of a function keeps its fall-through edge.
 * Anything else: the next instruction; past the last one, `CFG_FALLTHROUGH`.
 
+The two literals of a long branch or a call are read with `isadb.immediate`, the one parser for an
+immediate printed in disassembly. It takes LLVM 18-23's `0x20` / `32` / `-16` and LLVM 24's
+`lit(0x20)` / `lit64(0x...)`: ROCm `d6f6cb69` prints a literal whose value would also fit an
+inline constant that way (`AMDGPUDisassembler::decodeLiteralConstant` wraps it in
+`AMDGPUMCExpr::createLit`, printed in hex). Every other immediate (waits, `s_clause`, branch
+offsets, `s_sendmsg`, `s_trap`, VOPD) is read from the encoding, not the text. Baseline and SARIF
+fingerprints fold `lit(X)` to the LLVM 18-23 spelling of an integer operand
+(`isadb.canonical_literals`), so a baseline written with one disassembler matches the other; a
+literal of a floating-point operand (LLVM 18-23 prints e.g. `1.0`) still differs.
+
 How the passes treat a resolved long branch:
 
 * Hazards, counters, liveness: a jump to its target, like `s_branch`. `UNINITIALIZED_READ` passes
@@ -317,7 +337,7 @@ are found across branches and loop back edges, not only between adjacent instruc
   others the low half). A D16 load of the other half may stay outstanding across it, as in LLVM
   `SIInsertWaitcnts`; every other reader, and a store whose data register is also its address,
   needs both halves.
-* At a workgroup barrier only LDS writes are looked at (`LDS_STORE_BEFORE_BARRIER`, a warning). An
+* At a workgroup barrier only LDS writes are looked at (`LDS_STORE_BEFORE_BARRIER`, an error). An
   LDS or global load may be outstanding there (the compiler leaves unused loads outstanding), and so
   may a global store: a barrier with fences scoped to LDS, like Radiance's `lds_barrier()`, orders
   local memory only.
@@ -366,7 +386,8 @@ the finished machine code: where the pass would insert a wait and none is there,
   vector write of an SGPR and its vector read makes it emit no wait. The check runs with both
   numberings: a wait both ask for is `MISSING_ALU_WAIT`; a wait only the real register numbers ask
   for is `ALU_WAIT_TTMP`, a warning, because it is in compiler output (2 places in the libr4d
-  units, both in `r4d_gemm_mxfp4a8_gemv`) and is not confirmed on hardware.
+  units, both in `r4d_gemm_mxfp4a8_gemv`) and is not confirmed on hardware (the `alu_wait_ttmp`
+  probe showed no mismatch on the R9700, which shows nothing either way).
 * A `MISSING_ALU_WAIT` that exists only because of the assumed operands of an instruction outside
   the operand table (as producer, consumer, or the earlier VALU read that makes the pair tracked)
   is re-graded to a warning: LLVM computes these waits from an instruction's uses only.
@@ -629,13 +650,78 @@ for every CHANGED fact re-review the rules it names against the new source; then
 
 `hwprobe/` holds probe kernels for the hazard rules (`MISSING_WAIT`, `LDS_STORE_BEFORE_BARRIER`,
 `WMMA_D_TO_AB`, `PERMLANE_AFTER_CMPX`, `MISSING_ALU_WAIT`, `ALU_WAIT_TTMP`, the D16 relaxation) and a
-runner for the R9700. None has run on hardware yet. See `hwprobe/README.md`.
+runner for the R9700. They ran once on one R9700 (2026-11-12); the results are under "Measured on
+the target" and in `hwprobe/README.md`.
 
-## Measured (before the rules of this change)
+## Measured on the target (2026-11-12)
+
+Run of commit `1fe68fb` (the per-rule counts were identical on `0b3712d`) with AMD clang
+24.0.0git (ROCm llvm-project `d6f6cb69`) on one machine with one Radeon AI PRO R9700.
+
+**Unit tests**, `RAD_ISA_REQUIRE_LLVM=1` (nothing skipped for a missing toolchain capability): 580
+run, 7 failures and 1 error. The causes, all fixed in the commit that follows `1fe68fb`; **that fix
+has not been re-run on the target**:
+
+* LLVM 24 prints a literal whose value would fit an inline constant as `lit(0x20)` (the
+  disassembler wraps it in `AMDGPUMCExpr` `lit(`/`lit64(`), and the long-branch and call-target
+  resolution read it with `int(x, 0)`, which fails. 5 tests: `test_hazards`
+  `FixtureTests.test_failing_fixtures` (`hazard_longbranch.s` gave `PASS` instead of the
+  `PERMLANE_AFTER_CMPX` error), `FixtureTests.test_clean_fixtures`,
+  `FixtureTests.test_long_branch_finding_is_at_the_target`, `CompiledTests.test_long_branches_resolved`,
+  and `test_callee` `NoreturnCall.test_object_and_linked_object` (`NORETURN_CALL_RETURNS` missing on
+  the linked object). Fixed by one shared parser, `isadb.immediate`.
+* `test_check` `AssemblyCheckTests.test_vgpr_out_of_range`: its mutant reads v7, which nothing
+  writes, so `UNINITIALIZED_READ` rightly fires; the test expected no finding at all. The test was
+  wrong (it never ran with LLVM 18, which cannot assemble `kernel_reduce.s`).
+* `test_compiler_clean` `CompilerClean.test_clean_fixtures_wave64`: `clean_compiled.hip` calls a
+  wave32-only WMMA builtin that clang 24 rejects with `-mwavefrontsize64`. Such fixtures now carry a
+  `radisa-test: wave32-only (reason)` comment and are left out of the wave64 run.
+
+**Corpus**: the 114 libr4d units including `r4d_gemm_iqr`, with the flags of
+`compile_commands.json`: 6448 kernels and 2 callee functions (`r4d_sam_attn_bf16`), 11.79 M
+instructions, none outside the AMD operand model. 112 `PASS`, 2 `NO_KERNELS` (`ar_entry`,
+`gemm_bf16_nt_m16`), 0 `FAIL`, 0 `INCOMPLETE`. 47.5 min wall time with 4 units in parallel;
+`gemm_iqr` alone took 37 min at about 0.8 GB.
+
+| findings | count |
+|---|---|
+| any rule at `error` | 0 for every rule. `LDS_STORE_BEFORE_BARRIER` had no finding either (a warning on `1fe68fb`, an error on `0b3712d`, as it is again now) |
+| `VOPD_ANTIDEP` (warning) | 3065 |
+| `REGISTER_SPILL` (warning) | 548 |
+| `SCRATCH_USE` (warning) | 76 |
+| `UNINITIALIZED_READ` (warning) | 46: 36 are `v_readfirstlane_b32 sN, v1` in `attn_paged`, the rest dead tuple copies in `gdn_kkt_solve` and `hc_bf16`; in none is the value used in arithmetic |
+| `ALU_WAIT_TTMP` (warning) | 2 (`gemm_mxfp4a8_gemv`, the `ttmp9` pattern) |
+| `VOPD_SOURCE_HI` (warning) | 2 |
+| no finding at all | `WMMA_D_TO_AB`, `PERMLANE_AFTER_CMPX`, `DEALLOC_*`, `CLAUSE_*`, `ASM_UNDECLARED_CLOBBER`, `CALLEE_RETURN_OUTSTANDING`, `MISSING_WAIT`, `CFG_*`, `OPERAND_MODEL_UNKNOWN`, `BYTE_COVERAGE`, `DECODE`, `NORETURN_CALL_RETURNS` |
+
+**Caveat: long branches were not resolved in this run** (the `lit(` bug above). Every long branch
+in the corpus was taken as an indirect jump with no successor, so blocks reached only through a
+long branch were not analysed at all; their findings, if any, are missing from these counts. The
+zero for `CFG_*` does not cover them either.
+
+**`SYS_STORE_WAIT`** (opt-in; run on `0b3712d`, 113 units without `gemm_iqr`): 1307 warnings in 10
+units, largest `ar_twoshot_Nrank_exact` 548, `rmsnorm_quant_i8` 468, `fused_quant_fp8` 138,
+`ar_ln_had_quant_i8` 76.
+
+**Drift** against the ROCm `d6f6cb69` source: 21 of 21 pinned facts `PASS`.
+
+**Hardware probes** (`hwprobe/`, 200 launches per variant, grid 512, GPU 0; `host_runner.cpp`
+built unmodified against the real HIP runtime). Every `_fixed` variant: 0 mismatches.
+
+| case | `_hazard` | reading |
+|---|---|---|
+| `ds_load_wait`, `global_load_wait` | 200 of 200 launches, all 26,214,400 words | `MISSING_WAIT` hazard observed |
+| `wmma_d_to_a` | 200 of 200 launches, all 26,214,400 words (120.0 instead of 128.0) | `WMMA_D_TO_AB` hazard observed |
+| `lds_store_barrier` | 137 and 152 of 200 launches (8,576 / 8,960 words) | `LDS_STORE_BEFORE_BARRIER` hazard observed: the basis of its `error` |
+| `d16_other_half` | 200 of 200 launches; `_fixed` clean | hazard observed; no evidence against the D16 half-store relaxation |
+| `cmpx_permlane`, `alu_wait_carry`, `alu_wait_ttmp` | not observed | proves nothing |
+
+## Measured earlier (before the cross-block rules)
 
 These numbers were taken before the cross-block hazards, callee analysis, `UNINITIALIZED_READ`,
-`ASM_UNDECLARED_CLOBBER`, the clause and dealloc rules, `NORETURN_CALL_RETURNS` and the
-`LDS_STORE_BEFORE_BARRIER` re-grading. They have not been repeated since (see "Not validated").
+`ASM_UNDECLARED_CLOBBER`, the clause and dealloc rules and `NORETURN_CALL_RETURNS`. The corpus run
+was repeated with those rules on 2026-11-12 ("Measured on the target"); the fault injection below
+was not.
 
 The libr4d units of Radiance, compiled with its own compiler (AMD clang 24, ROCm llvm-project
 `d6f6cb69`, the flags of `compile_commands.json`), all but `r4d_gemm_iqr` (2069 kernels, left out
@@ -662,10 +748,10 @@ per run, the result is "at least one error"):
 | `s_wait_alu` deleted | 120 of 120 |
 | WMMA reads the result of the previous WMMA | 30 of 30 |
 | `s_endpgm` deleted | 5 of 6 |
+| `s_wait_dscnt 0` before a barrier deleted (`LDS_STORE_BEFORE_BARRIER`, an error then as now) | 20 of 20 |
 
-Measured at the same time, when `LDS_STORE_BEFORE_BARRIER` was still an error: `s_wait_dscnt 0`
-before a barrier deleted, 20 of 20 reported. The rule is a warning now, so these mutants give a
-warning and `PASS`; not re-measured.
+The `LDS_STORE_BEFORE_BARRIER` row was measured while the rule was an error; with it at warning
+(commit `1fe68fb` only) these mutants gave `PASS`. It is an error again, so the row applies.
 
 The 13 that are not reported, by reading each one:
 
@@ -680,22 +766,23 @@ The 13 that are not reported, by reading each one:
 
 `tests/test_check.py` repeats the experiment on a checked-in kernel (`fixtures/check/kernel_reduce.s`):
 every wait and the `s_endpgm` removed in turn; each mutant has to fail with exactly the expected
-rule, except the LDS one, which has to give `PASS` with an `LDS_STORE_BEFORE_BARRIER` warning. The
-test needs a newer llvm-mc than LLVM 18 and is skipped here.
+rule (the LDS one with `LDS_STORE_BEFORE_BARRIER`). The test needs a newer llvm-mc than LLVM 18 and
+is skipped here.
 
 ## Not checked
 
 * Numerical correctness, global memory safety, performance beyond the listed resource notes.
 * Waits that only a memory ordering asks for: before atomics and fences, around `global_inv` /
   `global_wb`, cross-device release/acquire. Which ordering and scope the source asked for is not in
-  the machine code. The LDS write before a workgroup barrier is reported only as a warning, for
-  the same reason.
+  the machine code. The LDS write before a workgroup barrier is the exception: it is an error on
+  hardware evidence (`LDS_STORE_BEFORE_BARRIER`).
 * The waits LLVM puts in front of every non-atomic `scope:SCOPE_SYS` store on GFX12.0
   (`SIGfx12CacheControl::finalizeStore`), unless `SYS_STORE_WAIT` is enabled. Checked against the
   libr4d units this would be 701 errors in 8 of the 9 all-reduce units: the compiler emits
   `s_wait_loadcnt`/`s_wait_storecnt` in front of the stores but leaves `global_inv` and the store
   before it outstanding (it inserts the waits as "soft" waits, which the wait pass later merges
-  and relaxes). What the hardware needs there is not documented by AMD.
+  and relaxes). What the hardware needs there is not documented by AMD. Re-measured on 2026-11-12
+  with the opt-in rule: 1307 warnings in 10 units ("Measured on the target").
 * An `s_endpgm` missing in the middle of a kernel (see above).
 * Callees outside the checked object, calls through a loaded pointer, and indirect branch targets
   other than LLVM's long branch. A call is assumed to return with every counter but STOREcnt
@@ -713,31 +800,42 @@ test needs a newer llvm-mc than LLVM 18 and is skipped here.
 
 ## Not validated in this change
 
-The cross-block hazards, callee analysis, liveness, inline-asm clobber check, suppression,
-check-all/SARIF/GitHub output, drift and hwprobe were developed and tested with Ubuntu
-LLVM/clang 18.1.3 only, without a GPU and without ROCm:
+The rules were developed and tested with Ubuntu LLVM/clang 18.1.3, without a GPU and without
+ROCm. Validated since, on the target (commit `1fe68fb`, "Measured on the target"): the unit tests
+with AMD clang 24 and `RAD_ISA_REQUIRE_LLVM=1`, the 114-unit libr4d corpus, `radisa drift`
+against ROCm `d6f6cb69`, and the hardware probes on one R9700, with `host_runner.cpp` built against
+the real HIP runtime. Not validated:
 
-* **Not run on the libr4d corpus with ROCm clang 24.** The "Measured" numbers above predate these
-  rules. False positives of the new rules on Radiance's compiler output are not ruled out; the
-  wave64 runs of an earlier false-positive sweep should be repeated on that toolchain.
-* **No hardware run** of any probe (`hwprobe/`); `host_runner.cpp` was built only against a mock
-  HIP header.
-* Tests that need a newer llvm-mc (the checked-in kernel fixtures) are skipped here, among them the
-  `kernel_reduce` mutant test with its new LDS expectation.
-* The long-branch shape and its `s_wait_alu` fillers come from upstream main
-  `SIInstrInfo::insertIndirectBranch`, not from LLVM 20-24 output. The call sequence that
+* **The fixes made after that run** (the `lit(...)` immediate parser, the two corrected tests, the
+  `LDS_STORE_BEFORE_BARRIER` severity and the `--keep`/work-directory fixes) were tested with LLVM
+  18 only, with LLVM 24's `lit(0x..)` spelling simulated by an llvm-objdump wrapper
+  (`tests/support.py` `lit24_objdump`). Neither the unit tests nor the corpus have been re-run on
+  the target since.
+* **Long branches on the corpus.** Because of the `lit(` bug no long branch was resolved in the
+  corpus run, so blocks reached only through one were not analysed there. A corpus rerun with
+  the fix is outstanding; its findings in those blocks are unknown.
+* **Hardware**: one GPU, one run. Not repeated on a second gfx1201 board, or after this change.
+  `PERMLANE_AFTER_CMPX`, `MISSING_ALU_WAIT` and `ALU_WAIT_TTMP` were not made visible by their
+  probes; nothing is known about them from hardware.
+* **LLVM 20-23**: neither the corpus nor the tests were run with those compilers. The long-branch
+  shape and its `s_wait_alu` fillers come from upstream main `SIInstrInfo::insertIndirectBranch`
+  and clang 18 output; that AMD clang 24's long branches resolve is untested (on the target they
+  failed on the `lit(` spelling before the shape was compared). `lit(` printing was checked in the ROCm `d6f6cb69` source only
+  (`AMDGPUMCExpr::printImpl`, `AMDGPUDisassembler::decodeLiteralConstant`); in which LLVM release
+  it starts was not checked, and both spellings are accepted. The call sequence that
   `NORETURN_CALL_RETURNS` resolves comes from clang 18 output.
-* The one-address-space fence behaviour behind `LDS_STORE_BEFORE_BARRIER` was confirmed with
-  clang 18 output and the `SIMemoryLegalizer.cpp` source of both trees, not with AMD clang 24.
-  Hand-written code that drops the `s_wait_dscnt` of a `__syncthreads` sequence is now only a
-  warning.
+* The `LDS_STORE_BEFORE_BARRIER` error rests on one probe on one GPU. The one-address-space fence
+  behaviour of LLVM (no wait) was confirmed with clang 18 output and the `SIMemoryLegalizer.cpp`
+  source of both trees, not with AMD clang 24 output of `barrier_one_as.hip`.
 * Wave64 HIP units: whether llvm-mc 24 needs `+wavefrontsize64` and whether that compiler's `.s`
   still emits `.amdhsa_wavefront_size32 0` / `.wavefront_size: 64` were taken from the
   AMDGPUAsmParser source, not run.
 * Called functions: the per-counter register files at entry come from the AMD XML operand table
   (the ISA PDF text is not in the repository); the `s_sendmsg_rtn` result is treated as an SGPR on
   KMcnt; a wave64 `-fgpu-rdc` object was not checked.
-* `UNINITIALIZED_READ` exemptions were derived from clang 18 -O0..-O3 output only.
+* `UNINITIALIZED_READ` exemptions were derived from clang 18 -O0..-O3 output. On the AMD clang 24
+  corpus 46 warnings remain, classified above (the value is never used in arithmetic); no
+  exemption was added for them.
 * `ASM_UNDECLARED_CLOBBER`: the `s_*_saveexec`/`s_mov` restore semantics are ISA readings, not
   tested; the asm-label heuristic is lexical; LLVM 20-24 IR (e.g. the two-line `callbr` form) was
   not checked.

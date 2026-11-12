@@ -22,6 +22,12 @@ class DisassemblyTests(unittest.TestCase):
         d=parse_objdump('1900 <kernel<A<B>,C>>:\n s_endpgm // 1900: BFB00000');self.assertEqual(len(d),1)
     def test_duplicate_addresses_conflict(self):
         with self.assertRaises(FormatError):parse_objdump('s_endpgm // 0: BFB00000\nv_nop // 0: 7E000280')
+    def test_branch_target_annotation(self):
+        # llvm-objdump appends the branch target after the words; such a line was dropped, so every
+        # kernel with a branch came out as `instruction absent from objdump output` with --objdump.
+        d=parse_objdump('\ts_cbranch_scc0 7    // 000000000000: BFA10007 <.text+0x20>\n'
+                        '\ts_branch 1 // 000000000004: BFA00001 <kernel<A<B>,C>+0x10>\n')
+        self.assertEqual((d[0],d[4]),((bytes.fromhex('0700a1bf'),'s_cbranch_scc0 7'),(bytes.fromhex('0100a0bf'),'s_branch 1')))
     def test_unrecognized_line_not_invented(self):self.assertEqual(parse_objdump('this is not disassembly'),{})
     def test_exclusive_backend_options(self):
         with self.assertRaises(FormatError):select_backend('a','b')

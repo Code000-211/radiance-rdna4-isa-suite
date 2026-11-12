@@ -15,14 +15,17 @@ from __future__ import annotations
 
 import argparse
 from collections import Counter
+import contextlib
 import functools
 import hashlib
 import json
 from pathlib import Path
 import re
 import subprocess
+import signal
 import sys
 import tempfile
+import threading
 
 from .binary import ELF, FormatError, extract_code_objects
 from .decode import decode_object, select_backend
@@ -667,8 +670,50 @@ def finalize(report: dict, strict: bool) -> dict:
     return report
 
 
+class Terminated(BaseException):
+    """SIGTERM or SIGHUP arrived while `analyze` ran. Raised in the main thread so that every
+    `with` and `finally` on the way out runs: the compiler `subprocess.run` is waiting for is
+    killed and the `radisa-check-*` work directory removed (with the default handler the process
+    just ended and left both behind). `run` exits 128 + signum."""
+
+    def __init__(self, signum: int):
+        super().__init__(signum)
+        self.signum = signum
+
+
+@contextlib.contextmanager
+def _unwind_on_signals():
+    """While `analyze` runs: SIGTERM / SIGHUP raise `Terminated` instead of ending the process.
+    Only a signal at its default action is taken over (a caller's handler, e.g. `check-all`'s, and
+    an ignored SIGHUP under nohup stay); nothing changes outside the main thread."""
+    saved = {}
+    if threading.current_thread() is threading.main_thread():
+        def on_signal(signum, frame):
+            raise Terminated(signum)
+        for name in ('SIGTERM', 'SIGHUP'):
+            sig = getattr(signal, name, None)
+            try:
+                if sig is not None and signal.getsignal(sig) == signal.SIG_DFL:
+                    saved[sig] = signal.signal(sig, on_signal)
+            except (OSError, ValueError):
+                pass
+    try:
+        yield
+    finally:
+        for sig, handler in saved.items():
+            signal.signal(sig, handler)
+
+
 def analyze(args) -> dict:
-    """The full report for `args` (as parsed by `add_parser`), finalized; prints and writes nothing."""
+    """The full report for `args` (as parsed by `add_parser`), finalized; prints and writes nothing.
+
+    The work directory (`radisa-check-*` under the temporary directory) is removed on every way
+    out: a result, an exception, or SIGTERM/SIGHUP (`Terminated`)."""
+    with _unwind_on_signals():
+        return _analyze(args)
+
+
+def _analyze(args) -> dict:
     path = Path(args.input)
     if hasattr(args, 'enable') or hasattr(args, 'config'):
         suppress.validate(args)   # a bad configuration fails before anything is compiled
@@ -679,7 +724,9 @@ def analyze(args) -> dict:
     with tempfile.TemporaryDirectory(prefix='radisa-check-') as tmp:
         work = Path(tmp)
         if args.keep:
-            work = Path(args.keep)
+            # Absolute: with --compile-commands the compiler runs in that file's directory, and
+            # a relative --keep would name a different directory there than here.
+            work = Path(args.keep).resolve()
             work.mkdir(parents=True, exist_ok=True)
         try:
             if path.suffix in hipsrc.SOURCE_SUFFIXES and not args.no_incremental:
@@ -723,7 +770,11 @@ def analyze(args) -> dict:
 
 
 def run(args) -> int:
-    report = analyze(args)
+    try:
+        report = analyze(args)
+    except Terminated as ex:
+        print(f'radisa check: stopped by signal {ex.signum}; the work directory was removed', file=sys.stderr)
+        return 128 + ex.signum
     if args.json:
         Path(args.json).write_text(json.dumps(report, indent=2, sort_keys=True, default=_jsonable) + '\n')
     fmt = getattr(args, 'format', None) or 'text'

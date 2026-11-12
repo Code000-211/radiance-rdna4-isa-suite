@@ -198,8 +198,12 @@ class CounterModelTests(unittest.TestCase):
         f = run_waits(st, sig, wt, ('s_endpgm',))
         self.assertEqual([(x['rule'], x['pc'], x['later_uses']) for x in f], [('LDS_STORE_BEFORE_BARRIER', 4, [8])])
         self.assertEqual(f[0]['required_wait'], 's_wait_dscnt 0')
-        # 'review': LLVM waits here only for a cross-address-space release fence (SIMemoryLegalizer).
-        self.assertEqual(f[0]['severity'], 'review')
+        # 'error' although LLVM waits here only for a cross-address-space release fence (SIMemoryLegalizer):
+        # the R9700 lost LDS writes without it (hwprobe lds_store_barrier, 137 and 152 of 200 launches).
+        self.assertEqual(f[0]['severity'], 'error')
+        from radisa.suppress import RULES
+        self.assertEqual(RULES['LDS_STORE_BEFORE_BARRIER']['severity'], 'error')
+        self.assertIn('R9700', RULES['LDS_STORE_BEFORE_BARRIER']['basis'])
         self.assertEqual(run_waits(st, ('s_wait_dscnt', '0x0', 0), sig, wt, ('s_endpgm',)), [])
         # A global store or an unused LDS read may stay outstanding across the barrier.
         self.assertEqual(run_waits(('global_store_b32', 'v[4:5], v2, off'), ('ds_load_b32', 'v7, v1'), sig, wt,
@@ -457,8 +461,8 @@ class AssemblyCheckTests(unittest.TestCase):
 
     @needs_kernel_asm
     def test_every_single_fault_in_a_kernel_fails(self):
-        """Every fault is reported; LDS_STORE_BEFORE_BARRIER is a warning (LLVM waits at a barrier only
-        for a cross-address-space release fence, which machine code does not show), the rest errors."""
+        """Every fault is an error, LDS_STORE_BEFORE_BARRIER included (hwprobe lds_store_barrier lost LDS
+        writes on an R9700 in 137 and 152 of 200 launches without the s_wait_dscnt)."""
         seen = []
         with tempfile.TemporaryDirectory() as d:
             for what, text, rule in self.mutants():
@@ -466,12 +470,7 @@ class AssemblyCheckTests(unittest.TestCase):
                 p.write_text(text)
                 code, r, _ = run_check(p)
                 errors = {f['rule'] for f in findings(r) if f['severity'] == 'error'}
-                if rule == 'LDS_STORE_BEFORE_BARRIER':
-                    warnings = {f['rule'] for f in findings(r) if f['severity'] == 'review'}
-                    self.assertEqual((code, r['status'], errors), (0, 'PASS', set()), what)
-                    self.assertIn(rule, warnings, what)
-                else:
-                    self.assertEqual((code, r['status'], errors), (1, 'FAIL', {rule}), what)
+                self.assertEqual((code, r['status'], errors), (1, 'FAIL', {rule}), what)
                 seen.append(rule)
         self.assertEqual(len(seen), 8)
         self.assertEqual(set(seen), {'MISSING_WAIT', 'LDS_STORE_BEFORE_BARRIER', 'CFG_FALLTHROUGH',
@@ -480,11 +479,17 @@ class AssemblyCheckTests(unittest.TestCase):
     @needs_kernel_asm
     def test_vgpr_out_of_range(self):
         # The descriptor allocates 8 VGPRs (granule of 8 in wave32): v7 is the last one the kernel owns.
+        # Nothing writes v7 (the entry state defines only v0), so reading it is UNINITIALIZED_READ, a
+        # warning ('review'): exit 0 and no other finding, in particular no VGPR_OUT_OF_RANGE.
         text = (FIX / 'kernel_reduce.s').read_text()
         with tempfile.TemporaryDirectory() as d:
             p = Path(d, 'm.s')
             p.write_text(text.replace('v_add_f32_e32 v0, v2, v3', 'v_add_f32_e32 v0, v2, v7'))
             code, r, _ = run_check(p)
+            self.assertEqual((code, [(x['rule'], x['severity'], x['instruction'], x.get('registers'))
+                                     for x in findings(r)]),
+                             (0, [('UNINITIALIZED_READ', 'review', 'v_add_f32_e32 v0, v2, v7', ['v7'])]))
+            code, r, _ = run_check(p, '--no-liveness')
             self.assertEqual((code, findings(r)), (0, []))
             p.write_text(text.replace('v_add_f32_e32 v0, v2, v3', 'v_add_f32_e32 v0, v2, v8'))
             code, r, _ = run_check(p)
@@ -594,6 +599,32 @@ class HipCheckTests(unittest.TestCase):
             self.assertEqual(fixed['incremental']['compiled'], 1)
             self.assertEqual([f for k in fixed['kernels'] for f in k['findings'] if f['rule'] == 'MISSING_WAIT'], [])
 
+    def test_relative_keep_with_compile_commands(self):
+        """Regression (target run): clang runs in the compile_commands directory, so a relative
+        --keep named another directory for it than for radisa, and the compile failed."""
+        cxx = gfx1201_compiler()
+        with tempfile.TemporaryDirectory() as d:
+            d = Path(d)
+            build, here, src = d / 'build', d / 'here', d / 'k.hip'
+            build.mkdir()
+            here.mkdir()
+            src.write_text((FIX / 'clean_compiler_basic.hip').read_text())
+            db = build / 'compile_commands.json'
+            db.write_text(json.dumps([{'directory': str(build), 'file': str(src), 'command':
+                                       f'{cxx} -nogpuinc -nogpulib -O1 -x hip --offload-arch=gfx1201 -c {src} -o k.o'}]))
+            old = os.getcwd()
+            os.chdir(here)
+            try:
+                for mode in ((), ('--no-incremental',)):
+                    code, r, _ = run_check(src, '--compile-commands', db, '--keep', 'keep', *mode)
+                    bad = [f['rule'] for f in findings(r) if f['severity'] == 'incomplete' or f['rule'] == 'COMPILE']
+                    self.assertEqual((bad, bool(r['kernels'])), ([], True), (mode, findings(r)[:3]))
+                    self.assertTrue(list((here / 'keep').rglob('*.s')), mode)
+                    self.assertFalse((build / 'keep').exists(), mode)
+                    shutil.rmtree(here / 'keep')
+            finally:
+                os.chdir(old)
+
     def test_inline_asm_race_points_at_source(self):
         code, r, _ = self.check('inline_asm_lds.hip')
         self.assertEqual(code, 1)
@@ -614,20 +645,30 @@ class HipCheckTests(unittest.TestCase):
 
     def test_barrier_without_release_fence(self):
         code, r, text = self.check('barrier_no_fence.hip')
-        self.assertEqual(code, 0)   # a warning: LLVM itself emits no wait for a bare barrier
-        self.assertEqual([x for x in findings(r) if x['severity'] == 'error'], [])
-        f = [x for x in findings(r) if x['severity'] == 'review']
+        self.assertEqual(code, 1)
+        f = [x for x in findings(r) if x['severity'] == 'error']
         self.assertEqual([(x['rule'], x['loc']['line']) for x in f], [('LDS_STORE_BEFORE_BARRIER', 11)])
         self.assertIn('barrier_no_fence.hip:10', f[0]['message'])
 
-    def test_one_as_fence_barrier_is_not_an_error(self):
-        """rocm-apply finding 6: a "workgroup-one-as" release fence makes LLVM (upstream and ROCm
-        d6f6cb69) emit no s_wait_dscnt before the barrier; that is correct compiler output."""
-        code, r, _ = self.check('clean_barrier_one_as.hip')
-        self.assertEqual([x['rule'] for x in findings(r) if x['severity'] == 'error'], [])
+    def test_one_as_fence_barrier_is_an_error(self):
+        """A "workgroup-one-as" release fence makes LLVM (upstream and ROCm d6f6cb69) emit no
+        s_wait_dscnt before the barrier; on an R9700 that shape lost LDS writes (hwprobe
+        lds_store_barrier), so it is an error, which an inline suppression with a reason can accept."""
+        code, r, _ = self.check('barrier_one_as.hip')
+        self.assertEqual(code, 1)
         f = [x for x in findings(r) if x['rule'] == 'LDS_STORE_BEFORE_BARRIER']
-        self.assertEqual([(x['severity'], x['loc']['line']) for x in f], [('review', 14)])
-        self.assertIn('-one-as', f[0]['message'])
+        self.assertEqual([(x['severity'], x['loc']['line']) for x in f], [('error', 14)])
+        self.assertEqual([x['rule'] for x in findings(r) if x['severity'] == 'error'], ['LDS_STORE_BEFORE_BARRIER'])
+        for word in ('-one-as', 'R9700', 'ignore[LDS_STORE_BEFORE_BARRIER]'):
+            self.assertIn(word, f[0]['message'])
+        with tempfile.TemporaryDirectory() as d:
+            src = Path(d, 'barrier_one_as.hip')
+            lines = (FIX / 'barrier_one_as.hip').read_text().splitlines()
+            lines[13] += '  // radisa: ignore[LDS_STORE_BEFORE_BARRIER] no wave reads another wave\'s s[] here'
+            src.write_text('\n'.join(lines) + '\n')
+            code, r, _ = run_check(src, '--cxx', gfx1201_compiler(), '--flag', '-nogpuinc -nogpulib')
+        self.assertEqual((code, [x['rule'] for x in findings(r) if x['severity'] == 'error']), (0, []))
+        self.assertEqual([x['rule'] for x in r['suppressed']], ['LDS_STORE_BEFORE_BARRIER'])
 
     def test_compile_error_is_an_error(self):
         with tempfile.TemporaryDirectory() as d:

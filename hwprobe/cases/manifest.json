@@ -42,7 +42,7 @@
       "words_per_lane": 1
     },
     {
-      "basis": "LLVM AMDGPUUsage.md, Memory Model GFX12: s_wait_dscnt 0x0 synchronises LDS with vector memory between waves; LLVM (SIMemoryLegalizer.cpp SIGfx12CacheControl::insertWait) emits it before a workgroup barrier only for a cross-address-space release fence, not for LDS-only synchronisation like this probe: the probe measures whether the hardware needs it here",
+      "basis": "LLVM AMDGPUUsage.md, Memory Model GFX12: s_wait_dscnt 0x0 synchronises LDS between waves; LLVM (SIMemoryLegalizer.cpp SIGfx12CacheControl::insertWait) emits it before a workgroup barrier only for a cross-address-space release fence, not for LDS-only synchronisation like this probe. Observed on a Radeon AI PRO R9700 (2026-11-12): the hazard variant mismatched in 137 and 152 of 200 launches, the fixed one in none",
       "file": "cases/lds_store_barrier.hip",
       "name": "lds_store_barrier",
       "title": "LDS store still outstanding at the workgroup barrier",
@@ -56,7 +56,7 @@
           "expect": "LDS_STORE_BEFORE_BARRIER",
           "kernel": "lds_store_barrier_hazard",
           "note": "ds_store_b32, then s_barrier_signal/s_barrier_wait with no s_wait_dscnt; then each thread reads the word another wave stored.",
-          "severity": "review"
+          "severity": "error"
         }
       },
       "words_per_lane": 1
@@ -164,9 +164,44 @@
   ],
   "fill_byte": 165,
   "grid": 512,
-  "hardware_validated": false,
+  "hardware_runs": [
+    {
+      "cases_commit": "1fe68fb",
+      "compiler": "AMD clang 24.0.0git (ROCm llvm-project d6f6cb69)",
+      "date": "2026-11-12",
+      "device": "Radeon AI PRO R9700 (gfx1201)",
+      "fixed_mismatching_launches": 0,
+      "gpus": 1,
+      "grid": 512,
+      "hazard_not_observed": [
+        "cmpx_permlane",
+        "alu_wait_carry",
+        "alu_wait_ttmp"
+      ],
+      "hazard_observed": {
+        "d16_other_half": [
+          200
+        ],
+        "ds_load_wait": [
+          200
+        ],
+        "global_load_wait": [
+          200
+        ],
+        "lds_store_barrier": [
+          137,
+          152
+        ],
+        "wmma_d_to_a": [
+          200
+        ]
+      },
+      "host_runner": "built unmodified against the real HIP runtime",
+      "iterations": 200
+    }
+  ],
   "iterations": 200,
-  "note": "UNTESTED ON HARDWARE. A mismatch on a hazard variant is evidence for the rule; zero mismatches do not show the rule is unnecessary. A mismatch on a fixed variant is a harness bug.",
+  "note": "A mismatch on a hazard variant is evidence for the rule; zero mismatches do not show the rule is unnecessary. A mismatch on a fixed variant is a harness bug.",
   "schema": "radisa-hwprobe-1",
   "target": "gfx1201",
   "wave": 32

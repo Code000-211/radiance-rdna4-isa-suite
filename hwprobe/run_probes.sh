@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Build and run the hazard probes on a gfx1201 GPU (Radeon AI PRO R9700). UNTESTED: written where no
-# ROCm and no GPU exist; the build and launch steps have never been executed.
+# Build and run the hazard probes on a gfx1201 GPU (Radeon AI PRO R9700). Run once on one R9700 with
+# ROCm (2026-11-12, cases as of commit 1fe68fb); results in hwprobe/README.md.
 #
 #   bash hwprobe/run_probes.sh [OUT_DIR]          (default hwprobe/build)
 #

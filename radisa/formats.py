@@ -23,7 +23,7 @@ from collections import Counter
 from pathlib import Path
 import re
 
-from . import __version__, functions, suppress
+from . import __version__, functions, isadb, suppress
 
 SARIF_SCHEMA = 'https://json.schemastore.org/sarif-2.1.0.json'
 SARIF_LEVEL = {'error': 'error', 'review': 'warning', 'incomplete': 'note', 'info': 'note'}
@@ -93,10 +93,11 @@ _LINE_REF = re.compile(r'(:\d+)+\b|\b0x[0-9a-f]+\b|\bpc \d+\b', re.I)
 def fingerprint(report: dict, kernel: dict | None, f: dict, where: str | None = None) -> str:
     """Stable across line moves: rule, the input (`where`: its base-relative path, as in the
     SARIF artifact URI; default its name), kernel, instruction text and the message with line
-    numbers / pcs removed. pc and loc.line are deliberately left out."""
+    numbers / pcs removed. pc and loc.line are deliberately left out. LLVM 24's `lit(X)` literal
+    spelling is folded to the LLVM 18-23 one (isadb.canonical_literals)."""
     msg = _LINE_REF.sub('', f.get('message', ''))
     key = json.dumps([f.get('rule'), where if where is not None else Path(str(report.get('input', ''))).name,
-                      (kernel or {}).get('name'), f.get('instruction', ''), msg])
+                      (kernel or {}).get('name'), isadb.canonical_literals(f.get('instruction', '')), msg])
     return hashlib.sha256(key.encode()).hexdigest()[:32]
 
 

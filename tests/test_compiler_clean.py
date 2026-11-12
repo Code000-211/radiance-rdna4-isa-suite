@@ -7,6 +7,11 @@ Every HIP fixture documented as clean (fixtures/check/clean_*.hip, or a .hip who
 A fixture the compiler cannot build (clang 18 lacks e.g. the 3-argument __builtin_amdgcn_fence)
 is skipped with the compiler's reason, unless RAD_ISA_REQUIRE_LLVM=1.
 
+A fixture that is wave32-only by construction (e.g. it calls a `_w32` WMMA builtin, which clang
+rejects with -mwavefrontsize64) says so with a `radisa-test: wave32-only (reason)` comment and is
+left out of the wave64 run. Nothing else is skipped there: a compile error of any other fixture
+is a failure.
+
 Older upstream LLVM does not yet fix every hazard radisa checks, and then its output is genuinely
 hazardous. FIRST_FIXED_IN lists, per rule, the first upstream LLVM release whose AMDGPU backend
 inserts the fix; for an upstream clang older than that, findings of the rule are left out of the
@@ -53,6 +58,15 @@ def clean_fixtures() -> list[Path]:
     return out
 
 
+WAVE32_ONLY = re.compile(r'^\s*//\s*radisa-test:\s*wave32-only\s*\((?P<why>[^)]+)\)', re.M)
+
+
+def wave32_only(src: Path) -> str:
+    """The reason the fixture gives for being wave32-only, or ''."""
+    m = WAVE32_ONLY.search(src.read_text())
+    return m['why'].strip() if m else ''
+
+
 def tolerated(cxx: str) -> set[str]:
     amd, major = compiler_identity(cxx)
     if amd or major is None:
@@ -70,6 +84,15 @@ class CompilerClean(unittest.TestCase):
         self.assertIn('clean_compiled.hip', names)
         self.assertIn('clean_compiler_basic.hip', names)
         self.assertNotIn('barrier_no_fence.hip', names)   # a fixture that must fail
+
+    def test_wave32_only_marker(self):
+        # clang 24 rejects the _w32 WMMA builtin of clean_compiled.hip with -mwavefrontsize64.
+        marked = {p.name for p in clean_fixtures() if wave32_only(p)}
+        self.assertEqual(marked, {'clean_compiled.hip'})
+        for p in clean_fixtures():   # every fixture using a _w32 builtin carries the marker
+            if re.search(r'__builtin_amdgcn_\w*_w32(?:_|\b)', p.read_text()):
+                self.assertIn(p.name, marked)
+        self.assertEqual(wave32_only(CHECK_FIX / 'clean_compiler_basic.hip'), '')
 
     def test_clean_fixtures_have_no_errors(self):
         cxx = compiler()
@@ -116,6 +139,8 @@ class CompilerClean(unittest.TestCase):
         skip = tolerated(cxx)
         checked = 0
         for src in clean_fixtures():
+            if wave32_only(src):
+                continue   # by construction; see the module docstring
             if hip_compiles(cxx, src):
                 continue   # reported by test_clean_fixtures_have_no_errors
             for opt, mode in (('-O3', ()), ('-O2', ('--no-incremental',))):

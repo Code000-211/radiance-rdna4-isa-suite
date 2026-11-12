@@ -1,7 +1,7 @@
-// Must pass: LDS write, then a release fence at the "workgroup-one-as" scope and a barrier. The fence
-// orders no second address space, so LLVM (SIMemoryLegalizer.cpp SIGfx12CacheControl::insertWait,
-// DSCnt |= IsCrossAddrSpaceOrdering; same in ROCm d6f6cb69) emits no s_wait_dscnt before the barrier:
-// LDS_STORE_BEFORE_BARRIER is a warning here, never an error.
+// Must fail: LDS write, then a release fence at the "workgroup-one-as" scope and a barrier. LLVM
+// (SIMemoryLegalizer.cpp SIGfx12CacheControl::insertWait, DSCnt |= IsCrossAddrSpaceOrdering; same in ROCm
+// d6f6cb69) emits no s_wait_dscnt for this fence, and on an R9700 that shape lost LDS writes (hwprobe
+// lds_store_barrier, 137-152 of 200 launches): LDS_STORE_BEFORE_BARRIER is an error here.
 #define __global__ __attribute__((global))
 #define __shared__ __attribute__((shared))
 #define __launch_bounds__(n) __attribute__((amdgpu_flat_work_group_size(1, n)))

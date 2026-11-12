@@ -129,7 +129,8 @@ def parse_objdump(text: str) -> dict[int, tuple[bytes, str]]:
     Duplicate addresses with different bytes/text are a collection error.
     """
     out = {}
-    amd = re.compile(r'^\s*(.*?)\s*//\s*([0-9a-fA-F]+):\s*((?:[0-9a-fA-F]{8}(?:\s+|$))+)$')
+    # A branch carries its target after the words: `s_cbranch_scc0 7 // 000000000000: BFA10007 <.text+0x20>`.
+    amd = re.compile(r'^\s*(.*?)\s*//\s*([0-9a-fA-F]+):\s*((?:[0-9a-fA-F]{8}(?:\s+|$))+)(?:<.*>\s*)?$')
     generic = re.compile(r'^\s*([0-9a-fA-F]+):\s+((?:[0-9a-fA-F]{2}\s+)+)(\S.*)$')
     for line in text.splitlines():
         a = amd.match(line)
