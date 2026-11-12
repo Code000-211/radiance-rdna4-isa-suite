@@ -659,8 +659,8 @@ Run of commit `1fe68fb` (the per-rule counts were identical on `0b3712d`) with A
 24.0.0git (ROCm llvm-project `d6f6cb69`) on one machine with one Radeon AI PRO R9700.
 
 **Unit tests**, `RAD_ISA_REQUIRE_LLVM=1` (nothing skipped for a missing toolchain capability): 580
-run, 7 failures and 1 error. The causes, all fixed in the commit that follows `1fe68fb`; **that fix
-has not been re-run on the target**:
+run, 7 failures and 1 error. The causes, all fixed in commit `7448fd5`, which was re-run on the target
+(see "Re-run of `7448fd5`" below):
 
 * LLVM 24 prints a literal whose value would fit an inline constant as `lit(0x20)` (the
   disassembler wraps it in `AMDGPUMCExpr` `lit(`/`lit64(`), and the long-branch and call-target
@@ -715,6 +715,37 @@ built unmodified against the real HIP runtime). Every `_fixed` variant: 0 mismat
 | `lds_store_barrier` | 137 and 152 of 200 launches (8,576 / 8,960 words) | `LDS_STORE_BEFORE_BARRIER` hazard observed: the basis of its `error` |
 | `d16_other_half` | 200 of 200 launches; `_fixed` clean | hazard observed; no evidence against the D16 half-store relaxation |
 | `cmpx_permlane`, `alu_wait_carry`, `alu_wait_ttmp` | not observed | proves nothing |
+
+
+### Re-run of `7448fd5`
+
+Same machine, compiler and GPU, same day, on commit `7448fd5` (the fixes for the causes above).
+
+* **Unit tests**, `RAD_ISA_REQUIRE_LLVM=1`: 594 run, OK, 1 skipped (the pin test without
+  `RADISA_LLVM_SRC`); with `RADISA_LLVM_SRC` set to the ROCm `d6f6cb69` files: 594 OK, none skipped.
+  `RADIANCE_SOURCE=<radiance checkout> bash check.sh`: `tests` 594 OK and `replay_tests` 142 OK.
+  Without `RADIANCE_SOURCE`, 124 of the 142 replay tests error with "cannot read RAD_ABI_VERSION".
+* **Fixtures**: `hazard_longbranch.s` FAIL with `PERMLANE_AFTER_CMPX`, `hazard_longbranch_clean.s`
+  PASS, `barrier_one_as.hip` and `barrier_no_fence.hip` FAIL with `LDS_STORE_BEFORE_BARRIER`,
+  `clean_compiled.hip` PASS.
+* **Corpus**: 114 units, 6448 kernels, 2 callee functions, 11,788,006 instructions, none outside
+  the operand model; 112 PASS, 2 NO_KERNELS, 0 FAIL, 0 INCOMPLETE; 39.3 min wall with 4 parallel
+  units (`r4d_gemm_iqr` alone 32 min). Every per-rule count is identical to the `1fe68fb` run: no
+  error finding for any rule, including `LDS_STORE_BEFORE_BARRIER` at error severity.
+* **Long branches**: the corpus contains none. The largest kernel function is 98,532 bytes
+  (`r4d_hc_bf16`), below the 128 KiB branch range; the five units whose kernels could exceed it by
+  instruction count were disassembled completely and contain no `s_setpc_b64`. The only two
+  `s_setpc_b64` in the corpus are the callee returns in `r4d_sam_attn_bf16`. The long-branch caveat
+  on the `1fe68fb` run therefore did not hide anything in this corpus, and the long-branch
+  resolution is exercised only by fixtures and unit tests, not by corpus code.
+* **Work directories**: 10 `/tmp/radisa-check-*` before the run and 10 after; none left behind.
+* **hwprobe** (200 launches per variant, grid 512, `--verify-lint` passed, every `_fixed` variant 0
+  mismatches): `ds_load_wait`, `global_load_wait`, `wmma_d_to_a` and `d16_other_half` wrong in
+  200/200 launches (`d16_other_half`: 1,087,857 words); `lds_store_barrier` in 143/200 (8,960
+  words); `cmpx_permlane`, `alu_wait_carry`, `alu_wait_ttmp` not observed.
+
+Not run on the target: the `--objdump` decode backend on corpus code, `SYS_STORE_WAIT` on this
+commit, the second GPU.
 
 ## Measured earlier (before the cross-block rules)
 
@@ -806,15 +837,12 @@ with AMD clang 24 and `RAD_ISA_REQUIRE_LLVM=1`, the 114-unit libr4d corpus, `rad
 against ROCm `d6f6cb69`, and the hardware probes on one R9700, with `host_runner.cpp` built against
 the real HIP runtime. Not validated:
 
-* **The fixes made after that run** (the `lit(...)` immediate parser, the two corrected tests, the
-  `LDS_STORE_BEFORE_BARRIER` severity and the `--keep`/work-directory fixes) were tested with LLVM
-  18 only, with LLVM 24's `lit(0x..)` spelling simulated by an llvm-objdump wrapper
-  (`tests/support.py` `lit24_objdump`). Neither the unit tests nor the corpus have been re-run on
-  the target since.
-* **Long branches on the corpus.** Because of the `lit(` bug no long branch was resolved in the
-  corpus run, so blocks reached only through one were not analysed there. A corpus rerun with
-  the fix is outstanding; its findings in those blocks are unknown.
-* **Hardware**: one GPU, one run. Not repeated on a second gfx1201 board, or after this change.
+* **Long branches in real code.** The corpus contains no long branch (see the re-run of
+  `7448fd5`), so the long-branch resolution has only been exercised by fixtures and unit tests,
+  on LLVM 18 and on AMD clang 24. Its behaviour on a compiler-generated kernel larger than the
+  128 KiB branch range is not measured.
+* **The `--objdump` decode backend** on corpus code, and `SYS_STORE_WAIT` after `0b3712d`.
+* **Hardware**: one GPU, three runs on one day. Not repeated on a second gfx1201 board.
   `PERMLANE_AFTER_CMPX`, `MISSING_ALU_WAIT` and `ALU_WAIT_TTMP` were not made visible by their
   probes; nothing is known about them from hardware.
 * **LLVM 20-23**: neither the corpus nor the tests were run with those compilers. The long-branch

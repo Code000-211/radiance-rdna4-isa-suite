@@ -187,8 +187,8 @@ NOT run:
 
 * A second GPU (another R9700 or another gfx1201 board), or the R9700 at other clocks or loads. The
   counts above are from one device.
-* A rerun after this change. Only comments and the `LDS_STORE_BEFORE_BARRIER` severity in the
-  manifest changed in `cases/`, but the run above is of commit 1fe68fb.
+* More than three runs. Commit 7448fd5 was re-run on the same device with the same outcome per
+  case (`lds_store_barrier` wrong in 143 of 200 launches); the table above is of commit 1fe68fb.
 * The probes with LLVM 20-23. The asm text is fixed, but the compiler code around it (where LLVM
   20+ inserts `s_wait_alu` itself) was linted only with clang 18 and AMD clang 24.
 * A probe that makes `cmpx_permlane`, `alu_wait_carry` or `alu_wait_ttmp` visible. Their zero

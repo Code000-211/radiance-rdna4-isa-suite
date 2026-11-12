@@ -75,8 +75,8 @@ This gives byte-identical code and descriptors to a whole-unit compile (4475 of 
 
 On the target (2026-11-12, commit 1fe68fb, AMD clang 24 ROCm d6f6cb69, one R9700): the 114 libr4d
 units (6448 kernels, 11.79 M instructions) gave 112 `PASS`, 2 `NO_KERNELS`, no `FAIL`, no
-`INCOMPLETE` and no error finding; long branches were not resolved in that run (an LLVM 24
-`lit(...)` spelling, fixed since, not yet re-run there). The hardware probes showed the
+`INCOMPLETE` and no error finding. A re-run of commit 7448fd5 gave the same per-rule counts and
+594 unit tests OK with `RAD_ISA_REQUIRE_LLVM=1`; the corpus contains no long branch. The hardware probes showed the
 `MISSING_WAIT`, `WMMA_D_TO_AB` and `LDS_STORE_BEFORE_BARRIER` hazards on the R9700. Details and
 what is still unvalidated: docs/CHECK.md, "Measured on the target". `radisa hook` runs the same
 check as a PostToolUse edit hook.
