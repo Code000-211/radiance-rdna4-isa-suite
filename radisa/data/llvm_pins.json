@@ -1,22 +1,22 @@
 {
   "schema": "radisa-llvm-pins/1",
   "provenance": {
-    "revision": "llvm-project main, fetched 2026-11-12, commit unknown",
-    "generated_utc": "2026-11-12T14:12:12+00:00",
-    "note": "Initial pins were generated from llvm-project main (upstream, not ROCm), fetched 2026-11-12, commit unknown. docs/CHECK.md names ROCm llvm-project d6f6cb69 as the basis of AMDGPUWaitSGPRHazards / SIInsertWaitcnts; these pins are NOT from that commit. Regenerate them on the Radiance machine with `radisa drift --llvm-src <ROCm llvm-project> --update --revision d6f6cb69` and review the rules of every fact the update reports as changed. Facts the given tree lacks make --update refuse (exit 3, nothing written); re-anchor them by editing file / alt_files / anchor in this JSON (features.* already fall back to AMDGPU.td, where ROCm d6f6cb69 and older trees define FeatureISAVersion12 / FeatureGFX12), then rerun with --note to record what the new pins are."
+    "revision": "ROCm/llvm-project d6f6cb691863e9258034ab48c1dfce21689d5606 (AMD clang 24.0.0git)",
+    "generated_utc": "2026-11-12T15:14:46+00:00",
+    "note": "Pins rebaselined 2026-11-12 on ROCm/llvm-project d6f6cb691863e9258034ab48c1dfce21689d5606, the compiler Radiance targets, from single files fetched from raw.githubusercontent.com at that commit (llvm/lib/Target/AMDGPU). The earlier pins were from upstream llvm-project main (fetched 2026-11-12, commit unknown); against them 9 facts differ: features.isa_version_12, features.gfx12_generation, processor.gfx1201, hazards.fixHazards, waitsgpr.whole_file, waitcnt.determineVGPR16Dependency, waitcnt.dealloc_vgprs, clauses.whole_file, memorder.gfx12_insertWaitsBeforeSystemScopeStore. All 9 were reviewed for gfx1201 with no rule change: the feature-set differences (upstream-only LDS granularity, 32BitNumRecords, HalfAddressablePhysicalLocalMemory, GetDoorbellID, MaxWavesPerEU16, cond-sub atomics) touch no rule; fixHazards differs only by the upstream-only, gfx1250-gated fixVPermPk16Hazard; AMDGPUWaitSGPRHazards and determineVGPR16Dependency differ in isVALU AllowLDSDMA (no gfx1201 instruction is LDS-DMA) and option plumbing; dealloc_vgprs max waves per EU is 16 in both; SIInsertHardClauses gates the mixed branch on GFX10||GFX1250 (gfx1201 neither) and adds debug-instruction handling and a cluster-size budget that only shortens clauses; the BVHCNT wait before system-scope stores lacks upstream's hasAnyBVHInsts() guard, which is true for gfx1201. A drift run against upstream main therefore reports those 9 facts by design. Rerun with --update on the next ROCm revision Radiance moves to."
   },
   "normalisation": "radisa.drift.normalize: comments removed, string/char literals kept verbatim, whitespace dropped except one space between adjacent word tokens; sha256 over UTF-8.",
   "facts": [
     {
       "id": "features.isa_version_12",
       "family": "target-features",
-      "file": "GCNFeatures.td",
+      "file": "AMDGPU.td",
       "alt_files": [
-        "AMDGPU.td"
+        "GCNFeatures.td"
       ],
       "anchor": "FeatureISAVersion12",
       "extractor": "td_def",
-      "sha256": "07b3362624b7b7a71376554e9338f35cbe65e859f59bb96358cd7a67b6ec217e",
+      "sha256": "83d5575a6f38e236933d5e14a9558ecd0b1657be0cb0954e1e6323e0d0f4211c",
       "rules": [
         "PERMLANE_AFTER_CMPX",
         "CLAUSE_TOO_LONG",
@@ -31,13 +31,13 @@
     {
       "id": "features.gfx12_generation",
       "family": "target-features",
-      "file": "GCNFeatures.td",
+      "file": "AMDGPU.td",
       "alt_files": [
-        "AMDGPU.td"
+        "GCNFeatures.td"
       ],
       "anchor": "FeatureGFX12",
       "extractor": "td_def",
-      "sha256": "5fc714c2332423f6794ca6acc122a7552c93b7419b2892678f237264b64037e7",
+      "sha256": "0dfb385d86b2a2463dcc741aaa0bdbf143fc35b29b32a4d06789f1a3422808c2",
       "rules": [
         "MISSING_ALU_WAIT",
         "ALU_WAIT_TTMP",
@@ -54,7 +54,7 @@
       "file": "GCNProcessors.td",
       "anchor": "GFX1201",
       "extractor": "td_def",
-      "sha256": "584a4857816df785fdcc3c58a8f886a3da37b870c10a998542c27a1e5e140afe",
+      "sha256": "730310ddcfc6259bef624869b6ee7f07a5f8aa719d9c2db29c2a6537db8bf47a",
       "rules": [
         "*"
       ],
@@ -143,7 +143,7 @@
       "file": "GCNHazardRecognizer.cpp",
       "anchor": "GCNHazardRecognizer::fixHazards",
       "extractor": "cxx_function",
-      "sha256": "4fbfd8a410fc8b6e990b7d427b5df6a6524bad9ee09b5a97bfd6bdc2c720f821",
+      "sha256": "b64fa69ed62a8d7ef446262a0dc7c27621c3f14162c52dfad5bb7ea900f70488",
       "rules": [
         "WMMA_D_TO_AB",
         "PERMLANE_AFTER_CMPX"
@@ -205,7 +205,7 @@
       "file": "AMDGPUWaitSGPRHazards.cpp",
       "anchor": "AMDGPUWaitSGPRHazards.cpp",
       "extractor": "file",
-      "sha256": "00d59e77e4f85e9377ef59c467add095e775c3e9dbe4461aa252814befbbbb38",
+      "sha256": "ed0f4ca8c5191d5f8a7acb4171c349127328003ba47b46b9b914e5d3b0accfab",
       "rules": [
         "MISSING_ALU_WAIT",
         "ALU_WAIT_TTMP",
@@ -220,7 +220,7 @@
       "file": "SIInsertWaitcnts.cpp",
       "anchor": "WaitcntBrackets::determineVGPR16Dependency",
       "extractor": "cxx_function",
-      "sha256": "e738b4182efe4c87325e00da98d071ea39f80d9e3881120c169e9d6300251816",
+      "sha256": "e9cddd22e00253fed847db57f472ac77762c212f346990ce832e26e9c7fc84d1",
       "rules": [
         "MISSING_WAIT"
       ],
@@ -232,7 +232,7 @@
       "file": "SIInsertWaitcnts.cpp",
       "anchor": "if (!WCG->isOptNone() && MFI->isDynamicVGPREnabled())",
       "extractor": "statement",
-      "sha256": "b8494f918cf0e70f9c7d94e6b6fd56837c5ced3f0e762909c57bf1e8015ffd17",
+      "sha256": "4f9d1ed413dd2390189d8aed94e285892d9b9e56424972717665ac370ee3b23d",
       "rules": [
         "DEALLOC_NO_NOP",
         "DEALLOC_DYNAMIC",
@@ -248,7 +248,7 @@
       "file": "SIInsertHardClauses.cpp",
       "anchor": "SIInsertHardClauses.cpp",
       "extractor": "file",
-      "sha256": "626af8edf6aad6536bc08e6d425a72a5f92b98144bd7da06a32c2f249291cc44",
+      "sha256": "40ba29fbd5c58d07b8b866cba5c2e62a3773b9bfa7f598802bdad71e061d7e8e",
       "rules": [
         "CLAUSE_TOO_LONG",
         "CLAUSE_MIXED",
@@ -274,7 +274,7 @@
       "file": "SIMemoryLegalizer.cpp",
       "anchor": "SIGfx12CacheControl::insertWaitsBeforeSystemScopeStore",
       "extractor": "cxx_function",
-      "sha256": "70d886d9bd394339e78f0b453ba2c34ecf27e61b7b339cf63f4e2680b8e59d33",
+      "sha256": "9c8745fa5f2669d316885d8921472cde0aad700057caba40a62ce2892a637675",
       "rules": [
         "SYS_STORE_WAIT"
       ],

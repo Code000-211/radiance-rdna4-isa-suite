@@ -15,7 +15,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from support import CHECK_FIX, ROOT, check_text, hip_compiles, run_check  # noqa: E402
 
 sys.path.insert(0, str(ROOT))
-from radisa import asmclobber, hipsrc, incremental, isadb  # noqa: E402
+from radisa import asmclobber, check, hipsrc, incremental, isadb  # noqa: E402
 
 TABLE = isadb.load()
 
@@ -156,7 +156,7 @@ class ClobberTests(unittest.TestCase):
 
 
 class ReviewRegressionTests(unittest.TestCase):
-    """Issues of the adversarial review (scratchpad review-asmclobber/issues.md)."""
+    """Issues found by the adversarial review of this feature."""
 
     def test_copies_of_one_statement_give_one_finding(self):
         c = call(r'v_mov_b32 v7, $1\0Av_mov_b32 $0, v7', '=v,v')
@@ -340,13 +340,14 @@ class ParseAsmTests(unittest.TestCase):
         fns = hipsrc.parse_asm(text)
         self.assertEqual([i['mnemonic'] for i in fns['k']], ['v_mov_b32', 's_endpgm'])
         self.assertEqual([i['loc'] for i in fns['k']], [None, None])
-        fns = hipsrc.parse_asm(text, asm_file='k.s')
-        self.assertEqual([i['loc'] for i in fns['k']], [{'file': 'k.s', 'line': 4, 'column': 1},
-                                                         {'file': 'k.s', 'line': 7, 'column': 1}])
-        fns = hipsrc.parse_asm('radisa_snippet:\n' + text.split('k:\n', 1)[1], asm_file='s.s', line_offset=-1)
-        self.assertEqual([i['loc']['line'] for i in fns['radisa_snippet']], [2, 5])
-        # A .loc still wins over the .s line.
-        fns = hipsrc.parse_asm('\t.file\t0 "/src" "k.hip"\nk:\n\t.loc\t0 7 3\n\ts_nop 0\n', asm_file='k.s')
+        # Hand-written assembly maps to its own lines through check.asm_line_map (the one .s-line
+        # mechanism; parse_asm only follows .loc).
+        fns = check.asm_line_map(text.replace('\t.text\n', '\t.text\n\t.type k,@function\n'), 'k.s', False)
+        self.assertEqual([i['loc'] for i in fns['k']], [{'file': 'k.s', 'line': 5, 'column': 1},
+                                                         {'file': 'k.s', 'line': 8, 'column': 1}])
+        fns = check.asm_line_map(text.split('k:\n', 1)[1], 's.s', True)
+        self.assertEqual([i['loc']['line'] for i in fns['<snippet>']], [2, 5])
+        fns = hipsrc.parse_asm('\t.file\t0 "/src" "k.hip"\nk:\n\t.loc\t0 7 3\n\ts_nop 0\n')
         self.assertEqual(fns['k'][0]['loc'], {'file': '/src/k.hip', 'line': 7, 'column': 3})
 
 

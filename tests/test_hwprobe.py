@@ -74,7 +74,8 @@ class GenerationTests(unittest.TestCase):
             'alu_wait_ttmp': 'ALU_WAIT_TTMP', 'd16_other_half': 'MISSING_WAIT'})
         for c in m['cases']:
             self.assertEqual(c['variants']['fixed']['expect'], 'clean')
-            self.assertEqual(c['variants']['hazard']['severity'], 'review' if c['name'] == 'alu_wait_ttmp' else 'error')
+            self.assertEqual(c['variants']['hazard']['severity'],
+                             'review' if c['name'] in ('alu_wait_ttmp', 'lds_store_barrier') else 'error')
             self.assertTrue((HW / c['file']).is_file())
 
     def test_data_is_deterministic(self):
@@ -114,6 +115,19 @@ def _report(name, hazard, fixed, instructions=5, top=()):
                        'findings': [{'rule': r, 'severity': s, 'message': ''} for r, s in fs]}
     return {'status': 'FAIL', 'findings': [{'rule': r, 'severity': s, 'message': ''} for r, s in top],
             'kernels': [k('hazard', hazard), k('fixed', fixed)]}
+
+
+class ReadmeTests(unittest.TestCase):
+    def test_case_table_severity_matches_linter(self):
+        """hwprobe/README.md names each case's rule with the severity `radisa check` reports
+        (generate.REVIEW_RULES are warnings, every other probed rule an error)."""
+        from radisa.suppress import RULES
+        text = (HW / 'README.md').read_text()
+        for name, case in CASES.items():
+            with self.subTest(case=name):
+                want = 'warning' if case['rule'] in generate.REVIEW_RULES else 'error'
+                self.assertEqual(RULES[case['rule']]['severity'] == 'review', want == 'warning')
+                self.assertIn(f"| `{name}` | `{case['rule']}` ({want}) |", text)
 
 
 class VerifyLintTests(unittest.TestCase):

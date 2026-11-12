@@ -390,7 +390,7 @@ class DriftCommand(unittest.TestCase):
 
 
 REQUIRED = {  # (file, anchor) the task requires pinned
-    ('GCNFeatures.td', 'FeatureISAVersion12'),
+    ('AMDGPU.td', 'FeatureISAVersion12'),
     ('GCNSubtarget.h', 'hasVALUReadSGPRHazard'), ('GCNSubtarget.h', 'requiresNopBeforeDeallocVGPRs'),
     ('GCNSubtarget.h', 'requiresWaitIdleBeforeGetReg'), ('GCNSubtarget.h', 'setRegModeNeedsVNOPs'),
     ('GCNSubtarget.h', 'hasVALUPartialForwardingHazard'), ('GCNSubtarget.h', 'hasVALUMaskWriteHazard'),
@@ -419,17 +419,21 @@ class ShippedPins(unittest.TestCase):
         self.assertTrue(all(re.fullmatch('[0-9a-f]{64}', f['sha256']) for f in self.pins['facts']))
 
     def test_provenance_is_honest(self):
+        """The shipped pins are from the target compiler, ROCm llvm-project d6f6cb69 (full hash
+        recorded), and the note says that upstream main differs in 9 reviewed facts."""
         prov = self.pins['provenance']
-        self.assertIn('commit unknown', prov['revision'])
-        self.assertIn('d6f6cb69', prov['note'])
-        self.assertIn('--update', prov['note'])
+        self.assertIn('d6f6cb691863e9258034ab48c1dfce21689d5606', prov['revision'])
+        self.assertIn('ROCm', prov['revision'])
+        self.assertIn('upstream', prov['note'])
+        self.assertIn('9 facts', prov['note'])
 
-    def test_feature_defs_fall_back_to_amdgpu_td(self):
-        """ROCm d6f6cb69 (the documented --update target) defines FeatureISAVersion12 and
-        FeatureGFX12 in AMDGPU.td, not GCNFeatures.td."""
-        for f in self.pins['facts']:
-            if f['file'] == 'GCNFeatures.td':
-                self.assertIn('AMDGPU.td', f.get('alt_files', []), f['id'])
+    def test_feature_defs_found_in_both_trees(self):
+        """ROCm d6f6cb69 (the pinned tree) defines FeatureISAVersion12 and FeatureGFX12 in
+        AMDGPU.td; upstream main moved them to GCNFeatures.td. Each feature fact searches both."""
+        feats = [f for f in self.pins['facts'] if f['extractor'] == 'td_def' and f['anchor'].startswith('Feature')]
+        self.assertEqual(len(feats), 2)
+        for f in feats:
+            self.assertEqual({f['file'], *f.get('alt_files', [])}, {'AMDGPU.td', 'GCNFeatures.td'}, f['id'])
 
     def test_rule_names_exist(self):
         """Each pinned rule name is a rule radisa can report ('*' = all; 'X_*' = a family)."""

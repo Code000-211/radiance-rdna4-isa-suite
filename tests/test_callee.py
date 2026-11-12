@@ -316,10 +316,7 @@ class CalleeConvention(unittest.TestCase):
         r = lint((CHECK_FIX / 'callee_noreturn.s').read_text(), cfg_issues=True)
         self.assertEqual(set(r), {'kn', '_Z3diePi', '_Z3chkPii'})
         ft = {n: rule(found, 'CFG_FALLTHROUGH') for n, (_, found, _) in r.items()}
-        if ft['kn'] or ft['_Z3diePi']:
-            # PENDING (NEEDS CHANGE ELSEWHERE, radisa/rules.py cfg): a final s_swappc_b64 and
-            # s_trap 2 have no fall-through successor.
-            self.skipTest('rules.cfg still gives a final call / s_trap 2 a fall-through edge')
+        # rules.cfg: a final s_swappc_b64 and s_trap 2 have no fall-through successor.
         self.assertEqual(ft, {'kn': [], '_Z3diePi': [], '_Z3chkPii': []})
         for name, (_, found, _) in r.items():
             self.assertEqual(rule(found, 'MISSING_WAIT') + rule(found, 'CALLEE_RETURN_OUTSTANDING'), [], name)
@@ -328,8 +325,7 @@ class CalleeConvention(unittest.TestCase):
         # s_setpc_b64 returns or jumps; the S_CODE_END padding after a function is not reached.
         seq = [ins('s_setpc_b64', 's[30:31]', 0), ins('s_code_end', '', 4)]
         _, reachable, issues = rules.cfg(seq)
-        if 4 in reachable:
-            self.skipTest('PENDING (radisa/rules.py cfg): s_setpc_b64 still falls through')
+        self.assertNotIn(4, reachable)
         self.assertNotIn('REACHABLE_CODE_END', {f['rule'] for f in issues})
 
     def test_tail_call_is_not_a_return(self):
@@ -407,6 +403,20 @@ class Fixpoint(unittest.TestCase):
         self.assertEqual(len(st['store']), 10000)
         self.assertEqual(sorted(a for _, a in st['store'].values())[:3], [0, 1, 2])
         self.assertEqual(st['store'][seq[0]['pc']], (frozenset(), waits.CAP))
+
+    def test_loop_back_to_the_entry_keeps_the_entry_state(self):
+        # waits.solve gives an instruction with one predecessor that predecessor's out-state without a
+        # join; the entry has the caller's state as one more predecessor, so a loop that branches
+        # back to the first instruction (after draining every counter) must not replace it.
+        drain = [ins(op, '0x0', 4 + 4 * k) for k, op in enumerate(('s_wait_loadcnt', 's_wait_dscnt', 's_wait_kmcnt',
+                                                                      's_wait_samplecnt', 's_wait_bvhcnt',
+                                                                      's_wait_expcnt'))]
+        back = (-(len(drain) + 2)) & 0xffff
+        seq = [ins('v_add_f32', 'v2, v1, v1', 0), *drain,
+               ins('s_cbranch_scc1', '', 28, raw=f'{back & 0xff:02x}{back >> 8:02x}0000'), ins('s_setpc_b64', 's[30:31]', 32)]
+        self.assertEqual(rules.cfg(seq)[0][28], [0, 32])
+        found, _ = run(seq, callee=True)
+        self.assertEqual([(f['rule'], f['pc']) for f in found], [('MISSING_WAIT', 0)])
 
     def test_saturated_producer_is_still_reported(self):
         # A load with CAP+ younger loads is still outstanding until a wait: its use is a MISSING_WAIT.
@@ -496,15 +506,14 @@ class EndToEnd(unittest.TestCase):
         calls, = [f for f in both[[r['name'] for r in both].index('k')]['findings'] if f['rule'] == 'CALLS']
         self.assertEqual(calls['callees_checked'], ['helper'])
 
-    # ---- PENDING: these need the check.py wiring listed under NEEDS CHANGE ELSEWHERE
-    # (review-callee/fix.md); each skips, naming what is missing, until it is in.
+    # ---- check.py wiring: function-only .s / objects (functions.has_functions, object_inventory),
+    # offsets inside a function (functions.relative_pc), the CALLS note for unsized functions.
 
     @needs_llvm_mc
     def test_function_only_assembly_is_checked_as_callee(self):
         code, rep = check_text((CHECK_FIX / 'callee_rdc_bug.s').read_text())
-        if '_Z4leafPKfi' not in [k['name'] for k in rep['kernels']]:
-            self.skipTest('PENDING check.check_assembly: functions.has_functions -> check_object_bytes')
         k, = rep['kernels']
+        self.assertEqual(k['name'], '_Z4leafPKfi')
         self.assertTrue(k['callee'])
         rules_ = {f['rule'] for f in all_findings(rep)}
         self.assertIn('MISSING_WAIT', rules_)
@@ -517,8 +526,7 @@ class EndToEnd(unittest.TestCase):
         _, rep = check_text((CHECK_FIX / 'callee_rdc.s').read_text())
         errors = {f['rule'] for f in all_findings(rep) if f['severity'] == 'error'}
         self.assertNotIn('REACHABLE_CODE_END', errors)
-        if '_Z4leafPKfi' not in [k['name'] for k in rep['kernels']]:
-            self.skipTest('PENDING check.check_assembly: functions.has_functions -> check_object_bytes')
+        self.assertEqual([k['name'] for k in rep['kernels']], ['_Z4leafPKfi'])
         self.assertEqual(errors - {'MISSING_ALU_WAIT'}, set())     # the LLVM<20 s_wait_alu gap only
 
     @needs_llvm_mc
@@ -527,8 +535,6 @@ class EndToEnd(unittest.TestCase):
             obj = Path(d, 'rdc_bug.o')
             assemble((CHECK_FIX / 'callee_rdc_bug.s').read_text(), obj)
             code, rep = run_check(obj)
-        if rep['status'] == 'NO_KERNELS':
-            self.skipTest('PENDING check.check_object_bytes: functions.object_inventory')
         self.assertEqual([k['name'] for k in rep['kernels']], ['_Z4leafPKfi'])
         self.assertIn('MISSING_WAIT', {f['rule'] for f in all_findings(rep)})
         self.assertEqual((rep['status'], code), ('FAIL', 1))
@@ -547,8 +553,7 @@ class EndToEnd(unittest.TestCase):
         h, = [k for k in rep['kernels'] if k['name'] == 'helper']
         self.assertGreater(h['address'], 0)                    # helper follows kernel k
         ret, = [f for f in h['findings'] if f['rule'] == 'CALLEE_RETURN_OUTSTANDING']
-        if f"helper+{ret['pc']:#x}:" in text:
-            self.skipTest('PENDING check.render / formats.py: functions.relative_pc')
+        self.assertNotIn(f"helper+{ret['pc']:#x}:", text)
         # helper: v_add_f32 (+0x0), global_load_b32 (+0x4, 12 bytes on gfx12), s_setpc_b64 (+0x10).
         self.assertEqual(ret['pc'] - h['address'], 0x10)
         self.assertIn('cmw.o:helper+0x0: error: [MISSING_WAIT]', text)
@@ -561,11 +566,75 @@ class EndToEnd(unittest.TestCase):
             '\t.size\thelper, .Lfunc_end_helper-helper\n', '')
         _, rep = check_text(text)
         calls, = [f for f in all_findings(rep) if f['rule'] == 'CALLS']
-        if 'holds no function body' in calls['message']:
-            self.skipTest("PENDING check.check_object_bytes: options['_unchecked'] from object_inventory")
+        self.assertNotIn('holds no function body', calls['message'])
         self.assertIn('helper', calls['message'])
         self.assertIn('NOT checked', calls['message'])
         self.assertIn('OBJECT_EVIDENCE', {f['rule'] for f in all_findings(rep)})
+
+
+class NoreturnCall(unittest.TestCase):
+    """NORETURN_CALL_RETURNS: a call that ends the code is taken as noreturn (rules.cfg); where its
+    callee is a function of the same object with a reachable return, that is reported ('review')."""
+
+    def found(self, rep):
+        return [(f['rule'], f['severity'], f.get('callee')) for f in all_findings(rep)
+                if f['rule'] == 'NORETURN_CALL_RETURNS']
+
+    @needs_minimal_kernel
+    def test_final_call_to_returning_callee(self):
+        _, rep = check_text((CHECK_FIX / 'callee_noreturn_returns.s').read_text())
+        self.assertEqual(self.found(rep), [('NORETURN_CALL_RETURNS', 'review', 'helper')])
+        f, = [f for f in all_findings(rep) if f['rule'] == 'NORETURN_CALL_RETURNS']
+        self.assertEqual(f['loc']['line'], 15)                       # the s_swappc_b64 line of the .s
+        self.assertIn('helper returns (s_setpc_b64 s[30:31] at +0x10)', f['message'])
+        calls, = [f for f in all_findings(rep) if f['rule'] == 'CALLS']
+        self.assertIn('noreturn', calls['message'])
+        self.assertEqual(calls['noreturn_call_pcs'], [f['pc']])
+
+    @needs_minimal_kernel
+    def test_object_and_linked_object(self):
+        # Relocatable object: the R_AMDGPU_REL32_LO relocation names the callee (a section symbol +
+        # addend here, `helper` is local); linked: the s_add literals hold the offset.
+        import shutil
+        with tempfile.TemporaryDirectory() as d:
+            obj = Path(d, 'nr.o')
+            assemble((CHECK_FIX / 'callee_noreturn_returns.s').read_text(), obj)
+            _, rep = run_check(obj)
+            self.assertEqual(self.found(rep), [('NORETURN_CALL_RETURNS', 'review', 'helper')])
+            lld = shutil.which('ld.lld')
+            if lld:
+                so = Path(d, 'nr.so')
+                subprocess.run([lld, '-shared', str(obj), '-o', str(so)], check=True, capture_output=True)
+                _, rep = run_check(so)
+                self.assertEqual(self.found(rep), [('NORETURN_CALL_RETURNS', 'review', 'helper')])
+
+    @needs_llvm_mc
+    def test_noreturn_callee_is_clean(self):
+        # clang 18 -O2: kn ends with its call to die(), which ends with s_trap 2 (no return).
+        _, rep = check_text((CHECK_FIX / 'callee_noreturn.s').read_text())
+        self.assertEqual(self.found(rep), [])
+        self.assertTrue(any('noreturn' in f['message'] for f in all_findings(rep) if f['rule'] == 'CALLS'))
+
+    def test_call_target_shapes(self):
+        def seq_(*xs):
+            out, pc = [], 0
+            for op, args, size in xs:
+                out.append({'op': op, 'args': args, 'pc': pc, 'size': size, 'text': f'{op} {args}'})
+                pc += size
+            return out
+        # Linked: after s_getpc_b64 (pc 4) + 0x100 (with the gfx12 s_sext_i32_i16 on the high half).
+        x = seq_(('s_getpc_b64', 's[2:3]', 4), ('s_sext_i32_i16', 's3, s3', 4), ('s_add_co_u32', 's2, s2, 0x100', 8),
+                 ('s_add_co_ci_u32', 's3, s3, 0', 8), ('s_swappc_b64', 's[30:31], s[2:3]', 4))
+        self.assertEqual(functions.call_target(x, 4, {}, 1), (0x104, None))
+        # Relocatable: S + A - (P - address after s_getpc_b64), P = the s_add literal at 8 + 4.
+        self.assertEqual(functions.call_target(x, 4, {(1, 12): (functions.R_AMDGPU_REL32_LO, 0x40, 1, 12)}, 1),
+                         (0x40 + 12 - 8, 1))
+        # Another pair, a missing s_getpc_b64, or a write of the low half in between: unresolved.
+        self.assertIsNone(functions.call_target(x[:4] + seq_(('s_swappc_b64', 's[30:31], s[4:5]', 4)), 4, {}, 1))
+        self.assertIsNone(functions.call_target(x[1:], 3, {}, 1))
+        y = x[:1] + seq_(('s_sext_i32_i16', 's2, s2', 4)) + x[2:]
+        self.assertIsNone(functions.call_target(y, 4, {}, 1))
+
 
 if __name__ == '__main__':
     unittest.main()

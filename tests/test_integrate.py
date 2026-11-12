@@ -106,6 +106,25 @@ class CheckFlags(unittest.TestCase):
         code, r = run_check(CHECK_FIX / 'liveness_uninit.s', '--no-config', '--no-liveness')
         self.assertNotIn('UNINITIALIZED_READ', rules_of(r))
 
+    @needs_minimal_kernel
+    def test_severity_override_applies_to_both_uninitialized_read_grades(self):
+        # liveness emits UNINITIALIZED_READ as 'review' (no path defines it) and 'info' (some do);
+        # a configured severity re-grades both.
+        sev = lambda r: sorted({f['severity'] for f in all_findings(r) if f['rule'] == 'UNINITIALIZED_READ'})
+        _, r = run_check(CHECK_FIX / 'liveness_uninit.s', '--no-config')
+        self.assertEqual(sev(r), ['info', 'review'])
+        _, r = run_check(CHECK_FIX / 'liveness_uninit.s', '--no-config', '--severity', 'UNINITIALIZED_READ=error')
+        self.assertEqual(sev(r), ['error'])
+
+    def test_operand_models_built_once_per_kernel(self):
+        from unittest import mock
+        from radisa import waits
+        real, calls = waits.operand_models, []
+        with mock.patch.object(waits, 'operand_models', side_effect=lambda *a, **k: calls.append(1) or real(*a, **k)):
+            _, r = run_check(CHECK_FIX / 'hazard_wmma_xblock.s', '--no-config')
+        self.assertIn('WMMA_D_TO_AB', rules_of(r))
+        self.assertEqual(len(calls), len(r['kernels']))
+
     def test_hazard_sources_keep_llvm_citation(self):
         _, r = run_check(CHECK_FIX / 'hazard_dealloc.s', '--no-config')
         [f] = [f for f in all_findings(r) if f['rule'] == 'DEALLOC_NO_NOP']

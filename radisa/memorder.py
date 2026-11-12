@@ -3,9 +3,12 @@
 Normative basis, LLVM only: SIMemoryLegalizer.cpp, SIGfx12CacheControl::finalizeStore calls
 insertWaitsBeforeSystemScopeStore for a store that is not atomic, not a read-modify-write and has
 cache policy scope SCOPE_SYS, when the subtarget has FeatureWaitsBeforeSystemScopeStores
-("Target requires waits for loads and atomics before system scope stores", GCNFeatures.td; part
-of FeatureISAVersion12, which gfx1201 uses). Those waits are S_WAIT_LOADCNT 0,
-S_WAIT_SAMPLECNT 0, S_WAIT_BVHCNT 0, S_WAIT_KMCNT 0 and S_WAIT_STORECNT 0. The AMD RDNA4 ISA
+("Target requires waits for loads and atomics before system scope stores", GCNFeatures.td
+upstream, AMDGPU.td at ROCm d6f6cb69; part of FeatureISAVersion12, which gfx1201 uses). Those waits
+are S_WAIT_LOADCNT 0, S_WAIT_SAMPLECNT 0, S_WAIT_BVHCNT 0, S_WAIT_KMCNT 0 and S_WAIT_STORECNT 0.
+(The SAMPLECNT/BVHCNT waits are under `hasImageInsts()`; upstream also requires `hasAnyBVHInsts()`
+for the BVHCNT one, ROCm d6f6cb69 does not. gfx1201 has image and BVH instructions
+(FeatureBVHRayTracingInsts), so both trees emit the same five waits.) The AMD RDNA4 ISA
 guide does not state this requirement.
 
 The literal reading checked here: at such a store, nothing may be outstanding on LOADcnt,
@@ -27,8 +30,8 @@ from . import waits
 
 RULE = 'SYS_STORE_WAIT'
 SOURCE = ('LLVM SIMemoryLegalizer.cpp SIGfx12CacheControl::finalizeStore / '
-          'insertWaitsBeforeSystemScopeStore; GCNFeatures.td FeatureWaitsBeforeSystemScopeStores '
-          '(FeatureISAVersion12). Not in the AMD RDNA4 ISA guide')
+          'insertWaitsBeforeSystemScopeStore; FeatureWaitsBeforeSystemScopeStores in FeatureISAVersion12 '
+          '(GCNFeatures.td upstream, AMDGPU.td at ROCm d6f6cb69). Not in the AMD RDNA4 ISA guide')
 COUNTERS = ('load', 'sample', 'bvh', 'km', 'store')
 _STORE = re.compile(r'^(?:global|flat|scratch|buffer)_store_|^image_store')
 _SYS = re.compile(r'\bscope:SCOPE_SYS\b')

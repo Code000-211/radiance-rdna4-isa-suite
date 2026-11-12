@@ -24,7 +24,7 @@ import subprocess
 import sys
 import tempfile
 
-from .binary import ELF, FormatError, extract_code_objects, kernel_inventory
+from .binary import ELF, FormatError, extract_code_objects
 from .decode import decode_object, select_backend
 from . import asmclobber, formats, functions, hipsrc, isadb, liveness, memorder, rules, sgpr, suppress, waits
 from .incremental import check_hip_incremental
@@ -140,7 +140,11 @@ def check_kernel(kernel: dict, decoded: dict, table: dict, origin: dict | None =
     callee = bool(kernel.get('callee'))
     kernel = {**kernel, 'issues': [m for m in kernel.get('issues', [])
                                    if not m.startswith(DROP_KERNEL_ISSUES)]}
-    base = rules.audit_kernel(kernel, decoded)
+    ins = decoded['instructions']
+    md = kernel['metadata']
+    wave = md.get('.wavefront_size', 32)
+    models = waits.operand_models(ins, table, wave)   # once per kernel: hazards (via audit_kernel), waits, passes
+    base = rules.audit_kernel(kernel, decoded, models, table)
     findings = [f for f in base['findings'] if f['rule'] not in ('LOCAL_MEMORY_HAZARD', 'CFG_INDIRECT')]
     returns = {i['pc'] for i in decoded['instructions'] if callee and i['op'] == 's_setpc_b64'
                and i['args'].strip() == waits.RETURN_ADDRESS}
@@ -160,10 +164,18 @@ def check_kernel(kernel: dict, decoded: dict, table: dict, origin: dict | None =
         if unchecked:
             where += (f"function(s) {', '.join(unchecked)} of this object are NOT checked (no symbol size, "
                       'see OBJECT_EVIDENCE); ')
+        noreturn = [f['pc'] for f in calls if f.get('noreturn')]
+        if noreturn:
+            at = ', '.join(f"+{functions.relative_pc(kernel, pc):#x}" for pc in noreturn)
+            where += (f'the call at the end of the code ({at}) is taken as a '
+                      'call to a noreturn function, as LLVM ends such a block with the call (if that callee '
+                      'returns, execution runs past the end: NORETURN_CALL_RETURNS where the callee is in this '
+                      'object); ')
         findings.append({'rule': 'CALLS', 'severity': 'info', 'pc': calls[0]['pc'],
                          'message': f'{len(calls)} call(s)/indirect branch(es); {where}every counter but '
                                     'STOREcnt is assumed drained on return (LLVM SIInsertWaitcnts)',
-                         'call_pcs': [f['pc'] for f in calls], 'callees_checked': checked})
+                         'call_pcs': [f['pc'] for f in calls], 'callees_checked': checked,
+                         **({'noreturn_call_pcs': noreturn} if noreturn else {})})
     if callee:
         for f in findings:
             if f['rule'] == 'CFG_FALLTHROUGH':
@@ -179,11 +191,7 @@ def check_kernel(kernel: dict, decoded: dict, table: dict, origin: dict | None =
         sec = _section(f['rule'])
         if sec and 'llvm' not in f:
             f['source'] = isadb.cite(table, sec)
-    ins = decoded['instructions']
     edges, reachable, _ = rules.cfg(ins)
-    md = kernel['metadata']
-    wave = md.get('.wavefront_size', 32)
-    models = waits.operand_models(ins, table, wave)
     wf, stats = waits.analyze(ins, edges, reachable, table, wave, origin, models, callee=callee)
     findings += wf
     findings += _unknown_operand_models(ins, models, stats, wave, edges, reachable, wf, callee)
@@ -248,17 +256,23 @@ def _objects(path: Path) -> list[bytes]:
 def check_object_bytes(data: bytes, label: str, table: dict, backend: dict, kernel_filter: str | None,
                        work: Path, asm_functions: dict | None = None,
                        timeout: float = 600, options: dict | None = None,
-                       map_severity: str = 'incomplete') -> tuple[list[dict], list[dict]]:
+                       map_severity: str = 'incomplete',
+                       wave: int | None = None) -> tuple[list[dict], list[dict]]:
     """Check every gfx1201 kernel of one code object, and every non-kernel function in it
-    (functions.function_inventory, checked with callee semantics). `map_severity` grades the
-    SOURCE_MAP notes for `asm_functions` that do not line up with the object."""
+    (functions.object_inventory, checked with callee semantics), also in an object that declares
+    no kernel at all (`amdhsa.kernels: []`, or an assembled .s with functions and no metadata).
+    `map_severity` grades the SOURCE_MAP notes for `asm_functions` that do not line up with the
+    object; `wave` is the wave size of functions in an object no kernel of which declares one."""
     elf = ELF(data)
-    ks, issues = kernel_inventory(elf)
-    fs = functions.function_inventory(elf, ks, issues)
+    missing: list[str] = []
+    ks, fs, issues = functions.object_inventory(elf, wave, missing)
     notes = [{'rule': 'OBJECT_EVIDENCE', 'severity': 'incomplete', 'message': m, 'pc': None}
              for m in issues]
-    # Functions found but not checked (functions.function_inventory reports them in `issues`).
-    unchecked = tuple(m[1] for m in (re.match(r'function (\S+) has no symbol size', i) for i in issues) if m)
+    if not ks:
+        notes.append({'rule': 'OBJECT_EVIDENCE', 'severity': 'info', 'pc': None,
+                      'message': f'the code object declares no kernel; its {len(fs)} function(s) are '
+                                 'checked as called functions'})
+    unchecked = tuple(missing)   # functions found without a symbol size: not checked
     present = tuple(f['name'] for f in fs)
     if kernel_filter:
         ks = [k for k in ks if kernel_filter in k['name'] or kernel_filter in k['symbol']]
@@ -270,7 +284,7 @@ def check_object_bytes(data: bytes, label: str, table: dict, backend: dict, kern
     tmp = work / 'object.co'
     tmp.write_bytes(data)
     decoded = decode_object(tmp, usable, backend, timeout) if usable else {}
-    results = []
+    results, units = [], []
     for k in ks:
         d = decoded.get(k['symbol'], {'instructions': [], 'issues': [], 'decoded_bytes': 0})
         origin = None
@@ -288,7 +302,60 @@ def check_object_bytes(data: bytes, label: str, table: dict, backend: dict, kern
         r = check_kernel(k, d, table, origin, options)
         r['object'] = label
         results.append(r)
+        units.append((k, d, r, origin))
+    _noreturn_calls(elf, units)
     return results, notes
+
+
+def _noreturn_calls(elf: ELF, units: list[tuple[dict, dict, dict, dict | None]]) -> None:
+    """NORETURN_CALL_RETURNS: a call that ends the code of a kernel or function (rules.cfg takes it as
+    a call to a noreturn function: no successor) whose callee is a function of the same object,
+    checked in this run, with a reachable return (`s_setpc_b64 s[30:31]`). If the callee returns,
+    the wave runs past the end of the caller into whatever follows (padding, the next function).
+
+    Severity 'review', by the severity policy: LLVM enforces nothing here. Compiler output has the
+    shape only for a callee the IR calls noreturn (declared [[noreturn]], or inferred), and a
+    reachable return in such a callee is undefined behaviour at the source level that the machine
+    CFG shows as a path, not proof that it executes. Hand-written assembly that forgot the code
+    after a call is the case this finds."""
+    by_addr = {(k.get('section'), k['address']): (k, d) for k, d, _, _ in units if k.get('callee') and 'address' in k}
+    if not by_addr:
+        return
+    relocs = functions.relocations(elf)
+    for k, d, r, origin in units:
+        notes = [f for f in r['findings'] if f['rule'] == 'CALLS' and f.get('noreturn_call_pcs')]
+        if not notes:
+            continue
+        ins = d['instructions']
+        ix_of = {i['pc']: n for n, i in enumerate(ins)}
+        for pc in notes[0]['noreturn_call_pcs']:
+            t = functions.call_target(ins, ix_of[pc], relocs, k.get('section')) if pc in ix_of else None
+            if t is None:
+                continue
+            addr, sec = t
+            hit = by_addr.get((sec if sec is not None else k.get('section'), addr))
+            if hit is None:
+                continue
+            callee, cd = hit
+            _, reachable, _ = rules.cfg(cd['instructions'])
+            rets = [i['pc'] for i in cd['instructions'] if i['pc'] in reachable and i['op'] == 's_setpc_b64'
+                    and i['args'].strip() == waits.RETURN_ADDRESS]
+            if not rets:
+                continue
+            f = {'rule': 'NORETURN_CALL_RETURNS', 'severity': 'review', 'pc': pc,
+                 'message': f"the call to {callee['name']} is the last instruction of {k['name']}, so it is taken "
+                            f"as a call to a noreturn function, but {callee['name']} returns (s_setpc_b64 "
+                            f"{waits.RETURN_ADDRESS} at {', '.join(f'+{functions.relative_pc(callee, x):#x}' for x in rets[:4])}"
+                            f"): if it does, "
+                            f"execution runs past the end of {k['name']}",
+                 'callee': callee['name'], 'callee_returns': rets,
+                 'source': 'LLVM SIInstrInfo/AMDGPUMCInstLower call sequence (s_getpc_b64, s_add, s_swappc_b64); '
+                           'rules.cfg noreturn call; AMDGPU calling convention: return address s[30:31]',
+                 'instruction': ins[ix_of[pc]]['text']}
+            o = (origin or {}).get(pc) or {}
+            if o.get('line'):
+                f['loc'] = {x: o[x] for x in ('file', 'line', 'column')}
+            r['findings'].append(f)
 
 
 def snippet_kernel(obj: Path, wave: int) -> tuple[dict, bytes]:
@@ -405,13 +472,14 @@ def check_assembly(path: Path, table: dict, backend: dict, args, work: Path):
     if p.returncode:
         return [], [{'rule': 'ASSEMBLER', 'severity': 'error', 'pc': None,
                      'message': p.stderr.strip() or 'llvm-mc failed'}]
-    if '.amdhsa_kernel' in text:
+    if '.amdhsa_kernel' in text or functions.has_functions(ELF(obj.read_bytes())):
         if re.search(r'^\s*\.loc\s', text, re.M):
             return check_object_bytes(obj.read_bytes(), str(path), table, backend, args.kernel, work,
-                                      hipsrc.parse_asm(text), args.timeout, pass_options(args))
+                                      hipsrc.parse_asm(text), args.timeout, pass_options(args),
+                                      wave=args.wave)
         return check_object_bytes(obj.read_bytes(), str(path), table, backend, args.kernel, work,
                                   asm_line_map(text, str(path), False), args.timeout, pass_options(args),
-                                  map_severity='info')
+                                  map_severity='info', wave=args.wave)
     k, _ = snippet_kernel(obj, args.wave)
     decoded = decode_object(obj, [k], backend)
     d = decoded[k['symbol']]
@@ -469,13 +537,13 @@ FAILING = {'error'}
 def render(report: dict, strict: bool) -> str:
     lines = []
 
-    def emit(f, prefix):
+    def emit(f, prefix, unit=None):
         sev = SEVERITY_LABEL.get(f['severity'], f['severity'])
         where = prefix
         if f.get('loc'):
             where = f"{f['loc']['file']}:{f['loc']['line']}:{f['loc'].get('column', 1)}"
         elif f.get('pc') is not None and prefix:
-            where = f"{prefix}+{f['pc']:#x}"
+            where = f"{prefix}+{functions.relative_pc(unit or {}, f['pc']):#x}"
         text = f"{where}: {sev}: [{f['rule']}] {f['message']}"
         if f.get('instruction'):
             text += f"\n    {f['instruction']}"
@@ -486,7 +554,7 @@ def render(report: dict, strict: bool) -> str:
         emit(f, report['input'])
     for k in report['kernels']:
         for f in k['findings']:
-            emit(f, f"{Path(k['object']).name}:{k['name']}")
+            emit(f, f"{Path(k['object']).name}:{k['name']}", k)
     c = report['counts']
     om = report['operand_model']
     nf = sum(1 for k in report['kernels'] if k.get('callee'))

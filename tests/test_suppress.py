@@ -282,7 +282,7 @@ def snippet_report(src, *fs):
 
 
 class Review(Workdir):
-    """Regressions for the adversarial review of this feature (scratchpad review-suppress)."""
+    """Regressions for the adversarial review of this feature."""
 
     # 1. a baseline is tied to its input file
     def test_baseline_of_one_file_does_not_hide_another(self):

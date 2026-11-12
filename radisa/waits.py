@@ -58,8 +58,10 @@ CALLS = ('LLVM SIInsertWaitcnts.cpp: SIInsertWaitcnts::run (non-kernel function 
          'setStateOnFunctionEntryOrReturn), generateWaitcntInstBefore (SI_RETURN / S_SETPC_B64_return: '
          'all counters but STOREcnt 0, simplifyVmemInvOnlyWait; a call waits only for SMEM writing its '
          'operands), updateEventWaitcntAfter (after a call: all counters but STOREcnt 0)')
-MEMORY_MODEL = ('LLVM AMDGPU User Guide, Memory Model GFX12, code sequences: s_wait_dscnt 0 before a '
-                'workgroup barrier; counter: AMD RDNA4 ISA §5.7.1')
+MEMORY_MODEL = ('LLVM AMDGPU User Guide, Memory Model GFX12 (s_wait_dscnt 0 synchronises LDS with vector '
+                'memory between waves); LLVM SIMemoryLegalizer.cpp SIGfx12CacheControl::insertWait (LDS at '
+                'workgroup scope: DSCnt |= IsCrossAddrSpaceOrdering); SIInsertWaitcnts.cpp (no wait at '
+                'S_BARRIER with FeatureBackOffBarrier); counter: AMD RDNA4 ISA §5.7.1')
 
 
 def domains(model: dict, op: str) -> list[str]:
@@ -351,6 +353,19 @@ def _where(prod: int, origin: dict | None) -> str:
 def _sync_findings(instructions, state_in, reachable, by_pc, origin) -> list[dict]:
     """Local-memory writes that may be outstanding when a workgroup barrier is reached.
 
+    Severity 'review', not 'error': LLVM does not enforce this wait for gfx1201. SIInsertWaitcnts
+    adds none at S_BARRIER (gfx1201 has FeatureBackOffBarrier), and SIGfx12CacheControl::insertWait
+    (SIMemoryLegalizer.cpp, identical in upstream main and ROCm d6f6cb69) adds S_WAIT_DSCNT for LDS at
+    workgroup scope only when the fence orders across address spaces (`DSCnt |=
+    IsCrossAddrSpaceOrdering`, "LDS operations for all waves are executed in a total global
+    ordering"). So the compiler emits s_wait_dscnt 0 before the barrier for __syncthreads() (fences
+    at the cross-address-space "workgroup" scope), and correctly emits none for a "-one-as" fence
+    (e.g. __builtin_amdgcn_fence(__ATOMIC_RELEASE, "workgroup-one-as")), an OpenCL local fence or a
+    bare __builtin_amdgcn_s_barrier(). Machine code does not say which fence the source had; with an
+    LDS write outstanding a cross-address-space release would have left its wait in place, so on
+    compiler output this finding means the source synchronised only LDS (correct per LLVM's memory
+    model) or had no fence (a source-level race), and in hand-edited code that a wait was removed.
+
     The barrier is the one synchronisation the machine code itself states. Which waits an
     atomic, a fence or a cache invalidate needs depends on the ordering and scope written in
     the source, which machine code does not carry, so those are not checked. An outstanding
@@ -370,11 +385,14 @@ def _sync_findings(instructions, state_in, reachable, by_pc, origin) -> list[dic
             extra = {}
             if origin and prod in origin:
                 extra['producer_origin'] = origin[prod]
-            f = {'rule': 'LDS_STORE_BEFORE_BARRIER', 'severity': 'error', 'pc': pc,
+            f = {'rule': 'LDS_STORE_BEFORE_BARRIER', 'severity': 'review', 'pc': pc,
                  'producer': None if prod == ENTRY else prod, 'counter': 'ds',
-                 'message': f"{op} is reached while {producer_op(prod, by_pc)} ({at}) may still be outstanding: "
-                            'the waves the barrier releases may read local memory before the write '
-                            'has landed; insert s_wait_dscnt 0 before the barrier',
+                 'message': f"{op} is reached while {producer_op(prod, by_pc)} ({at}) may still be outstanding. "
+                            'LLVM emits s_wait_dscnt 0 here only for a release fence that orders LDS together '
+                            'with global memory (the __syncthreads() fences); a "-one-as" or LDS-only fence '
+                            'or a bare barrier gets no wait. If other waves use this write together with '
+                            'global memory after the barrier, or the source had no fence, insert '
+                            's_wait_dscnt 0 before the barrier',
                  'required_wait': 's_wait_dscnt 0', 'later_uses': [], 'source': MEMORY_MODEL, **extra}
             seen[prod] = f
             out.append(f)
@@ -487,6 +505,10 @@ def solve(instructions: list[dict], edges: dict, table: dict, wave: int = 32, mo
         work = deque([entry])
         queued = {entry}
         guard = 0
+        npred: dict = {entry: 1}      # the entry state counts as one more predecessor of the entry
+        for succ in edges.values():
+            for t in succ:
+                npred[t] = npred.get(t, 0) + 1
         while work:
             guard += 1
             if guard > 200 * len(instructions) + 1000:
@@ -497,7 +519,8 @@ def solve(instructions: list[dict], edges: dict, table: dict, wave: int = 32, mo
             out = _transfer(raw[pc], by_pc[pc], models, bit)
             for s in edges.get(pc, []):
                 old = raw.get(s)
-                new = out if old is None else _join(old, out, bit)
+                # One predecessor: its out-state is the in-state, no join needed (most instructions).
+                new = out if old is None or npred[s] == 1 else _join(old, out, bit)
                 if old is None or new is not old and new != old:
                     raw[s] = new
                     if s not in queued:

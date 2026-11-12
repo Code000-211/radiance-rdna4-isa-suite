@@ -113,6 +113,27 @@ def hip_command(source: Path, cxx: str | None, flags: list[str], compile_command
                  '-gline-tables-only', *base], cwd
 
 
+_WAVE64_ASM = re.compile(r'^\s*(?:\.amdhsa_wavefront_size32\s+0\b|\.wavefront_size:\s+64\b)', re.M)
+
+
+def assembler_wave_args(asm_text: str, compile_args: list[str] = ()) -> list[str]:
+    """llvm-mc arguments that select the wave size of compiler output. clang's .s names only
+    `.amdgcn_target "amdgcn-amd-amdhsa--gfx1201"`: the wave size is a subtarget feature, and the
+    parser takes isWave64() from the feature bits passed on the command line; the kernel
+    descriptor's `.amdhsa_wavefront_size32 0` is only checked against them, it does not set them
+    (AMDGPUAsmParser::ParseDirectiveAMDHSAKernel). Without `-mattr=+wavefrontsize64` llvm-mc
+    rejects every wave64 operand (VCC pair, SGPR-pair carry/mask). The wave size is read from
+    the kernel descriptor / metadata in the .s; a unit without a kernel falls back to the last
+    -m[no-]wavefrontsize64 of the compile arguments."""
+    if _WAVE64_ASM.search(asm_text):
+        return ['-mattr=+wavefrontsize64']
+    if '.amdhsa_kernel' not in asm_text:
+        last = [a for a in compile_args if a in ('-mwavefrontsize64', '-mno-wavefrontsize64')]
+        if last and last[-1] == '-mwavefrontsize64':
+            return ['-mattr=+wavefrontsize64']
+    return []
+
+
 def compile_hip(source: Path, workdir: Path, cxx: str | None, flags: list[str],
                 compile_commands: Path | None, arch: str = 'gfx1201', timeout: float = 600) -> dict:
     cxx, args, cwd = hip_command(source, cxx, flags, compile_commands, arch)
@@ -128,7 +149,8 @@ def compile_hip(source: Path, workdir: Path, cxx: str | None, flags: list[str],
         return result
     mc = find_tool('llvm-mc', near=cxx)
     obj = workdir / (source.stem + '.gfx1201.o')
-    a = subprocess.run([mc, '-triple=amdgcn-amd-amdhsa', f'-mcpu={arch}', '-filetype=obj',
+    wave = assembler_wave_args(asm.read_text(encoding='utf-8', errors='replace'), args)
+    a = subprocess.run([mc, '-triple=amdgcn-amd-amdhsa', f'-mcpu={arch}', '-filetype=obj', *wave,
                         str(asm), '-o', str(obj)], capture_output=True, text=True,
                        timeout=timeout, check=False)
     result.update(assembler=mc, assembler_returncode=a.returncode, assembler_stderr=a.stderr, object=obj)
@@ -155,13 +177,11 @@ def compile_ir(source: Path, workdir: Path, cxx: str | None, flags: list[str],
 LABEL = re.compile(r'^([A-Za-z_.$][\w.$@]*):')
 
 
-def parse_asm(text: str, base: str | None = None, asm_file: str | None = None, line_offset: int = 0) -> dict:
-    """Per function: instruction mnemonics with source location and inline-asm flag.
-
-    `/* ... */` comments are blanked first (newlines kept), so a comment line is never taken for an
-    instruction. With `asm_file`, an instruction that no `.loc` covers (hand-written assembly) gets
-    its own line in that file: {'file': asm_file, 'line': N + line_offset, 'column': 1}, N counting
-    lines of `text` from 1 (pass line_offset=-1 when one line was prepended to the file's text)."""
+def parse_asm(text: str, base: str | None = None) -> dict:
+    """Per function: instruction mnemonics with the source location of their `.loc` (None before
+    the first one) and inline-asm flag, for compiler output. `/* ... */` comments are blanked first
+    (newlines kept), so a comment line is never taken for an instruction. Hand-written assembly is
+    mapped to its own lines by check.asm_line_map instead."""
     text = re.sub(r'/\*.*?\*/', lambda m: re.sub(r'[^\n]', ' ', m.group(0)), text, flags=re.S)
     files: dict[int, str] = {}
     functions: dict[str, list[dict]] = {}
@@ -170,7 +190,7 @@ def parse_asm(text: str, base: str | None = None, asm_file: str | None = None, l
     in_asm = False
     in_text = True
     in_metadata = False
-    for lineno, raw in enumerate(text.splitlines(), 1):
+    for raw in text.splitlines():
         line = raw.strip()
         if in_metadata:
             in_metadata = not line.startswith('.end_amdgpu_metadata')
@@ -226,8 +246,6 @@ def parse_asm(text: str, base: str | None = None, asm_file: str | None = None, l
         where = None
         if loc and loc[1] > 0:
             where = {'file': files.get(loc[0], f'file{loc[0]}'), 'line': loc[1], 'column': loc[2]}
-        elif asm_file is not None:
-            where = {'file': asm_file, 'line': lineno + line_offset, 'column': 1}
         functions[current].append({'mnemonic': mnemonic, 'text': code, 'loc': where, 'inline_asm': in_asm})
     return functions
 

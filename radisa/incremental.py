@@ -344,7 +344,8 @@ def check_hip_incremental(path: Path, table: dict, backend: dict, args, work: Pa
     jobs = max(1, args.jobs or os.cpu_count() or 1)
 
     def assemble(asm: Path, obj: Path):
-        a = _run([tools['llvm-mc'], '-triple=amdgcn-amd-amdhsa', '-mcpu=gfx1201', '-filetype=obj',
+        wave = hipsrc.assembler_wave_args(asm.read_text(encoding='utf-8', errors='replace'), cargs)
+        a = _run([tools['llvm-mc'], '-triple=amdgcn-amd-amdhsa', '-mcpu=gfx1201', '-filetype=obj', *wave,
                   str(asm), '-o', str(obj)], timeout=args.timeout)
         if a.returncode:
             raise FormatError('llvm-mc could not assemble the generated code: ' + a.stderr.strip())

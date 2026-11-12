@@ -104,6 +104,53 @@ class CompilerClean(unittest.TestCase):
         if not checked:
             self.skipTest(f'{cxx} builds none of the clean fixtures')
 
+    def test_clean_fixtures_wave64(self):
+        """-mwavefrontsize64: the .s names only the processor, so the internal llvm-mc step must be
+        given +wavefrontsize64 (hipsrc.assembler_wave_args) or every VCC-pair / SGPR-pair carry
+        operand is rejected and the unit ends INCOMPLETE (exit 0 in hook mode, i.e. no coverage)."""
+        cxx = compiler()
+        if not cxx:
+            if require_llvm():
+                self.fail('no clang++ for gfx1201')
+            self.skipTest('no clang++ (set RADISA_TEST_CXX)')
+        skip = tolerated(cxx)
+        checked = 0
+        for src in clean_fixtures():
+            if hip_compiles(cxx, src):
+                continue   # reported by test_clean_fixtures_have_no_errors
+            for opt, mode in (('-O3', ()), ('-O2', ('--no-incremental',))):
+                with self.subTest(fixture=src.name, opt=opt, mode=mode), tempfile.TemporaryDirectory() as cache:
+                    code, report = run_check(src, '--cxx', cxx, f'--flag=-nogpuinc -nogpulib {opt} -mwavefrontsize64',
+                                             '--cache-dir', cache, *mode)
+                    self.assertTrue(report['kernels'], 'no kernel was checked')
+                    self.assertEqual({k['metadata']['.wavefront_size'] for k in report['kernels']}, {64})
+                    bad = [f for f in findings(report)
+                           if f['severity'] in ('error', 'incomplete') and f['rule'] not in skip]
+                    self.assertFalse(bad, '\n'.join(f"{f['rule']} pc={f.get('pc')} {f.get('loc')}: "
+                                                        f"{f['message']}" for f in bad))
+                    if not skip:
+                        self.assertEqual(code, 0, report.get('status'))
+                    checked += 1
+        if not checked:
+            self.skipTest(f'{cxx} builds none of the clean fixtures')
+
+
+class AssemblerWaveArgs(unittest.TestCase):
+    def test_from_kernel_descriptor_and_metadata(self):
+        from radisa.hipsrc import assembler_wave_args
+        w64 = ['-mattr=+wavefrontsize64']
+        self.assertEqual(assembler_wave_args('\t.amdhsa_kernel k\n\t\t.amdhsa_wavefront_size32 0\n'), w64)
+        self.assertEqual(assembler_wave_args('    .wavefront_size: 64\n'), w64)
+        self.assertEqual(assembler_wave_args('\t.amdhsa_kernel k\n\t\t.amdhsa_wavefront_size32 1\n'
+                                             '    .wavefront_size: 32\n', ['-mwavefrontsize64']), [])
+
+    def test_without_kernel_uses_last_compile_flag(self):
+        from radisa.hipsrc import assembler_wave_args
+        self.assertEqual(assembler_wave_args('f:\n\ts_setpc_b64 s[30:31]\n', ['-mwavefrontsize64']),
+                         ['-mattr=+wavefrontsize64'])
+        self.assertEqual(assembler_wave_args('f:\n', ['-mwavefrontsize64', '-mno-wavefrontsize64']), [])
+        self.assertEqual(assembler_wave_args('f:\n', []), [])
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -40,7 +40,7 @@ the number of mismatching words and launches, and the first mismatch.
 |---|---|---|---|---|
 | `ds_load_wait` | `MISSING_WAIT` (error) | `v_add_nc_u32` reads a `ds_load_b32` destination with the load outstanding | `s_wait_dscnt 0x0` before the reader | RDNA4 ISA §5.7.1 (DScnt) |
 | `global_load_wait` | `MISSING_WAIT` (error) | the same with `global_load_b32` | `s_wait_loadcnt 0x0` | RDNA4 ISA §5.7.1 (LOADcnt) |
-| `lds_store_barrier` | `LDS_STORE_BEFORE_BARRIER` (error) | `ds_store_b32`, then `s_barrier_signal`/`s_barrier_wait` with no wait; each thread then reads the word stored by the next wave | `s_wait_dscnt 0x0` before `s_barrier_signal` | LLVM AMDGPUUsage, Memory Model GFX12 (LDS operations of different waves may be reordered) |
+| `lds_store_barrier` | `LDS_STORE_BEFORE_BARRIER` (warning) | `ds_store_b32`, then `s_barrier_signal`/`s_barrier_wait` with no wait; each thread then reads the word stored by the next wave | `s_wait_dscnt 0x0` before `s_barrier_signal` | LLVM AMDGPUUsage, Memory Model GFX12 (LDS operations of different waves may be reordered). A warning, not an error: LLVM emits this wait only for a release fence that orders LDS together with global memory (`SIGfx12CacheControl::insertWait`, `DSCnt \|= IsCrossAddrSpaceOrdering`) and none at `S_BARRIER` with `FeatureBackOffBarrier` (`SIInsertWaitcnts`), so an LDS-only fence or a bare barrier gets none. The probe measures whether the hardware needs it here |
 | `wmma_d_to_a` | `WMMA_D_TO_AB` (error) | the second `v_wmma_f32_16x16x16_f16` reads D of the first as A, directly | `v_nop` between them | RDNA4 ISA §7.12.1; LLVM `GCNHazardRecognizer::fixWMMAHazards` (inserts `V_NOP_e32`) |
 | `cmpx_permlane` | `PERMLANE_AFTER_CMPX` (error) | `v_cmpx_gt_u32` (lanes 0-15 stay active), then `v_permlane16_b32` | `v_mov_b32 src0, src0` between them | RDNA4 ISA §7.2.8; LLVM `fixVcmpxPermlaneHazards` (`FeatureVcmpxPermlaneHazard` is in `FeatureISAVersion12`; inserts `V_MOV_B32`, because "V_NOP will be discarded by SQ") |
 | `alu_wait_carry` | `MISSING_ALU_WAIT` (error) | `v_add_co_u32` writes the carry SGPR and `v_add_co_ci_u32` reads it next. The pair was already read by a VALU | `s_wait_alu 0xf1ff` (`depctr_va_sdst(0)`) before the reader | LLVM `AMDGPUWaitSGPRHazards.cpp` |
@@ -107,15 +107,18 @@ Steps:
    linter's verdict refers to the bytes that ran. `generate.py --verify-lint OUT_DIR/lint` then
    checks every kernel against the manifest: `_hazard` reports exactly the expected rule and
    severity, `_fixed` reports no error and not the rule, and neither has an `incomplete` finding.
-   The exit code of `radisa check` cannot show this, since `_hazard` alone makes it 1. On a
+   The exit code of `radisa check` cannot show this, since `_hazard` alone makes it 1 (or 0 for
+   the cases whose rule is a warning). On a
    mismatch (for example a newer compiler changed the code around the asm) nothing runs and the
    script exits 2, because the results would be filed under a rule the bytes do not have.
 4. `generate.py --data OUT_DIR/data` writes the inputs (`<case>.in.bin`), the expected outputs
    (`<case>.expect.bin`) and `cases.tsv`.
 5. `hipcc host_runner.cpp` builds the runner, which loads each code object with `hipModuleLoad`
    and launches it with `hipModuleLaunchKernel`. It needs only the HIP runtime.
-6. Results go to `OUT_DIR/results.json`. Each entry has the case, variant, kernel, `expect_rule`,
-   `launches`, `mismatched_words`, `mismatching_launches`, `first_mismatch` and a `verdict`:
+6. Results go to `OUT_DIR/results.json` (`schema` `radisa-hwprobe-results-1`, `device`, `arch`,
+   `iterations`, `complete`, `error`, `results`, `fixed_variants_ok`). Each entry of `results` has
+   the case, variant, kernel, `expect_rule`, `launches`, `words_per_launch`, `mismatched_words`,
+   `mismatching_launches`, `first_mismatch` (launch, index, got, want, or `null`) and a `verdict`:
    `hazard_observed` or `not_observed` for `_hazard`, `ok` or `FIXED_VARIANT_MISMATCH` for `_fixed`,
    `incomplete` for a kernel whose launches an error cut short. The file is rewritten after every
    kernel and on every error, so a fault or timeout in one probe keeps the counts collected before

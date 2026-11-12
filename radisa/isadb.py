@@ -163,8 +163,10 @@ def cite(table: dict, section: str) -> str:
 # ---------------------------------------------------------------- operand model
 
 REG_TOKEN = re.compile(
-    r'(?<![\w])(?:([vs])\[(\d+):(\d+)\]|([vs])(\d+)|ttmp\[(\d+):(\d+)\]|ttmp(\d+)|'
+    r'(?<![\w])(?:([vs])\[\s*(\d+)\s*(?::\s*(\d+)\s*)?\]|([vs])(\d+)|'
+    r'ttmp\[\s*(\d+)\s*(?::\s*(\d+)\s*)?\]|ttmp(\d+)|'
     r'(vcc_lo|vcc_hi|vcc|exec_lo|exec_hi|exec|m0|scc))(?![\w])')
+# `v[7]` (one register in brackets) is accepted by llvm-mc and printed as v7; it is read as v7.
 SPECIAL = {'vcc_lo': [106], 'vcc_hi': [107], 'vcc': [106, 107], 'exec_lo': [126],
            'exec_hi': [127], 'exec': [126, 127], 'm0': [125]}
 
@@ -174,14 +176,14 @@ def registers(text: str) -> set[tuple[str, int]]:
     for m in REG_TOKEN.finditer(text):
         kind, lo, hi, kind1, single, tlo, thi, tsingle, special = m.groups()
         if kind:
-            a, b = int(lo), int(hi)
+            a, b = int(lo), int(hi if hi is not None else lo)
             if a > b or b > 4096:
                 raise FormatError(f'invalid register range in {text!r}')
             out.update((kind, n) for n in range(a, b + 1))
         elif kind1:
             out.add((kind1, int(single)))
         elif tlo is not None:
-            out.update(('s', 108 + n) for n in range(int(tlo), int(thi) + 1))
+            out.update(('s', 108 + n) for n in range(int(tlo), int(thi if thi is not None else tlo) + 1))
         elif tsingle is not None:
             out.add(('s', 108 + int(tsingle)))
         elif special == 'scc':
@@ -238,7 +240,8 @@ def _align(positional: list[str], ops: list[list], drop_vdst: bool) -> list[tupl
     """Align printed operands to explicit XML operands, allowing LLVM's omissions.
 
     LLVM leaves out the EXEC destination of V_CMPX and sometimes the VCC operand
-    of VOP2/VOPC; a non-returning VMEM atomic has no VDST. Nothing else may vanish.
+    of VOP2/VOPC; a non-returning FLAT/GLOBAL atomic has no VDST (`drop_vdst`; a MUBUF/MIMG atomic
+    keeps it as its data operand, see operand_model). Nothing else may vanish.
     """
     explicit = [o for o in ops if not o[1]]
     result: list[tuple[str, list]] = []
@@ -291,7 +294,12 @@ def operand_model(table: dict, op: str, args: str, wave: int = 32) -> dict:
     args = re.split(r'\s(?://|;)', ' ' + args, maxsplit=1)[0].strip()
     positional = split_operands(args)
     vmem_atomic = 'ATOMIC' in entry['subgroups'] and not name.startswith('DS_')
-    drop_vdst = vmem_atomic and 'TH_ATOMIC_RETURN' not in args.upper()
+    returning = 'TH_ATOMIC_RETURN' in args.upper()
+    # A MUBUF/MIMG atomic has one VGPR operand for its data and its return value (VDATA): the XML
+    # lists it once, as VDST. It is always read (the data); written only with TH_ATOMIC_RETURN.
+    # FLAT/GLOBAL/SCRATCH atomics have a separate VDATA operand and no VDST without a return.
+    inout = vmem_atomic and name.startswith(('BUFFER_', 'TBUFFER_', 'IMAGE_'))
+    drop_vdst = vmem_atomic and not inout and not returning
     for form in entry['forms']:
         aligned = _align(positional, form['ops'], drop_vdst)
         if aligned is None:
@@ -304,6 +312,11 @@ def operand_model(table: dict, op: str, args: str, wave: int = 32) -> dict:
                 regs = implicit_registers(o[2], wave)
             if not token and o[3] == 'VDST':
                 returns = False
+            if inout and o[3] == 'VDST':
+                reads |= regs
+                if not returning:
+                    returns = False
+                    continue
             if 'r' in o[0]:
                 reads |= regs
             if 'w' in o[0]:

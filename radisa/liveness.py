@@ -3,7 +3,7 @@
 Normative basis. What a kernel finds in its registers at entry is the AMDHSA ABI, not the ISA
 guide: LLVM AMDGPU User Guide (llvm/docs/AMDGPUUsage), "Initial Kernel Execution State", and the
 code that implements it, LLVM SIISelLowering.cpp (allocateSpecialEntryInputVGPRs,
-allocateSystemSGPRs, getPreloadedValue). gfx1201 is FeatureISAVersion12 (GCNFeatures.td), which
+allocateSystemSGPRs, getPreloadedValue). gfx1201 is FeatureISAVersion12 (GCNFeatures.td upstream, AMDGPU.td at ROCm d6f6cb69), which
 has FeaturePackedTID, FeatureArchitectedFlatScratch and FeatureArchitectedSGPRs. Defined at entry:
 
   * User SGPRs s0..s(N-1). They are dense in the order private segment buffer (4), dispatch ptr
@@ -69,7 +69,9 @@ What is reported, and how:
     still applies to 64-bit integer and lane-mask operands (an any-extended i64 whose high half
     is undef and unused).
   * A call or indirect jump (s_swappc_b64, s_call_b64, s_setpc_b64, s_rfe_b64) defines every
-    register afterwards: the callee's effect is not visible.
+    register afterwards: the callee's effect is not visible. Not a long branch (an s_setpc_b64 that
+    rules.cfg resolves to its target, rules.long_branch_target): it is a jump inside the function,
+    and passes the state on to its target like s_branch.
   * An instruction outside the operand table defines every register it names; its reads are a
     guess and are not reported.
   * Reads whose result does not depend on the value (SAME_SOURCE, SELF_MOVE): x^x and x-x on
@@ -102,7 +104,8 @@ RULE = 'UNINITIALIZED_READ'
 SOURCE = ('LLVM AMDGPU User Guide (AMDGPUUsage), Initial Kernel Execution State: SGPR Register Set Up '
           'Order, Packed Work-Item ID Method, Preloaded Kernel Arguments; LLVM SIISelLowering.cpp '
           'allocateSpecialEntryInputVGPRs, allocateSystemSGPRs, getPreloadedValue (gfx1201: '
-          'FeaturePackedTID, FeatureArchitectedSGPRs in GCNFeatures.td FeatureISAVersion12)')
+          'FeaturePackedTID, FeatureArchitectedSGPRs in FeatureISAVersion12: GCNFeatures.td upstream, '
+          'AMDGPU.td at ROCm d6f6cb69)')
 MERGE_SOURCE = ('; LLVM SILowerI1Copies.cpp buildMergeLaneMasks (AndN2Opc/AndOpc/OrOpc/OrN2Opc with ExecReg), '
                 'insertUndefLaneMask (IMPLICIT_DEF)')
 
@@ -327,8 +330,8 @@ def solve(instructions: list[dict], edges: dict, models: dict, entry: int) -> tu
         pc = work.popleft()
         queued.discard(pc)
         i = by_pc[pc]
-        if i['op'] in OPAQUE:
-            out_must = out_may = ALL
+        if i['op'] in OPAQUE and not (i['op'] == 's_setpc_b64' and edges.get(pc)):
+            out_must = out_may = ALL   # a resolved long branch (successor in edges) is a plain jump
         else:
             out_must, out_may = must[pc] | acc[pc][1], may[pc] | acc[pc][1]
         for s in edges.get(pc, []):

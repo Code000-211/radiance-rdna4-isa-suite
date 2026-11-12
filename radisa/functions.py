@@ -22,13 +22,15 @@ after llc, a device library), and an assembled `.s` may hold functions and no me
 `object_inventory` lists their functions all the same.
 
 For the text report (check.py), `relative_pc` gives a finding's offset inside its kernel or function.
+`call_target` resolves the function an s_swappc_b64 calls (check.py: NORETURN_CALL_RETURNS).
 """
 from __future__ import annotations
 
 import re
 import struct
 
-from .binary import ELF, FormatError, kernel_inventory, sha256
+from .binary import ELF, FormatError, kernel_inventory, sha256, unpack
+from .rules import operands
 
 SHF_EXECINSTR = 4
 STT_FUNC = 2
@@ -148,3 +150,88 @@ def relative_pc(unit: dict, pc: int) -> int:
     inventory entry): pcs in findings are addresses in the object, and a unit starts at
     unit['address'] (0 for a snippet)."""
     return pc - (unit.get('address') or 0)
+
+
+SHT_RELA = 4
+R_AMDGPU_REL32_LO = 10   # S + A - P, low 32 bits (llvm/BinaryFormat/ELFRelocs/AMDGPU.def)
+# What LLVM places between s_getpc_b64 and the s_add pair of a call sequence: the gfx12 s_getpc
+# sign-extension workaround on the high half (SIInstrInfo: S_SEXT_I32_I16 after S_GETPC_B64 when
+# hasGetPCZeroExtension is false), and the wait/delay/nop fillers of later passes.
+_CALL_FILLER = {'s_wait_alu', 's_waitcnt_depctr', 's_delay_alu', 's_nop', 's_sext_i32_i16'}
+
+
+def relocations(elf: ELF) -> dict[tuple[int, int], tuple[int, int, int, int]]:
+    """(section index, offset) -> (relocation type, symbol value, symbol section, addend) of every
+    SHT_RELA entry of a relocatable object ({} for a linked one, whose literals are resolved)."""
+    out: dict = {}
+    if elf.type != 1:
+        return out
+    for rs in elf.sections:
+        if rs.type != SHT_RELA or rs.entry_size < 24 or not 0 < rs.link < len(elf.sections):
+            continue
+        st = elf.sections[rs.link]
+        if st.entry_size < 24:
+            continue
+        for n in range(rs.size // rs.entry_size):
+            off, info, addend = unpack('<QQq', elf.data, rs.offset + n * rs.entry_size)
+            idx = info >> 32
+            if idx * st.entry_size >= st.size:
+                continue
+            _, _, _, ndx, value, _ = unpack('<IBBHQQ', elf.data, st.offset + idx * st.entry_size)
+            out[(rs.info, off)] = (info & 0xffffffff, value, ndx, addend)
+    return out
+
+
+def call_target(ins: list[dict], ix: int, relocs: dict, section: int | None) -> tuple[int, int | None] | None:
+    """(address, section or None) of the function the call ins[ix] jumps to, or None if the machine
+    code does not say. LLVM calls with (SIInstrInfo, SI_PC_ADD_REL_OFFSET / AMDGPUMCInstLower)
+        s_getpc_b64 s[N:N+1]
+        s_add_co_u32 sN, sN, callee@rel32@lo+A      ; A = literal address - address after s_getpc
+        s_add_co_ci_u32 sN+1, sN+1, callee@rel32@hi+B
+        s_swappc_b64 s[30:31], s[N:N+1]
+    so the callee is (address after s_getpc_b64) + the 64-bit offset in the two literals. In a
+    relocatable object the literals are 0 and the R_AMDGPU_REL32_LO relocation of the low one
+    (S + A - P) names it: callee = S + A - (P - address after s_getpc_b64), which also holds for
+    a relocation against a section symbol. Only this shape (with `_CALL_FILLER` in between) is
+    resolved; `section`: the section of the calling code (relocatable objects)."""
+    a = operands(ins[ix]['args'])
+    if ins[ix]['op'] != 's_swappc_b64' or len(a) != 2:
+        return None
+    m = re.fullmatch(r's\[(\d+):(\d+)\]', a[1])
+    if not m or int(m[2]) != int(m[1]) + 1:
+        return None
+    lo, hi = f's{m[1]}', f's{m[2]}'
+
+    def filler(i: dict) -> bool:   # s_sext_i32_i16 only as the s_getpc workaround on the high half
+        return i['op'] in _CALL_FILLER and (i['op'] != 's_sext_i32_i16' or operands(i['args']) == [hi, hi])
+    j, found = ix - 1, {}
+    for ops, reg in ((('s_add_co_ci_u32', 's_addc_u32'), hi), (('s_add_co_u32', 's_add_u32'), lo)):
+        while j >= 0 and filler(ins[j]):
+            j -= 1
+        if j < 0 or ins[j]['op'] not in ops:
+            return None
+        o = operands(ins[j]['args'])
+        if len(o) != 3 or o[0] != reg or o[1] != reg:
+            return None
+        found[reg] = (ins[j], o[2])
+        j -= 1
+    while j >= 0 and filler(ins[j]):
+        j -= 1
+    if j < 0 or ins[j]['op'] != 's_getpc_b64' or ins[j]['args'].strip() != a[1]:
+        return None
+    after_getpc = ins[j]['pc'] + ins[j]['size']
+    add_lo, lit_lo = found[lo]
+    if relocs:
+        p = add_lo['pc'] + 4                  # the literal follows the 4-byte SOP2 word
+        r = relocs.get((section, p))
+        if r is None or r[0] != R_AMDGPU_REL32_LO:
+            return None
+        _, value, ndx, addend = r
+        return value + addend - (p - after_getpc), ndx
+    try:
+        offset = (int(lit_lo, 0) & 0xffffffff) | (int(found[hi][1], 0) & 0xffffffff) << 32
+    except ValueError:
+        return None
+    if offset >= 1 << 63:
+        offset -= 1 << 64
+    return after_getpc + offset, None

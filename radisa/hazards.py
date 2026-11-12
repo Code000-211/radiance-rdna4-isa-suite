@@ -11,9 +11,12 @@ Normative basis (LLVM main, llvm/lib/Target/AMDGPU/):
   WMMA/SWMMAC; on GFX12 also the SWMMAC index (src2); overlap with C is allowed on GFX12+ (the
   hardware stalls, per the comment there). Expires at `SIInstrInfo::isVALU(I, AllowLDSDMA=true)`,
   i.e. any VALU including V_NOP and including LDS-DMA (no gfx1201 instruction in the AMD table is
-  LDS DMA). LLVM's fix: one V_NOP_e32 before the consumer.
+  LDS DMA). LLVM's fix: one V_NOP_e32 before the consumer. fixWMMAHazards, fixVcmpxPermlaneHazards
+  and their helpers are identical in upstream main and ROCm d6f6cb69; the static
+  `getWaitStatesSince` skips meta instructions upstream only, which changes nothing here (a meta
+  instruction is never a WMMA, VOPC or VALU).
 - `fixVcmpxPermlaneHazards` (ST.hasVcmpxPermlaneHazard(): FeatureVcmpxPermlaneHazard is in
-  GCNFeatures.td FeatureISAVersion12): a V_PERMLANE* after a VOPC/VOP3 compare that writes EXEC
+  FeatureISAVersion12: GCNFeatures.td upstream, AMDGPU.td at ROCm d6f6cb69): a V_PERMLANE* after a VOPC/VOP3 compare that writes EXEC
   (`isVCmpXWritesExec`). Expires at a VALU that is not V_NOP (`isVALU(MI, true)` and not
   V_NOP_e32/_e64/_sdwa); SALU, s_nop and v_nop keep it. LLVM's fix: `v_mov_b32 vN, vN` with vN the
   permlane's src0 ("V_NOP will be discarded by SQ").
@@ -24,8 +27,10 @@ Normative basis (LLVM main, llvm/lib/Target/AMDGPU/):
 - SIInsertHardClauses.cpp (the hard-clause former; the task text called it AMDGPUInsertHardClauses):
   `emitClause` writes S_CLAUSE simm16 = length - 1 and treats an existing clause as covering
   `(imm & 63) + 1` instructions; length <= `maxHardClauseLength()` = 32 (FeatureMaxHardClauseLength32,
-  in FeatureISAVersion12 and FeatureGFX12). GFX12 has no FeatureMixedLoadStoreClauses, so
-  `getHardClauseType` gives separate MIMG load/store/atomic/sample, BVH, VMEM (buffer, global,
+  in FeatureISAVersion12 and FeatureGFX12). gfx1201 takes the per-kind branch of
+  `getHardClauseType`: upstream gates the mixed load/store branch on hasMixedLoadStoreClauses()
+  (FeatureMixedLoadStoreClauses, absent from FeatureGFX12 / FeatureISAVersion12), ROCm d6f6cb69 on
+  `getGeneration() == GFX10 || hasGFX1250Insts()` (gfx1201 is neither), so in both trees it gives separate MIMG load/store/atomic/sample, BVH, VMEM (buffer, global,
   scratch) load/store/atomic, FLAT load/store/atomic and SMEM types; LDS is "TODO" (illegal);
   only S_NOP is allowed inside (HARDCLAUSE_INTERNAL); SALU, export, branch, message, s_waitcnt and
   anything else is HARDCLAUSE_ILLEGAL. Clauses never cross a basic block (they are formed per MBB).
@@ -41,11 +46,12 @@ LLVM = 'LLVM llvm/lib/Target/AMDGPU/'
 CITE = {
     'wmma': LLVM + 'GCNHazardRecognizer.cpp fixWMMAHazards (GFX12 branch), getWaitStatesSince',
     'permlane': LLVM + 'GCNHazardRecognizer.cpp fixVcmpxPermlaneHazards, isVCmpXWritesExec, isPermlane; '
-                'GCNFeatures.td FeatureISAVersion12 FeatureVcmpxPermlaneHazard',
+                'FeatureISAVersion12 FeatureVcmpxPermlaneHazard (GCNFeatures.td upstream; AMDGPU.td at ROCm d6f6cb69)',
     'dealloc': LLVM + 'SIInsertWaitcnts.cpp (S_NOP 0 before S_SENDMSG ID_DEALLOC_VGPRS_GFX11Plus if '
                'ST.requiresNopBeforeDeallocVGPRs()); GCNSubtarget.h requiresNopBeforeDeallocVGPRs()',
-    'clause': LLVM + 'SIInsertHardClauses.cpp getHardClauseType, emitClause; GCNFeatures.td '
-              'FeatureISAVersion12 FeatureMaxHardClauseLength32',
+    'clause': LLVM + 'SIInsertHardClauses.cpp getHardClauseType, emitClause; '
+              'FeatureISAVersion12 FeatureMaxHardClauseLength32 (GCNFeatures.td upstream; AMDGPU.td at '
+              'ROCm d6f6cb69)',
 }
 ISA_SECTION = {'wmma': '7.12.1', 'permlane': '7.2.8', 'dealloc': '3.3.3', 'clause': '5.3'}
 MAX_CLAUSE = 32

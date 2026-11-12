@@ -7,6 +7,12 @@ Normative basis
   GitHub  "Workflow commands for GitHub Actions": `::error file=F,line=L,col=C,title=T::MSG`;
           data escapes % CR LF, property values additionally `:` and `,`.
 
+Findings hidden by a `radisa: ignore` comment or by the baseline (suppress.hidden_findings) are
+SARIF results with a `suppressions` entry (§3.27.23, §3.35; suppress.sarif_suppression), so code
+scanning shows them as suppressed; in the GitHub rendering one `::notice` per file names what
+was hidden (suppress.summary_suffix). Kernel offsets (`name+0x..`) are relative to the kernel or
+function start (functions.relative_pc), as in the text report.
+
 Input: report dicts as returned by `check.analyze` (one per checked file).
 """
 from __future__ import annotations
@@ -17,7 +23,7 @@ from collections import Counter
 from pathlib import Path
 import re
 
-from . import __version__
+from . import __version__, functions, suppress
 
 SARIF_SCHEMA = 'https://json.schemastore.org/sarif-2.1.0.json'
 SARIF_LEVEL = {'error': 'error', 'review': 'warning', 'incomplete': 'note', 'info': 'note'}
@@ -35,6 +41,22 @@ def iter_findings(report: dict):
     for k in report.get('kernels', []):
         for f in k.get('findings', []):
             yield k, f
+
+
+def iter_hidden(report: dict):
+    """(kernel dict or None, finding) for the findings suppressed or baselined in `report`
+    (suppress.hidden_findings: their 'kernel' is a name, looked up in report['kernels'])."""
+    by_name: dict = {}
+    for k in report.get('kernels', []):
+        by_name.setdefault(k.get('name'), k)
+    for f in suppress.hidden_findings(report):
+        yield by_name.get(f.get('kernel')) if f.get('kernel') else None, f
+
+
+def _where(k: dict, f: dict) -> str:
+    """`name` or `name+0xOFFSET` (offset inside the kernel or function) of a kernel finding."""
+    name = k.get('name') or k.get('symbol') or '?'
+    return name if f.get('pc') is None else f"{name}+{functions.relative_pc(k, f['pc']):#x}"
 
 
 def _relpath(file: str, base: Path | None) -> str | None:
@@ -93,7 +115,7 @@ def to_sarif(reports: list[dict], base: str | Path | None = None) -> dict:
     base = Path(base) if base is not None else Path.cwd()
     by_rule: dict[str, list[dict]] = {}
     for r in reports:
-        for _, f in iter_findings(r):
+        for _, f in [*iter_findings(r), *iter_hidden(r)]:
             by_rule.setdefault(f['rule'], []).append(f)
     rule_ids = sorted(by_rule)
     rules = []
@@ -116,7 +138,8 @@ def to_sarif(reports: list[dict], base: str | Path | None = None) -> dict:
     for r in reports:
         seen: Counter = Counter()
         input_uri = _uri(str(r.get('input', '')), base)
-        for k, f in iter_findings(r):
+        shown = list(iter_findings(r))
+        for n, (k, f) in enumerate([*shown, *iter_hidden(r)]):
             res = {'ruleId': f['rule'], 'ruleIndex': index[f['rule']],
                    'level': SARIF_LEVEL.get(f['severity'], 'note'),
                    'message': {'text': f.get('message') or f['rule']}}
@@ -136,8 +159,8 @@ def to_sarif(reports: list[dict], base: str | Path | None = None) -> dict:
                                                                      'index': artifact(input_uri)}}
             if k is not None:
                 name = k.get('name') or k.get('symbol') or '?'
-                full = name if f.get('pc') is None else f"{name}+{f['pc']:#x}"
-                location['logicalLocations'] = [{'name': name, 'fullyQualifiedName': full, 'kind': 'function'}]
+                location['logicalLocations'] = [{'name': name, 'fullyQualifiedName': _where(k, f),
+                                                 'kind': 'function'}]
             if location:
                 res['locations'] = [location]
             fp = fingerprint(r, k, f, input_uri)
@@ -148,6 +171,13 @@ def to_sarif(reports: list[dict], base: str | Path | None = None) -> dict:
                 if f.get(key) is not None:
                     props[key] = f[key]
             res['properties'] = json.loads(json.dumps(props, default=_plain))
+            if n >= len(shown):   # suppressed inline or by the baseline
+                sup = suppress.sarif_suppression(f)
+                art = (sup.get('location') or {}).get('physicalLocation', {}).get('artifactLocation')
+                if art:
+                    art['uri'] = _uri(art['uri'], base)
+                    art['index'] = artifact(art['uri'])
+                res['suppressions'] = [sup]
             results.append(res)
     statuses = [r.get('status') for r in reports]
     run = {'tool': {'driver': {'name': 'radisa check', 'version': str(__version__),
@@ -182,7 +212,9 @@ def gh_prop(s: str) -> str:
 
 
 def to_github(reports: list[dict], base: str | Path | None = None) -> str:
-    """One `::error` / `::warning` / `::notice` workflow command per finding."""
+    """One `::error` / `::warning` / `::notice` workflow command per finding, and per report with
+    hidden findings one `::notice` naming them (suppress.summary_suffix: hidden errors stay visible
+    in the job log)."""
     base = Path(base) if base is not None else Path.cwd()
     out = []
     for r in reports:
@@ -201,15 +233,18 @@ def to_github(reports: list[dict], base: str | Path | None = None) -> str:
             props.append(f"title={gh_prop(f['rule'])}")
             msg = f.get('message') or f['rule']
             if k is not None:
-                where = k.get('name') or '?'
-                if f.get('pc') is not None and not loc:
-                    where += f"+{f['pc']:#x}"
+                where = _where(k, f) if not loc else (k.get('name') or '?')
                 msg = f'[{where}] {msg}'
             if f.get('instruction'):
                 msg += f"\n    {f['instruction']}"
             if f.get('source'):
                 msg += f"\n    see {f['source']}"
             out.append(f"::{level} {','.join(props)}::{gh_data(msg)}")
+        hidden = suppress.summary_suffix(r)
+        if hidden and r.get('input'):
+            inp = _path(str(r['input']), base)
+            out.append(f"::notice file={gh_prop(inp)},title={gh_prop('radisa suppressions')}::"
+                       f"{gh_data(inp + ': ' + hidden[2:])}")
     return '\n'.join(out) + ('\n' if out else '')
 
 

@@ -145,6 +145,19 @@ class AnalysisTests(unittest.TestCase):
                                   ('v_add_f32', 'v7, v7, v40'), ('s_add_co_u32', 's3, s50, s51'),
                                   ('s_endpgm',)), [])
 
+    def test_long_branch_is_a_jump(self):
+        # A resolved long branch (BranchRelaxation's s_getpc/s_add/s_setpc, target 4 + 0x10 = 20)
+        # carries the state to its target like s_branch; it does not define every register.
+        lb = [('s_getpc_b64', 's[4:5]'), ('s_add_co_u32', 's4, s4, 0x10'), ('s_add_co_ci_u32', 's5, s5, 0'),
+              ('s_setpc_b64', 's[4:5]')]
+        f = run_pass(*lb, ('s_endpgm',), ('v_mov_b32', 'v1, v7'), ('s_endpgm',))
+        self.assertEqual([(x['pc'], x['registers'], x['severity']) for x in f], [(20, ['v7'], 'review')])
+        self.assertEqual(run_pass(('v_mov_b32', 'v7, 0'), *lb, ('s_endpgm',), ('v_mov_b32', 'v1, v7'),
+                                  ('s_endpgm',)), [])
+        # An unresolved s_setpc_b64 (no s_getpc_b64 before it) stays opaque.
+        self.assertEqual(run_pass(('s_mov_b64', 's[4:5], 0'), ('s_setpc_b64', 's[4:5]'),
+                                  ('v_mov_b32', 'v1, v7'), ('s_endpgm',)), [])
+
     def test_unknown_instruction(self):
         # Outside the operand table: it defines what it names; its own reads are a guess, not reported.
         self.assertEqual(run_pass(('v_made_up_op', 'v9, v10'), ('v_add_f32', 'v1, v9, v10'), ('s_endpgm',)), [])

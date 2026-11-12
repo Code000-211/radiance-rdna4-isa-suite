@@ -113,8 +113,10 @@ RULES: dict[str, dict] = {
     'MISSING_WAIT': _r('error', 'a register is read or overwritten while a memory instruction writing it may '
                        'still be outstanding on some CFG path', 'RDNA4 ISA §5.7.1 memory dependency counters',
                        memory_safety=True),
-    'LDS_STORE_BEFORE_BARRIER': _r('error', 'an LDS write may still be outstanding (DScnt) at a workgroup barrier',
-                                   'LLVM AMDGPU User Guide, memory model GFX12', memory_safety=True),
+    'LDS_STORE_BEFORE_BARRIER': _r('review', 'an LDS write may still be outstanding (DScnt) at a workgroup barrier '
+                                   '(LLVM waits only for a cross-address-space release fence)',
+                                   'LLVM AMDGPU User Guide, memory model GFX12; SIMemoryLegalizer.cpp '
+                                   'SIGfx12CacheControl::insertWait', memory_safety=True),
     'MISSING_ALU_WAIT': _r('error', 'an SGPR read by vector instructions is read before its last write is '
                            'committed, with no s_wait_alu in between', LLVM + 'AMDGPUWaitSGPRHazards.cpp',
                            memory_safety=True),
@@ -129,20 +131,26 @@ RULES: dict[str, dict] = {
                           'RDNA4 ISA §5.8'),
     'SYS_STORE_WAIT': _r('review', 'system-scope store while loads/stores may be outstanding (opt-in, '
                          'unconfirmed)', 'LLVM SIMemoryLegalizer.cpp SIGfx12CacheControl::finalizeStore; '
-                         'GCNFeatures.td FeatureWaitsBeforeSystemScopeStores', UNRELEASED, opt_in=True),
+                         'FeatureWaitsBeforeSystemScopeStores (GCNFeatures.td upstream; AMDGPU.td at ROCm d6f6cb69)', UNRELEASED, opt_in=True),
     # --- control flow and program end (rules.py)
     'CFG_FALLTHROUGH': _r('error', 'a path runs past the last instruction without s_endpgm (note for snippets)',
                           'RDNA4 ISA §5.5'),
     'CFG_INDIRECT': _r('incomplete', 'call or indirect branch; its target is not followed', 'RDNA4 ISA §5.5'),
     'CFG_TARGET': _r('incomplete', 'a branch target is not an instruction boundary', 'RDNA4 ISA §5.5'),
     'CFG_ENCODING': _r('incomplete', 'unexpected branch encoding size', 'RDNA4 ISA §5.5'),
-    'CALLS': _r('info', 'calls or indirect branches; callee bodies are assumed to drain the counters',
+    'CALLS': _r('info', 'calls or indirect branches; callee bodies are assumed to drain the counters; a call '
+                'that ends the code is taken as a call to a noreturn function',
                 'LLVM SIInsertWaitcnts.cpp callee prologue'),
+    'NORETURN_CALL_RETURNS': _r('review', 'the call that ends a kernel or function is taken as noreturn, but its '
+                                'callee in the same object has a reachable return',
+                                'AMDGPU calling convention (return address s[30:31]); RDNA4 ISA §5.5',
+                                UNRELEASED),
     'REACHABLE_CODE_END': _r('error', 'reachable s_code_end padding', 'RDNA4 ISA §2.4'),
     # --- registers and resources
     'VGPR_OUT_OF_RANGE': _r('error', 'an instruction names a VGPR the kernel descriptor does not allocate',
                             'RDNA4 ISA §3.3.2', memory_safety=True),
-    'UNINITIALIZED_READ': _r('review', 'a register is read on some path before anything defines it',
+    'UNINITIALIZED_READ': _r('review', 'a register is read before anything defines it (warning when no path '
+                             'defines it, note when only some paths do)',
                              'LLVM AMDGPU User Guide, initial kernel execution state; SIISelLowering.cpp',
                              UNRELEASED),
     'REGISTER_SPILL': _r('review', 'VGPR/SGPR spills to scratch', 'AMDGPU code object metadata'),

@@ -180,6 +180,54 @@ class GithubTest(unittest.TestCase):
         self.assertNotIn('file%3A', ''.join(out))
 
 
+class FunctionOffsetAndSuppressionTest(unittest.TestCase):
+    """Offsets inside a function (functions.relative_pc) and hidden findings (suppress.hidden_findings)."""
+
+    def hidden_report(self):
+        r = report(kernel_findings=[finding('SGPR_PAIR_GUARD', 'review', pc=0x110)], name='helper')
+        r['kernels'][0]['address'] = 0x100
+        r['suppressed'] = [finding('MISSING_WAIT', line=9, file='src/k.hip', pc=0x104, kernel='helper',
+                                   suppression={'kind': 'inline', 'reason': 'drained by the caller',
+                                                'file': 'src/k.hip', 'line': 8})]
+        r['baselined'] = [finding('CFG_FALLTHROUGH', pc=0x120, kernel='helper',
+                                  suppression={'kind': 'baseline', 'file': 'b.json', 'fingerprint': 'ab' * 8})]
+        r['suppression'] = {'suppressed': 1, 'baselined': 1,
+                            'suppressed_errors': {'MISSING_WAIT': 1, 'CFG_FALLTHROUGH': 1}}
+        return r
+
+    def test_offsets_are_relative_to_the_function(self):
+        r = self.hidden_report()
+        res = formats.to_sarif([r], base=Path.cwd())['runs'][0]['results']
+        sg = next(x for x in res if x['ruleId'] == 'SGPR_PAIR_GUARD')
+        self.assertEqual(sg['locations'][0]['logicalLocations'][0]['fullyQualifiedName'], 'helper+0x10')
+        self.assertIn('[helper+0x10]', formats.to_github([r]).splitlines()[0])
+
+    def test_sarif_lists_suppressed_results(self):
+        log = formats.to_sarif([self.hidden_report()], base=Path.cwd())
+        validate_sarif(self, log)
+        res = {x['ruleId']: x for x in log['runs'][0]['results']}
+        self.assertNotIn('suppressions', res['SGPR_PAIR_GUARD'])
+        inline, = res['MISSING_WAIT']['suppressions']
+        self.assertEqual((inline['kind'], inline['status'], inline['justification']),
+                         ('inSource', 'accepted', 'drained by the caller'))
+        al = inline['location']['physicalLocation']['artifactLocation']
+        self.assertEqual(al['uri'], 'src/k.hip')
+        self.assertEqual(log['runs'][0]['artifacts'][al['index']]['location']['uri'], 'src/k.hip')
+        self.assertEqual(res['MISSING_WAIT']['level'], 'error')
+        self.assertEqual(res['MISSING_WAIT']['locations'][0]['logicalLocations'][0]['fullyQualifiedName'],
+                         'helper+0x4')
+        ext, = res['CFG_FALLTHROUGH']['suppressions']
+        self.assertEqual(ext['kind'], 'external')
+        self.assertEqual(ext['properties']['fingerprint'], 'ab' * 8)
+
+    def test_github_notice_names_hidden_errors(self):
+        out = formats.to_github([self.hidden_report()]).splitlines()
+        self.assertEqual(len(out), 2)                      # the shown finding + one notice per file
+        self.assertTrue(out[1].startswith('::notice file=src/k.hip,title=radisa suppressions::src/k.hip: '), out[1])
+        self.assertIn('hidden errors: CFG_FALLTHROUGH x1, MISSING_WAIT x1', out[1])
+        self.assertEqual(formats.to_github([report(status='PASS')]), '')
+
+
 class EmitTest(unittest.TestCase):
     def test_all_formats(self):
         r = report(kernel_findings=[finding('MISSING_WAIT', line=7)])

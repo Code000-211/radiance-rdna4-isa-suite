@@ -40,7 +40,7 @@ FILL_BYTE = 0xA5
 FILL = FILL_BYTE * 0x01010101
 SENTINEL = 0x5A5A5A5A           # value a register holds before the probed producer writes it
 PERM_SENTINEL = 0xDEAD
-REVIEW_RULES = ('ALU_WAIT_TTMP',)   # reported as a warning by radisa check; every other probed rule is an error
+REVIEW_RULES = ('ALU_WAIT_TTMP', 'LDS_STORE_BEFORE_BARRIER')   # reported as a warning by radisa check; every other probed rule is an error
 DSNOP4 = '"ds_nop\\n\\tds_nop\\n\\tds_nop\\n\\tds_nop\\n\\t"'
 # 4 ds_nop (wave32) make LLVM's AMDGPUWaitSGPRHazards forget every tracked SGPR pair
 # (AMDGPUWaitSGPRHazards.cpp, "Clear tracked SGPRs if sufficient DS_NOPs occur"; radisa/sgpr.py
@@ -142,8 +142,10 @@ CASES = [
     dict(
         name='lds_store_barrier', rule='LDS_STORE_BEFORE_BARRIER',
         title='LDS store still outstanding at the workgroup barrier',
-        basis='LLVM AMDGPUUsage.md, Memory Model GFX12: LDS operations of different waves of a work-group can be '
-              'reordered, s_wait_dscnt 0x0 is required to synchronise them (release before the barrier)',
+        basis='LLVM AMDGPUUsage.md, Memory Model GFX12: s_wait_dscnt 0x0 synchronises LDS with vector memory '
+              'between waves; LLVM (SIMemoryLegalizer.cpp SIGfx12CacheControl::insertWait) emits it before a '
+              'workgroup barrier only for a cross-address-space release fence, not for LDS-only '
+              'synchronisation like this probe: the probe measures whether the hardware needs it here',
         hazard_note='ds_store_b32, then s_barrier_signal/s_barrier_wait with no s_wait_dscnt; '
                     'then each thread reads the word another wave stored.',
         fixed_note='s_wait_dscnt 0x0 before s_barrier_signal.',

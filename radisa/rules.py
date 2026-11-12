@@ -283,8 +283,10 @@ def deallocation_checks(ins: list[dict], edges: dict, reachable: set) -> list[di
     return out
 
 
-def local_checks(ins: list[dict], edges: dict, reachable: set, wave: int = 32) -> tuple[list[dict], dict]:
-    """Pattern-level checks within basic blocks. No inter-wave memory proof.
+def local_checks(ins: list[dict], edges: dict, reachable: set, wave: int = 32, models: dict | None = None,
+                 table: dict | None = None) -> tuple[list[dict], dict]:
+    """Pattern-level checks within basic blocks. No inter-wave memory proof. `models`, `table`: passed
+    on to hazards.analyze (radisa check builds the operand models once per kernel).
 
     The LLVM-fixed ALU hazards (WMMA_D_TO_AB, PERMLANE_AFTER_CMPX), DEALLOC_NO_NOP and the s_clause
     lint run over the whole direct CFG in `hazards.analyze`; their findings are appended here.
@@ -351,7 +353,7 @@ def local_checks(ins: list[dict], edges: dict, reachable: set, wave: int = 32) -
                 out.append(finding('SGPR_PAIR_GUARD', 'review',
                     'documented VALU-read/SALU-write/read SGPR-pair pattern lacks S_WAIT_ALU guard',
                     c['pc'], 'wait', producer=a['pc']))
-    hz, hstats = hazards.analyze(ins, edges, reachable, wave=wave)
+    hz, hstats = hazards.analyze(ins, edges, reachable, models, table, wave=wave)
     out += hz; count.update(hstats)
     return out, dict(count)
 
@@ -374,7 +376,9 @@ def waterfall_checks(ins: list[dict], edges: dict) -> list[dict]:
     return out
 
 
-def audit_kernel(kernel: dict, decoded: dict) -> dict:
+def audit_kernel(kernel: dict, decoded: dict, models: dict | None = None, table: dict | None = None) -> dict:
+    """The per-kernel audit (`radisa audit`, and the base of `radisa check`). `models` (as from
+    waits.operand_models for the kernel's wave size) and `table`: see local_checks."""
     ins = decoded['instructions']
     issues = [finding('KERNEL_EVIDENCE', 'incomplete', m) for m in kernel['issues']]
     issues += [finding('DECODE', 'incomplete', e['message'], e.get('pc')) for e in decoded['issues']]
@@ -402,7 +406,7 @@ def audit_kernel(kernel: dict, decoded: dict) -> dict:
                 'last-use dirty discard requires whole-buffer lifetime proof',i['pc'],'cache'))
     edges, reachable, cissues = cfg(ins); issues += cissues
     issues += deallocation_checks(ins, edges, reachable)
-    local, stats = local_checks(ins, edges, reachable, md.get('.wavefront_size', 32)); issues += local
+    local, stats = local_checks(ins, edges, reachable, md.get('.wavefront_size', 32), models, table); issues += local
     issues += waterfall_checks(ins, edges)
     counts = Counter(i['op'] for i in ins)
     return {'name': kernel['name'], 'symbol': kernel['symbol'],

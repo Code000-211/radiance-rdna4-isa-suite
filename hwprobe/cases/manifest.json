@@ -42,7 +42,7 @@
       "words_per_lane": 1
     },
     {
-      "basis": "LLVM AMDGPUUsage.md, Memory Model GFX12: LDS operations of different waves of a work-group can be reordered, s_wait_dscnt 0x0 is required to synchronise them (release before the barrier)",
+      "basis": "LLVM AMDGPUUsage.md, Memory Model GFX12: s_wait_dscnt 0x0 synchronises LDS with vector memory between waves; LLVM (SIMemoryLegalizer.cpp SIGfx12CacheControl::insertWait) emits it before a workgroup barrier only for a cross-address-space release fence, not for LDS-only synchronisation like this probe: the probe measures whether the hardware needs it here",
       "file": "cases/lds_store_barrier.hip",
       "name": "lds_store_barrier",
       "title": "LDS store still outstanding at the workgroup barrier",
@@ -56,7 +56,7 @@
           "expect": "LDS_STORE_BEFORE_BARRIER",
           "kernel": "lds_store_barrier_hazard",
           "note": "ds_store_b32, then s_barrier_signal/s_barrier_wait with no s_wait_dscnt; then each thread reads the word another wave stored.",
-          "severity": "error"
+          "severity": "review"
         }
       },
       "words_per_lane": 1

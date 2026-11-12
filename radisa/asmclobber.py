@@ -266,25 +266,10 @@ def substitute(line: str, texts: list[str]) -> str:
     return PLACEHOLDER.sub(rep, line)
 
 
-def normalise(text: str) -> str:
-    """`v[7]`/`s[7]`/`ttmp[7]` (one register in brackets, accepted by llvm-mc, printed as v7) as `v7`:
-    isadb.registers reads only `x[a:b]` ranges and single `xN` names."""
-    return re.sub(r'(?<![\w])(ttmp|[vsa])\[\s*(\d+)\s*\]', r'\1\2', text)
-
-
-def _first_operand(args: str) -> set:
-    ops = isadb.split_operands(args)
-    try:
-        return isadb.registers(ops[0]) if ops else set()
-    except FormatError:
-        return set()
-
-
 def model_line(table: dict, text: str, wave: int) -> dict:
     """isadb.operand_model of one substituted template line, with what it lacks for inline asm:
     a VOPD pair ("X :: Y": two VALU operations in one instruction word, printed with their
-    V_DUAL_* names, which the table holds) is modelled as its two halves; a non-returning MUBUF/MIMG atomic (no th:TH_ATOMIC_RETURN) is
-    modelled as its returning form minus the VDATA register, which it then only reads.
+    V_DUAL_* names, which the table holds) is modelled as its two halves.
     Raises FormatError like operand_model. Adds 'op' and, when not known, 'why'."""
     halves = [h.strip() for h in text.split('::')] if '::' in text else [text]
     known, writes, why = True, set(), None
@@ -292,10 +277,6 @@ def model_line(table: dict, text: str, wave: int) -> dict:
         parts = h.split(None, 1)
         op, args = parts[0].lower(), (parts[1] if len(parts) > 1 else '')
         m = isadb.operand_model(table, op, args, wave)
-        if not m['known'] and re.match(r'(buffer|image)_atomic_', op) and 'TH_ATOMIC_RETURN' not in args.upper():
-            r = isadb.operand_model(table, op, args + ' th:TH_ATOMIC_RETURN', wave)
-            if r['known']:
-                m = {**r, 'writes': r['writes'] - _first_operand(args)}
         if not m['known']:
             known = False
             why = why or (f'{op} is not in the AMD ISA table' if m.get('name') is None else
@@ -420,7 +401,7 @@ def check_call(line: str, table: dict, wave: int, locs: Locations | None = None)
     tmpl, cons = ir_unescape(m['tmpl']), ir_unescape(m['cons'])
     operands, clobbers = parse_constraints(cons)
     args = _call_args(m['rest'])
-    plain = normalise(PLACEHOLDER.sub(' 0 ', tmpl))
+    plain = PLACEHOLDER.sub(' 0 ', tmpl)
     try:
         literal = isadb.registers(plain)
     except FormatError:
@@ -432,7 +413,7 @@ def check_call(line: str, table: dict, wave: int, locs: Locations | None = None)
     for op in operands:
         if op['kind'] == 'reg':
             try:
-                explicit |= isadb.registers(normalise(op['reg']))
+                explicit |= isadb.registers(op['reg'])
             except FormatError:
                 pass
     try:
@@ -443,7 +424,7 @@ def check_call(line: str, table: dict, wave: int, locs: Locations | None = None)
     stand_in: dict = {}   # register -> operand number, for placeholders bound to reserved registers
     for i, (op, t) in enumerate(zip(operands, texts)):
         try:
-            regs = isadb.registers(normalise(t))
+            regs = isadb.registers(t)
         except FormatError:
             regs = set()
         if op.get('output') and not op.get('indirect') or op['kind'] == 'tied':
@@ -455,7 +436,7 @@ def check_call(line: str, table: dict, wave: int, locs: Locations | None = None)
     srclocs = locs.srclocs(line) if locs else []
     steps = []
     for index, stmt in template_lines(tmpl):
-        text = normalise(substitute(stmt, texts))
+        text = substitute(stmt, texts)
         try:
             steps.append((index, stmt, text, model_line(table, text, wave)))
         except FormatError:

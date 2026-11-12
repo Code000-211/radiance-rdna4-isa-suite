@@ -16,7 +16,7 @@ Python 3.10+ with no third-party packages. An LLVM toolchain with `gfx1201` supp
 needed for compiling and disassembling; CMake, a C++20 compiler and clang ASan for the host
 pipeline. Keep performance estimates separate from ISA, numerical and runtime acceptance.
 
-## Lint one kernel: `radisa check`
+## Lint kernels: `radisa check`
 
 ```bash
 S=tools/rdna4-isa-suite
@@ -24,37 +24,56 @@ bash "$S/check-kernel.sh" libr4d/r4d_attn_paged_h128_gqa4.hip \
   --compile-commands build/compile_commands.json     # HIP source -> gfx1201 machine code
 bash "$S/check-kernel.sh" snippet.s                  # hand-written assembly
 bash "$S/check-kernel.sh" build/.../r4d_gemm_fp8a8.hip.o --kernel gemm_8a8_prefill   # code object
+bash "$S/check-tree.sh" --compile-commands build/compile_commands.json --jobs 8 \
+  --format sarif --out radisa.sarif                  # many files: radisa check-all
+python3 -m radisa rules                              # every rule, severity and basis
 ```
 
 Every instruction is mapped onto AMD's machine-readable RDNA4 operand table (XML, MIT), and the
-memory counters are modelled over the whole CFG. Findings point at source lines and cite the
-manual section and PDF page:
+memory counters are modelled over the whole CFG. Kernels and the non-kernel functions of the same
+code object are checked (a function with what a callee may assume at entry and must do before it
+returns). Findings point at source lines (HIP lines, or the lines of a hand-written `.s`) and cite
+the manual section and PDF page, or the LLVM function a rule follows. A rule is an error only where
+the ISA guide documents it or LLVM's AMDGPU backend itself fixes or enforces it for gfx1201; the
+rest are warnings or notes. Among them:
 
 - `MISSING_WAIT`: a register used while a load/LDS/SMEM/sample access may still be outstanding
   (typically after inline-asm memory instructions, which the compiler does not track), including
-  D16 half-register loads;
+  D16 half-register loads and a caller's operations at the entry of a called function;
 - `MISSING_ALU_WAIT`: an SGPR read before its write is committed, without `s_wait_alu`;
-- `LDS_STORE_BEFORE_BARRIER`: an LDS write still outstanding at a workgroup barrier;
-- `CFG_FALLTHROUGH`: a path that never reaches `s_endpgm`;
-- `VGPR_OUT_OF_RANGE`: a VGPR above the kernel descriptor's allocation (the hardware does not trap);
-- WMMA and VOPD hazards, VGPR deallocation errors, spills, scratch and lexical HIP warnings.
+- `WMMA_D_TO_AB`, `PERMLANE_AFTER_CMPX`: the ALU hazards LLVM fixes, across branches and loops;
+- `CFG_FALLTHROUGH`: a path that never reaches `s_endpgm`; `VGPR_OUT_OF_RANGE`: a VGPR above the
+  kernel descriptor's allocation (the hardware does not trap);
+- warnings: `LDS_STORE_BEFORE_BARRIER` (an LDS write outstanding at a barrier; LLVM waits there
+  only for a cross-address-space release fence), `UNINITIALIZED_READ`, `ASM_UNDECLARED_CLOBBER`,
+  `CALLEE_RETURN_OUTSTANDING`, `NORETURN_CALL_RETURNS`, `s_clause` and VGPR-deallocation lint;
+- VOPD encoding, spills, scratch and lexical HIP checks.
 
-Exit codes: 0 `PASS`, 1 `FAIL`, 3 `INCOMPLETE`. `--json FILE` writes the full report,
-`--strict` fails on warnings too.
+Exit codes: 0 `PASS`, 1 `FAIL`, 2 usage or configuration error, 3 `INCOMPLETE` (code that was not
+analysed). `--json FILE` writes the full report, `--format sarif|github|json` changes stdout,
+`--strict` fails on warnings too. Rules can be re-graded or switched off in `.radisa.json`,
+suppressed inline with a reason (`// radisa: ignore[RULE] why`) or recorded in a baseline
+(`--write-baseline`/`--baseline`); every hidden error is still named in the summary line.
+`radisa check-all` (`check-tree.sh`) checks many files in parallel with per-file timeouts, one
+merged baseline and SARIF or GitHub output; `.pre-commit-hooks.yaml` and
+`.github/workflows/radisa.yml` use it. `radisa drift --llvm-src DIR` reports when the LLVM source
+facts the rules restate (pinned at ROCm llvm-project `d6f6cb69`) change.
 
 **Compiler.** `--compile-commands` reuses the CMake flags and compiler of that file. Both LLVM 20
 (ROCm clang) and Radiance's own LLVM 24 compiler (`/opt/rocm-repeatable`) are supported; the
 latter lacks `llc` and `llvm-extract`, so `opt` + `clang` are used instead
-(reported as `incremental.codegen`).
+(reported as `incremental.codegen`). Wave64 units are assembled with `+wavefrontsize64`.
 
 **Incremental by default.** The unit is optimised once; only kernels whose IR fingerprint changed
 are compiled and checked again (`--jobs`, cache in `--cache-dir` or `~/.cache/radisa/<unit>`).
 This gives byte-identical code and descriptors to a whole-unit compile (4475 of 4475 kernels in
 117 libr4d units with LLVM 24). `--no-incremental` restores the single compile.
 
-On all 117 libr4d units: 115 `PASS`, 2 `INCOMPLETE` (`BYTE_COVERAGE`), no error findings.
-`radisa hook` runs the same check as a Claude Code PostToolUse hook.
-Details, rules and what is **not** checked: `docs/CHECK.md`.
+On all 117 libr4d units, before the rules added in the current change: 115 `PASS`, 2 `INCOMPLETE`
+(`BYTE_COVERAGE`), no error findings. The current rules were developed with LLVM/clang 18.1.3 and
+have not yet been run on that corpus with Radiance's compiler, nor on hardware (`hwprobe/` holds
+the probes for that). `radisa hook` runs the same check as a PostToolUse edit hook.
+Details, rules, and what is **not** checked or not yet validated: `docs/CHECK.md`.
 
 ## Audit a whole build: `radisa collect` + `audit`
 
@@ -127,16 +146,22 @@ of the hash check.
 ## Tests
 
 ```bash
-bash tools/rdna4-isa-suite/check.sh            # tests/ (220) + replay_tests/ (142)
+bash tools/rdna4-isa-suite/check.sh            # tests/ (580) + replay_tests/ (142)
 bash tools/rdna4-isa-suite/check-planner.sh    # planner_tests/ (257)
 ```
 
-`check.sh` requires LLVM and a C++ compiler. Replay and planner tests need
-`RADIANCE_SOURCE` pointing at the Radiance checkout. `SHA256SUMS` covers the shipped files.
+`check.sh` requires LLVM and a C++ compiler. It sets `RAD_ISA_REQUIRE_LLVM=1`, so tests that
+need a gfx1201 toolchain newer than LLVM 18 (the checked-in compiler-emitted kernels,
+`clean_compiled.hip`) fail instead of skipping: run it with ROCm's or Radiance's LLVM. With
+Ubuntu LLVM/clang 18.1.3 and no ROCm, `PYTHONPATH=$PWD python3 -m unittest discover -s tests`
+gives 580 tests, OK, 7 skipped. Replay and planner tests need `RADIANCE_SOURCE` pointing at the
+Radiance checkout. `SHA256SUMS` covers the shipped files (`sha256sum -c SHA256SUMS`).
 
 ## Documentation
 
-- `docs/CHECK.md`: `radisa check` rules, counter model, compiler paths, hook, gaps.
+- `docs/CHECK.md`: `radisa check` and `check-all` rules, CFG, counter and callee model, suppression,
+  formats, hook, drift, gaps.
+- `hwprobe/README.md`: hardware probes for the hazard rules (not yet run on a GPU).
 - `docs/ISA_V02.md`, `docs/RULE_COVERAGE.md`, `docs/REVIEW.md`: binary audit gate.
 - `docs/REPLAY_FORMAT.md`, `integration/README.md`: replay manifests and AQL patches.
 - `docs/V06_REVIEW.md`, `docs/OPERATOR_PLANNER.md`, `docs/FLOW_FORMAT.md`, `docs/SOURCES_V06.md`: planner v0.6.
