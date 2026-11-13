@@ -75,7 +75,8 @@ note).
 ## Compiling HIP
 
 The compiler is, in order: `--cxx`, `$RADISA_HIPCC`, `$ROCM_PATH/llvm/bin/clang++`, `hipcc`,
-`clang++`. With `--compile-commands`, the flags CMake used for that file are reused (output, depfile
+`clang++`. `-gline-tables-only` is added after the project's flags, so a build with `-g0` still
+gets findings at their source lines. With `--compile-commands`, the flags CMake used for that file are reused (output, depfile
 and `-c` flags are dropped) and `-x hip --offload-arch=gfx1201 --offload-device-only -O3
 -gline-tables-only -S` is added; project `-O`/`-m` flags still win. Extra flags: `--flag "-I inc -DX=1"`.
 `-gline-tables-only` only adds line tables (`-g` crashes clang 20.1.2 on some libr4d units).
@@ -120,7 +121,9 @@ is a single self-contained function. `radisa check` therefore:
    entries are recompiled).
    The cache is written also when a run stops early (a kernel that fails, `--timeout`, SIGTERM from
    a caller's time limit): the kernels finished by then are reused, so a unit too large for one time
-   limit is finished by the runs that follow.
+   limit is finished by the runs that follow. Results are recorded as kernels finish, and the
+   compilers still running are killed, so the run ends at once. The first phase, which optimises
+   the unit as a whole (about 6 s for a 38-kernel libr4d unit with AMD clang 24), caches nothing.
 
 Per-kernel `llc` gives the same machine code as compiling the unit: 241 of 241 kernels in seven
 libr4d units, and identical findings from `--no-incremental` and the default mode on `attn_paged_h256_gqa12`,
