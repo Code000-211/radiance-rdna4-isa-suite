@@ -111,12 +111,16 @@ is a single self-contained function. `radisa check` therefore:
    (`/opt/rocm-repeatable`), ship neither `llvm-extract` nor `llc`; there the same two steps are
    `opt -passes=internalize,globaldce` (keeps the kernel and every global variable) and
    `clang -x ir -Xclang -disable-llvm-passes` (code generation only, same `-O` level and `-mllvm`
-   options). The JSON report names the one used as `incremental.codegen` (`llc` or `clang`);
+   options). The JSON report names the one used as `incremental.codegen` (`llc` or `clang`) and
+   the device compiler as it names itself as `incremental.compiler` (`AMD clang version 24.0.0git ...`);
 4. takes the other kernels' results from the cache (`--cache-dir`, default `$RADISA_CACHE` or
    `~/.cache/radisa/<unit>`), with their source lines moved along the edit by a diff of the old and new
    file; a kernel whose finding line was itself edited is compiled again. The cache key includes the
    enabled rules and the analysis options; the cache schema is `radisa-incremental-v4` (older
    entries are recompiled).
+   The cache is written also when a run stops early (a kernel that fails, `--timeout`, SIGTERM from
+   a caller's time limit): the kernels finished by then are reused, so a unit too large for one time
+   limit is finished by the runs that follow.
 
 Per-kernel `llc` gives the same machine code as compiling the unit: 241 of 241 kernels in seven
 libr4d units, and identical findings from `--no-incremental` and the default mode on `attn_paged_h256_gqa12`,

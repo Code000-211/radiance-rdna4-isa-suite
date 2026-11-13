@@ -86,6 +86,8 @@ class Codegen:
         tool = self.tools['llc'] if self.mode == 'llc' else cxx
         # What a cached result depends on besides the kernel's IR.
         self.identity = [self.mode, self.opt_level, self.mllvm, _run([tool, '--version']).stdout]
+        # The device compiler as it names itself (`AMD clang version 24.0.0git ...`), for the report.
+        self.compiler = (_run([cxx, '--version']).stdout.splitlines() or [''])[0].strip()
 
     def compile(self, bc: Path, asm: Path, timeout: float) -> None:
         if self.mode == 'llc':
@@ -372,7 +374,7 @@ def check_hip_incremental(path: Path, table: dict, backend: dict, args, work: Pa
         n2 += asmclobber.attach(results, [f for f in asmclobber.check_ir_text(d.stdout, table, str(path))
                                           if not f['kernel'] or f['function'] in names])   # --kernel filter
         nk = sum(1 for r in results if not r.get('callee'))   # functions are checked too, not counted
-        return results, notes + n2, {'mode': 'whole-module', 'codegen': gen.mode, 'kernels': nk,
+        return results, notes + n2, {'mode': 'whole-module', 'codegen': gen.mode, 'compiler': gen.compiler, 'kernels': nk,
                                      'compiled': nk, 'reused': 0,
                                      'reason': f'{len(extra)} non-kernel function(s) after optimisation'}
 
@@ -418,31 +420,40 @@ def check_hip_incremental(path: Path, table: dict, backend: dict, args, work: Pa
     # On an exception (a kernel that fails, or check.Terminated from SIGTERM) the kernels still
     # queued are cancelled: ThreadPoolExecutor's own exit would compile all of them first, keeping
     # the work directory (and the process) alive for as long as the whole unit takes.
-    with ThreadPoolExecutor(max_workers=jobs) as pool, _cancel_on_error(pool):
-        for k, r, n in pool.map(one, enumerate(todo)):
-            results[k] = (r, n)
-            snap = {}
-            for f in files_of(r):
-                try:
-                    text = Path(f).read_text(encoding='utf-8', errors='replace')
-                except OSError:
-                    continue
-                sha = hashlib.sha1(text.encode()).hexdigest()
-                (cache_dir / 'src').mkdir(parents=True, exist_ok=True)
-                (cache_dir / 'src' / sha).write_text(text, encoding='utf-8')
-                snap[f] = sha
-            entries[k] = {'fingerprint': prints[k], 'result': r, 'notes': n, 'files': snap}
+    def save():
+        try:
+            cache_dir.mkdir(parents=True, exist_ok=True)
+            live = {k: entries[k] for k in mod['kernels'] if k in entries}
+            tmp = cache_file.with_suffix('.tmp')
+            tmp.write_text(json.dumps({'schema': SCHEMA, 'source': str(path.resolve()), 'kernels': live},
+                                      default=_plain))
+            tmp.replace(cache_file)
+        except OSError as ex:
+            notes.append({'rule': 'CACHE', 'severity': 'info', 'pc': None, 'message': f'cache not written: {ex}'})
+
+    # The cache is written also when the run stops early (a kernel that fails, a time limit, SIGTERM):
+    # the kernels finished by then are not compiled again, so a unit too large for one time limit
+    # is finished by the runs that follow.
     try:
-        cache_dir.mkdir(parents=True, exist_ok=True)
-        live = {k: entries[k] for k in mod['kernels'] if k in entries}
-        tmp = cache_file.with_suffix('.tmp')
-        tmp.write_text(json.dumps({'schema': SCHEMA, 'source': str(path.resolve()), 'kernels': live},
-                                  default=_plain))
-        tmp.replace(cache_file)
-    except OSError as ex:
-        notes.append({'rule': 'CACHE', 'severity': 'info', 'pc': None, 'message': f'cache not written: {ex}'})
+        with ThreadPoolExecutor(max_workers=jobs) as pool, _cancel_on_error(pool):
+            for k, r, n in pool.map(one, enumerate(todo)):
+                results[k] = (r, n)
+                snap = {}
+                for f in files_of(r):
+                    try:
+                        text = Path(f).read_text(encoding='utf-8', errors='replace')
+                    except OSError:
+                        continue
+                    sha = hashlib.sha1(text.encode()).hexdigest()
+                    (cache_dir / 'src').mkdir(parents=True, exist_ok=True)
+                    (cache_dir / 'src' / sha).write_text(text, encoding='utf-8')
+                    snap[f] = sha
+                entries[k] = {'fingerprint': prints[k], 'result': r, 'notes': n, 'files': snap}
+    finally:
+        save()
     ordered = [results[k][0] for k in kernels]
     for k in kernels:
         notes += results[k][1]
-    return ordered, notes, {'mode': 'per-kernel', 'codegen': gen.mode, 'kernels': len(kernels), 'compiled': len(todo),
+    return ordered, notes, {'mode': 'per-kernel', 'codegen': gen.mode, 'compiler': gen.compiler, 'kernels': len(kernels),
+                            'compiled': len(todo),
                             'reused': reused, 'jobs': jobs, 'cache': str(cache_dir)}

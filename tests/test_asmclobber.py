@@ -10,6 +10,7 @@ import shutil
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from support import CHECK_FIX, ROOT, check_text, hip_compiles, run_check  # noqa: E402
@@ -396,6 +397,27 @@ class HipTests(unittest.TestCase):
             moved = self.run_on(src)
             self.assertEqual((moved['incremental']['compiled'], moved['incremental']['reused']), (0, 2))
             self.assertEqual(asm_findings(moved), {(k, line + 2, r) for k, line, r in EXPECTED})
+
+    def test_interrupted_run_keeps_the_kernels_it_finished(self):
+        """A run that stops early (a failing kernel, a time limit, SIGTERM) still writes the cache, so the
+        kernels finished by then are reused: a unit too large for one time limit is finished by later runs."""
+        with tempfile.TemporaryDirectory() as d:
+            src = Path(d, 'asm_clobber.hip')
+            src.write_text((CHECK_FIX / 'asm_clobber.hip').read_text())
+            real, calls = incremental.Codegen.compile, []
+
+            def second_fails(gen, bc, asm, timeout):
+                calls.append(bc)
+                if len(calls) == 2:
+                    raise hipsrc.FormatError('stopped')
+                return real(gen, bc, asm, timeout)
+            with mock.patch.object(incremental.Codegen, 'compile', second_fails):
+                stopped = run_check(src, '--cxx', CXX, '--flag', '-nogpuinc -nogpulib', '--jobs', '1')[1]
+            self.assertEqual(stopped['status'], 'INCOMPLETE')
+            again = self.run_on(src)
+            self.assertEqual((again['incremental']['compiled'], again['incremental']['reused']), (1, 1))
+            self.assertEqual(asm_findings(again), EXPECTED)
+            self.assertRegex(again['incremental']['compiler'], r'clang version \d+')
 
     def test_old_schema_cache_is_recompiled_with_asm_findings(self):
         with tempfile.TemporaryDirectory() as d:
