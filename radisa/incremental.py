@@ -26,7 +26,7 @@ then the whole module goes through llc and nothing is cached.
 """
 from __future__ import annotations
 
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import contextlib
 import difflib
 import hashlib
@@ -36,6 +36,7 @@ from pathlib import Path
 import re
 import shlex
 import subprocess
+import threading
 
 from .binary import FormatError
 from . import __version__, asmclobber, hipsrc
@@ -45,11 +46,41 @@ SCHEMA = 'radisa-incremental-v4'   # v3: kernel results carry ASM_UNDECLARED_CLO
 LLC_OPT = {'-O0': '-O0', '-O1': '-O1', '-O2': '-O2', '-O3': '-O3', '-Os': '-O2', '-Oz': '-O2'}
 
 
+_LIVE: set = set()          # the compiler processes running now, for kill_running
+_LIVE_LOCK = threading.Lock()
+
+
 def _run(cmd: list[str], cwd=None, timeout: float = 600) -> subprocess.CompletedProcess:
     try:
-        return subprocess.run(cmd, capture_output=True, text=True, cwd=cwd, timeout=timeout, check=False)
-    except (OSError, subprocess.TimeoutExpired) as ex:
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, cwd=cwd)
+    except OSError as ex:
         raise FormatError(f'{Path(cmd[0]).name} failed to run: {ex}') from ex
+    with _LIVE_LOCK:
+        _LIVE.add(p)
+    try:
+        out, err = p.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired as ex:
+        p.kill()
+        p.communicate()
+        raise FormatError(f'{Path(cmd[0]).name} failed to run: {ex}') from ex
+    except BaseException:       # check.Terminated in the main thread: do not leave the compiler behind
+        p.kill()
+        p.wait()
+        raise
+    finally:
+        with _LIVE_LOCK:
+            _LIVE.discard(p)
+    return subprocess.CompletedProcess(cmd, p.returncode, out, err)
+
+
+def kill_running() -> None:
+    """Ends every compiler a worker thread waits for, so that a stopped run ends at once and not
+    after the kernels in flight (48 of them on a 48-thread machine) have compiled to the end."""
+    with _LIVE_LOCK:
+        live = list(_LIVE)
+    for p in live:
+        with contextlib.suppress(OSError):
+            p.kill()
 
 
 def codegen_options(cxx: str, args: list[str], source: Path, cwd) -> dict:
@@ -314,6 +345,7 @@ def _cancel_on_error(pool: ThreadPoolExecutor):
         yield
     except BaseException:
         pool.shutdown(wait=False, cancel_futures=True)
+        kill_running()
         raise
 
 
@@ -436,7 +468,10 @@ def check_hip_incremental(path: Path, table: dict, backend: dict, args, work: Pa
     # is finished by the runs that follow.
     try:
         with ThreadPoolExecutor(max_workers=jobs) as pool, _cancel_on_error(pool):
-            for k, r, n in pool.map(one, enumerate(todo)):
+            # As each kernel finishes, not in the order they were queued: a run that is stopped
+            # keeps every kernel done by then, whichever was still compiling.
+            for done in as_completed([pool.submit(one, item) for item in enumerate(todo)]):
+                k, r, n = done.result()
                 results[k] = (r, n)
                 snap = {}
                 for f in files_of(r):

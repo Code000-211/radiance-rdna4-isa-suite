@@ -3,12 +3,17 @@ spellings/macros of hipsrc.source_checks.
 
 The IR tests use hand-written IR in the shape clang emits (checked against clang 18.1.3 output);
 the HIP tests compile fixtures/check/asm_clobber.hip with the clang found here."""
+import contextlib
+import io
 import json
 import os
 from pathlib import Path
 import shutil
+import signal
 import sys
 import tempfile
+import threading
+import time
 import unittest
 from unittest import mock
 
@@ -17,6 +22,7 @@ from support import CHECK_FIX, ROOT, check_text, hip_compiles, run_check  # noqa
 
 sys.path.insert(0, str(ROOT))
 from radisa import asmclobber, check, hipsrc, incremental, isadb  # noqa: E402
+from radisa.cli import main as cli_main  # noqa: E402
 
 TABLE = isadb.load()
 
@@ -418,6 +424,48 @@ class HipTests(unittest.TestCase):
             self.assertEqual((again['incremental']['compiled'], again['incremental']['reused']), (1, 1))
             self.assertEqual(asm_findings(again), EXPECTED)
             self.assertRegex(again['incremental']['compiler'], r'clang version \d+')
+
+    def test_project_g0_does_not_remove_source_lines(self):
+        """A project that builds with -g0 (libr4d does) still gets findings at their source line: the line
+        tables radisa asks for come after the project's flags."""
+        with tempfile.TemporaryDirectory() as d:
+            src = Path(d, 'asm_clobber.hip')
+            src.write_text((CHECK_FIX / 'asm_clobber.hip').read_text())
+            plain = asm_findings(self.run_on(src))
+            g0 = asm_findings(run_check(src, '--cxx', CXX, '--flag', '-nogpuinc -nogpulib -g0',
+                                        '--cache-dir', str(Path(d, 'c')))[1])
+            self.assertEqual(g0, plain)
+            self.assertEqual(plain, EXPECTED)
+
+    def test_stopped_run_ends_at_once_and_keeps_finished_kernels(self):
+        """SIGTERM while kernels compile: the compilers in flight are killed (the run does not wait for
+        them), and the kernels already finished are in the cache."""
+        with tempfile.TemporaryDirectory() as d:
+            src = Path(d, 'asm_clobber.hip')
+            src.write_text((CHECK_FIX / 'asm_clobber.hip').read_text())
+            real, started = incremental.Codegen.compile, []
+
+            def second_hangs(gen, bc, asm, timeout):
+                started.append(bc)
+                if len(started) == 2:
+                    incremental._run(['sleep', '60'])       # a compiler that would take a minute
+                    raise AssertionError('the hanging compiler was not killed')
+                return real(gen, bc, asm, timeout)
+
+            def stop_soon():
+                while len(started) < 2 or not incremental._LIVE:
+                    time.sleep(0.02)
+                time.sleep(0.3)                              # the first kernel's result is recorded
+                os.kill(os.getpid(), signal.SIGTERM)
+            threading.Thread(target=stop_soon, daemon=True).start()
+            began = time.monotonic()
+            with mock.patch.object(incremental.Codegen, 'compile', second_hangs):
+                with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+                    code = cli_main(['check', str(src), '--cxx', CXX, '--flag', '-nogpuinc -nogpulib', '--jobs', '2'])
+            self.assertEqual(code, 128 + signal.SIGTERM)
+            self.assertLess(time.monotonic() - began, 20)
+            again = self.run_on(src)
+            self.assertEqual((again['incremental']['compiled'], again['incremental']['reused']), (1, 1))
 
     def test_old_schema_cache_is_recompiled_with_asm_findings(self):
         with tempfile.TemporaryDirectory() as d:

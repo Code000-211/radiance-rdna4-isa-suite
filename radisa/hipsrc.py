@@ -108,9 +108,11 @@ def hip_command(source: Path, cxx: str | None, flags: list[str], compile_command
     else:
         cxx = cxx or default_compiler()
         base = list(flags)
-    # Later -O flags from the project win over our default -O3.
+    # Later -O flags from the project win over our default -O3. The line tables come last: findings
+    # are placed by them, and a project's own -g0 (libr4d builds with it) would switch them off and
+    # put every finding at line 1.
     return cxx, ['-x', 'hip', f'--offload-arch={arch}', '--offload-device-only', '-O3',
-                 '-gline-tables-only', *base], cwd
+                 *base, '-gline-tables-only'], cwd
 
 
 _WAVE64_ASM = re.compile(r'^\s*(?:\.amdhsa_wavefront_size32\s+0\b|\.wavefront_size:\s+64\b)', re.M)
