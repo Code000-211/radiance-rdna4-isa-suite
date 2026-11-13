@@ -1,178 +1,267 @@
 # Radiance RDNA4 ISA Suite
 
-Offline tools for Radiance's `gfx1201` (RDNA4, R9700) kernels. The suite ships as a
-`tools/rdna4-isa-suite/` overlay for the Radiance source tree. Extracting it changes no
-Radiance file, kernel or production dispatcher; the AQL integration patches are opt-in.
-No clock, voltage, power, watchdog, memory scope, cache hint or kernel is modified.
+Tools that check GPU kernels for the AMD Radeon R9700 (`gfx1201`, RDNA4) without running them.
 
-| Part | Package | What it does |
-|---|---|---|
-| Kernel lint | `radisa check` | checks one HIP unit, assembly file or code object against AMD's RDNA4 ISA |
-| Binary audit | `radisa collect/audit` | static gate over every `gfx1201` code object of a build |
-| Replay | `radreplay` | replays declared kernel snapshots against real Radiance host code |
-| Offline planner | `radplan` | multi-operator cost scenarios (v0.6), not GPU emulation |
+The main tool is **`radisa check`**, a linter for kernel machine code. It finds bugs that the
+compiler accepts and the GPU then runs wrong, for example a register that is read before the load
+that fills it has finished.
 
-Python 3.10+ with no third-party packages. An LLVM toolchain with `gfx1201` support is
-needed for compiling and disassembling; CMake, a C++20 compiler and clang ASan for the host
-pipeline. Keep performance estimates separate from ISA, numerical and runtime acceptance.
+The suite also contains three smaller tools: an audit of every kernel in a build, a replay of
+recorded kernel inputs on the host, and an offline cost planner. They are described
+[further down](#the-other-tools).
 
-## Lint kernels: `radisa check`
+## Contents
+
+- [What you need](#what-you-need)
+- [A first check](#a-first-check)
+- [What it finds](#what-it-finds)
+- [Reading the result](#reading-the-result)
+- [Silencing a finding](#silencing-a-finding)
+- [Checking many files, CI and editors](#checking-many-files-ci-and-editors)
+- [How fast it is](#how-fast-it-is)
+- [What has been verified](#what-has-been-verified)
+- [The other tools](#the-other-tools)
+- [Tests](#tests)
+- [Where to read more](#where-to-read-more)
+
+## What you need
+
+- **Python 3.10 or newer.** No third-party packages.
+- **An LLVM toolchain that knows `gfx1201`**: `clang++` and `llvm-mc`. Use the compiler your
+  kernels are built with. ROCm's clang 20 and AMD clang 24 are supported.
+- Only for the replay and planner tools: CMake, a C++20 compiler and a Radiance checkout.
+
+The suite is meant to sit in a Radiance checkout as `tools/rdna4-isa-suite/`. It does not change
+any Radiance file. The commands below assume:
 
 ```bash
 S=tools/rdna4-isa-suite
+```
+
+> **Use LLVM 20 or newer.** Older compilers do not insert `s_wait_alu`, so `radisa` reports
+> `MISSING_ALU_WAIT` on correct compiler output.
+
+## A first check
+
+Save this as `snippet.s`. It loads a value and uses it straight away:
+
+```asm
+	global_load_b32 v1, v[2:3], off
+	v_add_f32 v4, v1, v1
+	s_endpgm
+```
+
+```bash
+bash "$S/check-kernel.sh" snippet.s
+```
+
+```text
+snippet.s:2:1: error: [MISSING_WAIT] v_add_f32_e32 reads v1 while global_load_b32 (snippet.s:1) may still be outstanding; insert s_wait_loadcnt 0 (or lower) before it
+    v_add_f32_e32 v4, v1, v1
+    see RDNA4 ISA §5.7.1 Memory Dependency Counters, PDF p.62
+radisa check: 1 kernel(s), 3/3 instructions in the AMD operand model; 1 error(s), 0 warning(s), 0 note(s) -> FAIL
+```
+
+The finding names the line, the rule, the fix and the place in AMD's manual.
+
+The same command checks the three kinds of input:
+
+```bash
+# A HIP source file. It is compiled for gfx1201 with the flags your build uses.
 bash "$S/check-kernel.sh" libr4d/r4d_attn_paged_h128_gqa4.hip \
-  --compile-commands build/compile_commands.json     # HIP source -> gfx1201 machine code
-bash "$S/check-kernel.sh" snippet.s                  # hand-written assembly
-bash "$S/check-kernel.sh" build/.../r4d_gemm_fp8a8.hip.o --kernel gemm_8a8_prefill   # code object
+  --compile-commands build/compile_commands.json
+
+# Hand-written assembly.
+bash "$S/check-kernel.sh" snippet.s
+
+# A compiled code object, here one kernel of it.
+bash "$S/check-kernel.sh" build/.../r4d_gemm_fp8a8.hip.o --kernel gemm_8a8_prefill
+```
+
+## What it finds
+
+`radisa check` reports three levels. Only errors make the check fail.
+
+**Errors** are bugs the hardware manual documents, or that LLVM's own backend repairs in compiler
+output. Hand-written assembly and inline `asm` do not get those repairs, which is where these
+bugs come from.
+
+| Rule | What is wrong |
+|---|---|
+| `MISSING_WAIT` | A register is used while the load that writes it may still be running. |
+| `MISSING_ALU_WAIT` | A scalar register is read before its write is committed, with no `s_wait_alu`. |
+| `LDS_STORE_BEFORE_BARRIER` | A write to shared memory may still be running when a barrier releases the other waves. |
+| `WMMA_D_TO_AB` | A matrix instruction reads the result of the one before it too early. |
+| `PERMLANE_AFTER_CMPX` | `v_permlane` follows `v_cmpx` with nothing in between that the hardware keeps. |
+| `CFG_FALLTHROUGH` | A path through the kernel never reaches `s_endpgm`. |
+| `VGPR_OUT_OF_RANGE` | A register above the number the kernel reserved. The hardware does not trap. |
+
+**Warnings** are probably wrong or worth a look: a register read that nothing wrote
+(`UNINITIALIZED_READ`), inline `asm` that changes a register without declaring it
+(`ASM_UNDECLARED_CLOBBER`), a function that returns with a load still running
+(`CALLEE_RETURN_OUTSTANDING`), register spills and scratch memory.
+
+**Notes** are information only.
+
+Kernels are checked along every path, across branches and loops. Functions that kernels call are
+checked too.
+
+To list every rule, or see the reasoning behind one:
+
+```bash
+PYTHONPATH="$S" python3 -m radisa rules
+PYTHONPATH="$S" python3 -m radisa rules --explain MISSING_WAIT
+```
+
+## Reading the result
+
+| Exit code | Status | Meaning |
+|---|---|---|
+| 0 | `PASS` | No errors. Warnings and notes may be present. |
+| 1 | `FAIL` | At least one error. |
+| 2 | | The command line or the configuration is wrong. Nothing was checked. |
+| 3 | `INCOMPLETE` | Part of the code could not be analysed, so it is **not** known to be clean. |
+
+Useful options:
+
+| Option | Effect |
+|---|---|
+| `--json FILE` | Write the full report to a file. |
+| `--format sarif\|github\|json` | Change what is printed. |
+| `--strict` | Fail on warnings too. |
+| `--kernel NAME` | Check only kernels whose name contains `NAME`. |
+
+## Silencing a finding
+
+Sometimes a finding is correct in general but does not apply to your code. There are three ways
+to say so, from narrowest to widest.
+
+**In the source, with a reason.** The reason is required.
+
+```cpp
+__builtin_amdgcn_s_barrier();  // radisa: ignore[LDS_STORE_BEFORE_BARRIER] no wave reads another's data here
+```
+
+**In a baseline**, to accept the findings a code base has today and see only new ones:
+
+```bash
+bash "$S/check-kernel.sh" k.hip --write-baseline radisa-baseline.json
+bash "$S/check-kernel.sh" k.hip --baseline radisa-baseline.json
+```
+
+**In `.radisa.json`**, for a whole project. The nearest file above the checked file is used.
+
+```json
+{ "severity": { "REGISTER_SPILL": "note" }, "disable": ["HIP_NO_LAUNCH_BOUNDS"] }
+```
+
+A silenced error is never hidden completely: the summary line still names it.
+
+## Checking many files, CI and editors
+
+```bash
+# Every HIP file of a build, 8 at a time, as a SARIF report.
 bash "$S/check-tree.sh" --compile-commands build/compile_commands.json --jobs 8 \
-  --format sarif --out radisa.sarif                  # many files: radisa check-all
-python3 -m radisa rules                              # every rule, severity and basis
+  --format sarif --out radisa.sarif
 ```
 
-Every instruction is mapped onto AMD's machine-readable RDNA4 operand table (XML, MIT), and the
-memory counters are modelled over the whole CFG. Kernels and the non-kernel functions of the same
-code object are checked (a function with what a callee may assume at entry and must do before it
-returns). Findings point at source lines (HIP lines, or the lines of a hand-written `.s`) and cite
-the manual section and PDF page, or the LLVM function a rule follows. A rule is an error only where
-the ISA guide documents it or LLVM's AMDGPU backend itself fixes or enforces it for gfx1201, with
-one hardware-observed exception (`LDS_STORE_BEFORE_BARRIER`); the rest are warnings or notes.
-Among them:
+| Where | How |
+|---|---|
+| Before a commit | `.pre-commit-hooks.yaml` |
+| GitHub Actions | `.github/workflows/radisa.yml`, with annotations on the changed lines |
+| Editors | Any SARIF viewer reads `--format sarif` |
+| Coding agents | `radisa hook` checks a file right after an agent edits it and blocks on errors. Setup: [docs/CHECK.md](docs/CHECK.md), "As an edit hook". |
 
-- `MISSING_WAIT`: a register used while a load/LDS/SMEM/sample access may still be outstanding
-  (typically after inline-asm memory instructions, which the compiler does not track), including
-  D16 half-register loads and a caller's operations at the entry of a called function;
-- `MISSING_ALU_WAIT`: an SGPR read before its write is committed, without `s_wait_alu`;
-- `WMMA_D_TO_AB`, `PERMLANE_AFTER_CMPX`: the ALU hazards LLVM fixes, across branches and loops;
-- `CFG_FALLTHROUGH`: a path that never reaches `s_endpgm`; `VGPR_OUT_OF_RANGE`: a VGPR above the
-  kernel descriptor's allocation (the hardware does not trap);
-- `LDS_STORE_BEFORE_BARRIER`: an LDS write outstanding at a workgroup barrier. LLVM waits there
-  only for a cross-address-space release fence, but on an R9700 the barrier without the wait lost
-  LDS writes in 137 and 152 of 200 launches (`hwprobe/`), so it is an error; code that does not
-  read another wave's LDS data after the barrier suppresses it inline with a reason;
-- warnings: `UNINITIALIZED_READ`, `ASM_UNDECLARED_CLOBBER`,
-  `CALLEE_RETURN_OUTSTANDING`, `NORETURN_CALL_RETURNS`, `s_clause` and VGPR-deallocation lint;
-- VOPD encoding, spills, scratch and lexical HIP checks.
+## How fast it is
 
-Exit codes: 0 `PASS`, 1 `FAIL`, 2 usage or configuration error, 3 `INCOMPLETE` (code that was not
-analysed). `--json FILE` writes the full report, `--format sarif|github|json` changes stdout,
-`--strict` fails on warnings too. Rules can be re-graded or switched off in `.radisa.json`,
-suppressed inline with a reason (`// radisa: ignore[RULE] why`) or recorded in a baseline
-(`--write-baseline`/`--baseline`); every hidden error is still named in the summary line.
-`radisa check-all` (`check-tree.sh`) checks many files in parallel with per-file timeouts, one
-merged baseline and SARIF or GitHub output; `.pre-commit-hooks.yaml` and
-`.github/workflows/radisa.yml` use it. `radisa drift --llvm-src DIR` reports when the LLVM source
-facts the rules restate (pinned at ROCm llvm-project `d6f6cb69`) change.
+A HIP file is optimised as a whole, but only the kernels whose code changed are compiled and
+checked again. The rest come from a cache in `~/.cache/radisa/`. The result is the same as a full
+compile: 4475 of 4475 kernels in 117 units were byte-identical.
 
-**Compiler.** `--compile-commands` reuses the CMake flags and compiler of that file. Both LLVM 20
-(ROCm clang) and Radiance's own LLVM 24 compiler (`/opt/rocm-repeatable`) are supported; the
-latter lacks `llc` and `llvm-extract`, so `opt` + `clang` are used instead
-(reported as `incremental.codegen`). Wave64 units are assembled with `+wavefrontsize64`.
+Measured with AMD clang 24 on the R9700 host: a first check took 17 seconds per file on average
+over 113 files. One very large file (`r4d_gemm_iqr`, 704 kernels) took 32 minutes. If a run is
+stopped, the kernels it finished stay in the cache, so the next run continues from there.
 
-**Incremental by default.** The unit is optimised once; only kernels whose IR fingerprint changed
-are compiled and checked again (`--jobs`, cache in `--cache-dir` or `~/.cache/radisa/<unit>`).
-This gives byte-identical code and descriptors to a whole-unit compile (4475 of 4475 kernels in
-117 libr4d units with LLVM 24). `--no-incremental` restores the single compile.
+`--no-incremental` turns the cache off.
 
-On the target (2026-11-12, commit 1fe68fb, AMD clang 24 ROCm d6f6cb69, one R9700): the 114 libr4d
-units (6448 kernels, 11.79 M instructions) gave 112 `PASS`, 2 `NO_KERNELS`, no `FAIL`, no
-`INCOMPLETE` and no error finding. A re-run of commit 7448fd5 gave the same per-rule counts and
-594 unit tests OK with `RAD_ISA_REQUIRE_LLVM=1`; the corpus contains no long branch. The hardware probes showed the
-`MISSING_WAIT`, `WMMA_D_TO_AB` and `LDS_STORE_BEFORE_BARRIER` hazards on the R9700. Details and
-what is still unvalidated: docs/CHECK.md, "Measured on the target". `radisa hook` runs the same
-check as a PostToolUse edit hook.
-Details, rules, and what is **not** checked or not yet validated: `docs/CHECK.md`.
+## What has been verified
 
-## Audit a whole build: `radisa collect` + `audit`
+Measured on 2026-11-12 with AMD clang 24 (ROCm `d6f6cb69`) and one Radeon AI PRO R9700:
+
+- **No false errors on real code.** 114 source files, 6448 kernels, 11.79 million instructions:
+  112 `PASS`, 2 files without kernels, no `FAIL`, no `INCOMPLETE`.
+- **Three rules confirmed on the GPU.** Small test kernels that break `MISSING_WAIT` and
+  `WMMA_D_TO_AB` gave wrong results in 200 of 200 runs. The one for `LDS_STORE_BEFORE_BARRIER`
+  did in 137 to 152 of 200. The corrected versions were always right. See
+  [hwprobe/README.md](hwprobe/README.md).
+- **Not confirmed on the GPU:** `PERMLANE_AFTER_CMPX`, `MISSING_ALU_WAIT` and `ALU_WAIT_TTMP`.
+  Their test kernels showed no wrong result, which proves neither that the rules are needed nor
+  that they are not.
+
+A `PASS` means the implemented rules found nothing. It is not a proof that a kernel is correct.
+What is not checked is listed in [docs/CHECK.md](docs/CHECK.md), "Not checked".
+
+## The other tools
+
+### Audit a whole build: `radisa collect` and `audit`
 
 ```bash
-bash tools/rdna4-isa-suite/run.sh BUILD_DIR SOURCE_ROOT NEW_RESULT_DIR
+bash "$S/run.sh" BUILD_DIR SOURCE_ROOT NEW_RESULT_DIR
 ```
 
-Extracts every `gfx1201` code object (ELF, `.hip_fatbin`, offload bundles, archives), checks
-descriptors, byte coverage and decoded instructions, and writes JSON, Markdown and JUnit
-reports. Kernel identity is code-object SHA-256 + descriptor symbol. This is a static
-gate, not conformance certification. See `docs/ISA_V02.md`, `docs/RULE_COVERAGE.md`.
+Finds every `gfx1201` code object of a build, checks its descriptors and that every byte decodes,
+and writes JSON, Markdown and JUnit reports. It is a gate for a build, not a certification.
+Details: [docs/ISA_V02.md](docs/ISA_V02.md), [docs/RULE_COVERAGE.md](docs/RULE_COVERAGE.md).
 
-## Replay kernels: `radreplay`
+### Replay kernels on the host: `radreplay`
 
 ```bash
-S=tools/rdna4-isa-suite
-bash "$S/replay.sh" validate MANIFEST.json            # no GPU, no native code
+bash "$S/replay.sh" validate MANIFEST.json                 # no GPU, no native code
 bash "$S/check-replay-host.sh" RADIANCE LIBREF.so NEW_BUILD_DIR
-bash "$S/check-all-host.sh" "$PWD" "$PWD/host-out"   # full host pipeline incl. ASan
+bash "$S/check-all-host.sh" "$PWD" "$PWD/host-out"         # the full host pipeline, with ASan
 ```
 
-Manifests (`radiance-kernel-replay/1`) are declared fixtures validated before any native code
-loads; results run through the real Radiance registry, host backend and comparison code.
-`check-target-gpu.sh` traces one approved single-plugin corpus on a `gfx1201` GPU and requires
-the AQL patches in `integration/`. Formats: `docs/REPLAY_FORMAT.md`, `integration/README.md`.
+Runs recorded kernel inputs through Radiance's real host code and compares the results. The
+recordings are validated before any native code is loaded. Recording on a GPU
+(`check-target-gpu.sh`) needs the optional patches in `integration/`.
+Details: [docs/REPLAY_FORMAT.md](docs/REPLAY_FORMAT.md), [integration/README.md](integration/README.md).
 
-## Offline planner: `radplan` (v0.6)
-
-**Multi-operator offline cost planning, not GPU emulation or production certification.**
-v0.6 keeps the v0.5 dense-GEMM calibration and adds attention/QSA, routed MoE, directional TP2
-communication cost models, dependency/resource scheduling, memory lifetimes, finite candidate
-search, profile sensitivity and a source-bound **partial** `qwen4_exp` model importer.
+### Offline planner: `radplan`
 
 ```bash
-bash tools/rdna4-isa-suite/check-planner-flow.sh "$PWD" "$PWD/offline-flow-v06"
+bash "$S/check-planner-flow.sh" "$PWD" "$PWD/offline-flow-v06"   # the output directory must be new
 ```
 
-The output directory must be new. This verifies source hashes, runs the planner tests, builds
-the 37-hypothesis catalog, plans seven example workloads, compares 96 TP2-window assignments,
-runs a three-profile sensitivity study and expands a declared model configuration. The final
-strict-mode test deliberately requires exit 2: no calibration is fabricated.
-
-```bash
-S=tools/rdna4-isa-suite
-E="$S/planner/examples/v06"
-bash "$S/planner.sh" plan-operators \
-  --catalog "$E/operator-catalog.json" --workloads "$E/operator-workloads.json" \
-  --system "$E/dual-r9700-unmeasured.json" --out ./operator-plan-v06
-bash "$S/planner.sh" plan-graph \
-  --catalog "$E/operator-catalog.json" --workloads "$E/operator-workloads.json" \
-  --system "$E/dual-r9700-unmeasured.json" --graph "$E/tp2-moe-graph.json" \
-  --out ./graph-plan-v06
-bash "$S/planner.sh" sensitivity \
-  --catalog "$E/operator-catalog.json" --workloads "$E/operator-workloads.json" \
-  --systems "$E/rate-sensitivity.json" --out ./sensitivity-v06.json
-bash "$S/planner.sh" attention-cpu-demo \
-  --worker "$PWD/host-out/normal/rad-kbench-replay" \
-  --libref "$PWD/host-out/normal/libref.so" \
-  --out "$PWD/attention-cpu-v06" --execute-trusted-code
-```
-
-New operator candidates are **cost hypotheses**, not compiled or executed GPU kernels; all new
-operator/graph scenarios stay `NEEDS_MEASUREMENT`, and `--require-calibrated` exits 2. Examples
-use synthetic routing and assumed rates. A calculated microsecond value is a conditional
-scenario, not a measured R9700 latency. The attention demo runs genuine Radiance CPU attention
-(`ref_attn_paged`) on twenty fixtures checked against independent Python references; FP32 CPU
-results are not FP8 GPU calibration. A changed source hash requires adapter review, not removal
-of the hash check.
+Estimates the cost of workloads made of several operators (GEMM, attention, MoE, communication
+between two GPUs). **These are estimates from assumed rates, not measurements and not GPU
+emulation.** Every new scenario is marked `NEEDS_MEASUREMENT`.
+Details: [docs/OPERATOR_PLANNER.md](docs/OPERATOR_PLANNER.md), [docs/V06_REVIEW.md](docs/V06_REVIEW.md).
 
 ## Tests
 
 ```bash
-bash tools/rdna4-isa-suite/check.sh            # tests/ (594) + replay_tests/ (142)
-bash tools/rdna4-isa-suite/check-planner.sh    # planner_tests/ (257)
+bash "$S/check.sh"            # linter tests (597) and replay tests (142)
+bash "$S/check-planner.sh"    # planner tests (257)
 ```
 
-`check.sh` requires LLVM and a C++ compiler. It sets `RAD_ISA_REQUIRE_LLVM=1`, so tests that
-need a gfx1201 toolchain newer than LLVM 18 (the checked-in compiler-emitted kernels,
-`clean_compiled.hip`) fail instead of skipping: run it with ROCm's or Radiance's LLVM. With
-Ubuntu LLVM/clang 18.1.3 and no ROCm, `PYTHONPATH=$PWD python3 -m unittest discover -s tests`
-gives 594 tests, OK, 7 skipped. Replay and planner tests need `RADIANCE_SOURCE` pointing at the
-Radiance checkout. `SHA256SUMS` covers the shipped files (`sha256sum -c SHA256SUMS`).
+- `check.sh` needs LLVM 20 or newer and a C++ compiler. With an older LLVM, six tests fail
+  instead of being skipped. That is intended: the script is the full check for the target
+  toolchain.
+- The replay and planner tests need `RADIANCE_SOURCE` to point at a Radiance checkout.
+- Without ROCm, the linter tests alone still run and skip what they cannot do:
+  `PYTHONPATH=$PWD python3 -m unittest discover -s tests` gives 597 tests, OK, 7 skipped with
+  Ubuntu's LLVM 18.
+- `sha256sum -c SHA256SUMS` verifies the shipped files.
 
-## Documentation
+## Where to read more
 
-- `docs/CHECK.md`: `radisa check` and `check-all` rules, CFG, counter and callee model, suppression,
-  formats, hook, drift, gaps.
-- `hwprobe/README.md`: hardware probes for the hazard rules and their results on one R9700.
-- `docs/ISA_V02.md`, `docs/RULE_COVERAGE.md`, `docs/REVIEW.md`: binary audit gate.
-- `docs/REPLAY_FORMAT.md`, `integration/README.md`: replay manifests and AQL patches.
-- `docs/V06_REVIEW.md`, `docs/OPERATOR_PLANNER.md`, `docs/FLOW_FORMAT.md`, `docs/SOURCES_V06.md`: planner v0.6.
-- `docs/V05_README.md`: retained dense-GEMM planning/calibration commands.
-- `evidence/v06/`: current example plans, logs and CPU fixture runs;
-  `evidence/cpu-comparison/`, `evidence/v05*`: **historical v0.5** run.
-  `evidence/RELEASE_VALIDATION.json` still lists the v0.6 release test counts.
+| Topic | File |
+|---|---|
+| Every rule, the analysis model, options, the hook, what is not checked | [docs/CHECK.md](docs/CHECK.md) |
+| Hardware test kernels and their results | [hwprobe/README.md](hwprobe/README.md) |
+| Build audit | [docs/ISA_V02.md](docs/ISA_V02.md), [docs/RULE_COVERAGE.md](docs/RULE_COVERAGE.md), [docs/REVIEW.md](docs/REVIEW.md) |
+| Replay formats and the optional patches | [docs/REPLAY_FORMAT.md](docs/REPLAY_FORMAT.md), [integration/README.md](integration/README.md) |
+| Planner | [docs/OPERATOR_PLANNER.md](docs/OPERATOR_PLANNER.md), [docs/FLOW_FORMAT.md](docs/FLOW_FORMAT.md), [docs/V06_REVIEW.md](docs/V06_REVIEW.md), [docs/SOURCES_V06.md](docs/SOURCES_V06.md) |
+| Older planner commands (v0.5) | [docs/V05_README.md](docs/V05_README.md) |
+| Example plans and logs | `evidence/v06/` (current), `evidence/v05*` and `evidence/cpu-comparison/` (historical) |
+| Working on this repository with a coding agent | [AGENTS.md](AGENTS.md) |
